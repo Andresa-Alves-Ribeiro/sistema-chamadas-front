@@ -2,6 +2,7 @@
 
 import { ArrowDownUp, UserPen, UserRoundX } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface OptionsDropdownProps {
   onEdit?: () => void;
@@ -11,20 +12,35 @@ interface OptionsDropdownProps {
 
 export default function OptionsDropdown({ onEdit, onDelete, onReorder }: OptionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [isOpen]);
+
+  const toggleDropdown = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.right + window.scrollX - 208 // 208px = width of dropdown
+      });
+    }
+    setIsOpen(!isOpen);
+  };
 
   const handleOptionClick = (callback?: () => void) => {
     if (callback) {
@@ -33,15 +49,67 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
     setIsOpen(false);
   };
 
+  const dropdownContent = isOpen && (
+    <div 
+      className="fixed bg-white rounded-lg shadow-xl border border-slate-200"
+      style={{ 
+        position: 'fixed',
+        zIndex: 99999,
+        top: position.top,
+        left: position.left,
+        width: '208px',
+        backgroundColor: 'white'
+      }}
+    >
+      <div className="py-2">
+        {onReorder && (
+          <button
+            onClick={() => handleOptionClick(onReorder)}
+            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+            type="button"
+          >
+            <div className="p-1.5 bg-blue-100 rounded-md mr-3">
+              <ArrowDownUp size={16} color="blue" />
+            </div>
+            <span className="font-medium">Remanejar</span>
+          </button>
+        )}
+        {onEdit && (
+          <button
+            onClick={() => handleOptionClick(onEdit)}
+            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+            type="button"
+          >
+            <div className="p-1.5 bg-green-100 rounded-md mr-3">
+              <UserPen size={16} color="green" />
+            </div>
+            <span className="font-medium">Editar</span>
+          </button>
+        )}
+        {onDelete && (
+          <button
+            onClick={() => handleOptionClick(onDelete)}
+            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
+            type="button"
+          >
+            <div className="p-1.5 bg-red-100 rounded-md mr-3">
+              <UserRoundX size={16} color="red" />
+            </div>
+            <span className="font-medium">Excluir</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen(!isOpen);
-        }}
-        className="p-2 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg hover:bg-slate-100 transition-all duration-200"
+        ref={buttonRef}
+        onClick={toggleDropdown}
+        className={`p-2 ${isOpen ? 'text-blue-600 bg-blue-50' : 'text-slate-500 hover:text-slate-700'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg hover:bg-slate-100 transition-all duration-200`}
         aria-label="Opções"
+        type="button"
       >
         <svg
           className="w-5 h-5"
@@ -52,54 +120,7 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl z-50 border border-slate-200 overflow-hidden">
-          <div className="py-2">
-            {onReorder && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOptionClick(onReorder);
-                }}
-                className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
-              >
-                <div className="p-1.5 bg-blue-100 rounded-md mr-3">
-                <ArrowDownUp size={16} color="blue" />
-                </div>
-                <span className="font-medium">Remanejar</span>
-              </button>
-            )}
-            {onEdit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOptionClick(onEdit);
-                }}
-                className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
-              >
-                <div className="p-1.5 bg-green-100 rounded-md mr-3">
-                <UserPen size={16} color="green" />
-                </div>
-                <span className="font-medium">Editar</span>
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOptionClick(onDelete);
-                }}
-                className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
-              >
-                <div className="p-1.5 bg-red-100 rounded-md mr-3">
-                <UserRoundX size={16} color="red" />
-                </div>
-                <span className="font-medium">Excluir</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+      {typeof window !== 'undefined' && isOpen && createPortal(dropdownContent, document.body)}
+    </>
   );
 }
