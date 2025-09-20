@@ -8,6 +8,7 @@ import { getAlunosColumns } from "../../config/tableColumns";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { Aluno, Turmas } from "../../types";
 import { Column } from "../../components/Table";
+import { ArrowLeftIcon } from "lucide-react";
 
 export default function TurmaDetailPage() {
     const params = useParams();
@@ -47,7 +48,6 @@ export default function TurmaDetailPage() {
 
                 setAlunos(alunosFiltrados);
                 
-                // Gerar colunas dinâmicas baseadas no dia da semana da turma
                 const columns = getAlunosColumns(turmaEncontrada.grade, daysOff, toggleDayOff);
                 setAlunosColumns(columns);
                 
@@ -60,7 +60,6 @@ export default function TurmaDetailPage() {
         setLoading(false);
     }, [params.id, router, daysOff, toggleDayOff]);
 
-    // Atualizar colunas quando daysOff mudar
     useEffect(() => {
         if (turma) {
             const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff);
@@ -76,8 +75,6 @@ export default function TurmaDetailPage() {
     const handleBackClick = () => {
         router.push('/');
     };
-
-
 
     const handleAddStudent = () => {
         setIsModalOpen(true);
@@ -128,9 +125,7 @@ export default function TurmaDetailPage() {
                         onClick={handleBackClick}
                         className="btn-primary"
                     >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
+                        <ArrowLeftIcon className="w-5 h-5 mr-2" />
                         Voltar ao início
                     </button>
                 </div>

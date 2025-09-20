@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CheckCircle, XCircle, AlertCircle, Minus } from "lucide-react";
 
-type PresencaStatusType = "presente" | "falta" | "falta_justificada";
+type PresencaStatusType = "presente" | "falta" | "falta_justificada" | "invalido";
 
 interface PresencaStatusProps {
     presente?: boolean;
@@ -12,8 +12,8 @@ export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps
     const [status, setStatus] = useState<PresencaStatusType>("presente");
 
     const handleClick = () => {
-        if (isDayOff) return; // Não permite cliques quando o dia está marcado como sem aula
-        
+        if (isDayOff) return;
+
         switch (status) {
             case "presente":
                 setStatus("falta");
@@ -22,6 +22,9 @@ export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps
                 setStatus("falta_justificada");
                 break;
             case "falta_justificada":
+                setStatus("invalido");
+                break;
+            case "invalido":
                 setStatus("presente");
                 break;
         }
@@ -54,6 +57,12 @@ export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps
                     className: "bg-yellow-100 text-yellow-800 border border-yellow-200 shadow-sm hover:bg-yellow-200 cursor-pointer",
                     icon: <AlertCircle size={14} color="#ca8a04" />,
                     text: "F. Justificada"
+                };
+            case "invalido":
+                return {
+                    className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm",
+                    icon: <Minus size={14} color="gray" />,
+                    text: "Inválido"
                 };
         }
     };
