@@ -49,7 +49,7 @@ export default function Table<T extends Record<string, unknown>>({
       
       // Estilos específicos para iOS
       if (isIOS) {
-        container.style.webkitOverflowScrolling = 'touch';
+        (container.style as any).webkitOverflowScrolling = 'touch';
         container.style.overflowX = 'auto';
         container.style.overflowY = 'visible';
         container.style.touchAction = 'pan-x';
