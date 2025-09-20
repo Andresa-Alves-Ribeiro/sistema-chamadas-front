@@ -163,6 +163,106 @@ body {
   }
 }
 
+/* Fallbacks para navegadores específicos */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  .table-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: visible;
+    touch-action: pan-x;
+  }
+}
+
+@supports not (-webkit-touch-callout: none) {
+  /* Android Chrome e outros */
+  .table-scroll-container {
+    overflow-x: auto;
+    overflow-y: visible;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+  }
+}
+
+/* Fallback para navegadores antigos */
+.table-scroll-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Garantir funcionamento em todos os dispositivos móveis */
+@media (max-width: 768px) {
+  .table-scroll-container {
+    position: relative;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .table-scroll-container table {
+    min-width: max-content;
+    width: 100%;
+    touch-action: pan-x;
+  }
+  
+  /* Forçar scroll vertical na página */
+  body, html {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    height: 100%;
+  }
+  
+  /* Container principal */
+  main, #__next, [data-nextjs-scroll-focus-boundary] {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Forçar comportamento correto em todos os navegadores móveis */
+@media screen and (max-width: 768px) {
+  .table-scroll-container {
+    /* Fallback para navegadores que não suportam touch-action */
+    -ms-touch-action: pan-x;
+    touch-action: pan-x;
+    
+    /* Forçar scroll horizontal */
+    overflow-x: scroll;
+    overflow-y: visible;
+    
+    /* Melhorar performance */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: scroll-position;
+  }
+  
+  /* Garantir que a página possa rolar verticalmente */
+  body {
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+  
+  html {
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Animações suaves */
 .transition-all {
   transition: all 0.2s ease-in-out;

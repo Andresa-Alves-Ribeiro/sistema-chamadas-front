@@ -38,7 +38,37 @@ export default function Table<T extends Record<string, unknown>>({
     }
   };
 
-  // Removido o JavaScript personalizado para evitar conflitos com scroll vertical
+  useEffect(() => {
+    // Detectar tipo de dispositivo e aplicar estilos específicos
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    if (isMobile && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      
+      // Estilos específicos para iOS
+      if (isIOS) {
+        container.style.webkitOverflowScrolling = 'touch';
+        container.style.overflowX = 'auto';
+        container.style.overflowY = 'visible';
+        container.style.touchAction = 'pan-x';
+      }
+      
+      // Estilos específicos para Android
+      if (isAndroid) {
+        container.style.overflowX = 'auto';
+        container.style.overflowY = 'visible';
+        container.style.touchAction = 'pan-x';
+        container.style.overscrollBehaviorX = 'contain';
+        container.style.overscrollBehaviorY = 'auto';
+      }
+      
+      // Garantir que o scroll funcione
+      container.style.position = 'relative';
+      container.style.zIndex = '1';
+    }
+  }, []);
 
   if (loading) {
     return (
