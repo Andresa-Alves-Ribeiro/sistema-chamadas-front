@@ -78,17 +78,7 @@ export default function Table<T extends Record<string, unknown>>({
       <div className="relative">
         <div
           ref={scrollContainerRef}
-          className="table-scroll-container overflow-x-auto overflow-y-visible"
-          style={{
-            touchAction: 'pan-x',
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehaviorX: 'contain',
-            overscrollBehaviorY: 'auto',
-            scrollBehavior: 'smooth',
-            position: 'relative',
-            zIndex: 1,
-            maxHeight: 'none'
-          }}
+          className="table-scroll-container"
         >
         <table
           className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"

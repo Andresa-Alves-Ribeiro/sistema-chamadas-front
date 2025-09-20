@@ -62,6 +62,9 @@ body {
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .table-scroll-container::-webkit-scrollbar {
@@ -86,60 +89,77 @@ body {
 /* Garantir que tabelas sejam scrolláveis em mobile */
 @media (max-width: 640px) {
   .table-scroll-container {
-    touch-action: pan-x;
-    overscroll-behavior-x: contain;
-    overscroll-behavior-y: auto;
+    position: relative;
+    overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    position: relative;
+    touch-action: manipulation;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
     z-index: 1;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    max-height: none !important;
-    height: auto !important;
-  }
-  
-  /* Melhorar a experiência de toque - APENAS horizontal */
-  .table-scroll-container * {
-    touch-action: pan-x;
+    width: 100%;
+    max-width: 100%;
   }
   
   /* Scrollbar mais sutil em mobile */
   .table-scroll-container::-webkit-scrollbar {
-    height: 4px;
+    height: 6px;
+    background: transparent;
   }
   
   .table-scroll-container::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.5);
+    background: rgba(148, 163, 184, 0.6);
+    border-radius: 3px;
   }
   
-  /* Forçar rolagem suave em todos os elementos da tabela */
+  .table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.8);
+  }
+  
+  /* Tabela dentro do container */
   .table-scroll-container table {
-    touch-action: pan-x;
-    pointer-events: auto;
-  }
-  
-  /* Garantir que não há bloqueio de scroll */
-  .table-scroll-container table,
-  .table-scroll-container table tbody,
-  .table-scroll-container table thead {
-    pointer-events: auto;
-  }
-  
-  /* Forçar hardware acceleration */
-  .table-scroll-container {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    will-change: scroll-position;
+    min-width: max-content;
+    width: 100%;
+    border-collapse: collapse;
   }
   
   /* Garantir que o scroll vertical da página funcione */
-  body {
+  body, html {
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    height: 100%;
+  }
+  
+  /* Container principal da página */
+  main, #__next {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* CSS específico para dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+  .table-scroll-container {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+  }
+  
+  .table-scroll-container table {
+    touch-action: pan-x;
+  }
+  
+  body, html {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 }
 
