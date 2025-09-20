@@ -57,7 +57,8 @@ export function getAlunosColumns(
     onToggleDayOff: (dateKey: string) => void,
     onReorderStudent?: (student: Aluno) => void,
     onEditStudent?: (student: Aluno) => void,
-    onDeleteStudent?: (student: Aluno) => void
+    onDeleteStudent?: (student: Aluno) => void,
+    onIncludeStudent?: (student: Aluno) => void
 ): Column<Aluno>[] {
     const startDate = new Date(2025, 7, 1); // Agosto = mês 7 (0-indexado)
     const endDate = new Date(2025, 11, 15); // Dezembro = mês 11 (0-indexado)
@@ -82,8 +83,8 @@ export function getAlunosColumns(
             align: "center" as const,
             isHeaderClickable: true,
             onHeaderClick: () => onToggleDayOff(dateKey),
-            render: () => {
-                return <PresencaStatus isDayOff={isDayOff} />;
+            render: (value: unknown, row: Aluno) => {
+                return <PresencaStatus isDayOff={isDayOff} student={row} dateKey={dateKey} />;
             }
         };
     });
@@ -94,6 +95,21 @@ export function getAlunosColumns(
             label: "Nome do Aluno",
             width: "150px",
             sortable: true,
+            render: (value: unknown, row: Aluno) => {
+                const name = value as string;
+                return (
+                    <div className="flex items-center space-x-2">
+                        <span className={row.excluded ? "text-slate-400 line-through" : ""}>
+                            {name}
+                        </span>
+                        {row.excluded && (
+                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
+                                desistência
+                            </span>
+                        )}
+                    </div>
+                );
+            }
         },
         ...dateColumns,
         {
@@ -107,6 +123,8 @@ export function getAlunosColumns(
                         onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
                         onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
                         onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
+                        onInclude={onIncludeStudent ? () => onIncludeStudent(row) : undefined}
+                        student={row}
                     />
                 );
             }

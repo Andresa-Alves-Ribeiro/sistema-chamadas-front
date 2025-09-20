@@ -1,16 +1,19 @@
 "use client";
 
-import { ArrowDownUp, UserPen, UserRoundX } from 'lucide-react';
+import { ArrowDownUp, UserPen, UserRoundX, UserPlus } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Aluno } from '../../types';
 
 interface OptionsDropdownProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onReorder?: () => void;
+  onInclude?: () => void;
+  student?: Aluno;
 }
 
-export default function OptionsDropdown({ onEdit, onDelete, onReorder }: OptionsDropdownProps) {
+export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude, student }: OptionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -100,21 +103,41 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
             <span className="font-medium">Editar</span>
           </button>
         )}
-        {onDelete && (
-          <button
-            data-dropdown-button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOptionClick(onDelete);
-            }}
-            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
-            type="button"
-          >
-            <div className="p-1.5 bg-red-100 rounded-md mr-3">
-              <UserRoundX size={16} color="red" />
-            </div>
-            <span className="font-medium">Excluir</span>
-          </button>
+        {/* Botão de Excluir ou Incluir baseado no status do aluno */}
+        {student?.excluded ? (
+          onInclude && (
+            <button
+              data-dropdown-button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOptionClick(onInclude);
+              }}
+              className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+              type="button"
+            >
+              <div className="p-1.5 bg-green-100 rounded-md mr-3">
+                <UserPlus size={16} color="green" />
+              </div>
+              <span className="font-medium">Incluir</span>
+            </button>
+          )
+        ) : (
+          onDelete && (
+            <button
+              data-dropdown-button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOptionClick(onDelete);
+              }}
+              className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
+              type="button"
+            >
+              <div className="p-1.5 bg-red-100 rounded-md mr-3">
+                <UserRoundX size={16} color="red" />
+              </div>
+              <span className="font-medium">Excluir</span>
+            </button>
+          )
         )}
       </div>
     </div>

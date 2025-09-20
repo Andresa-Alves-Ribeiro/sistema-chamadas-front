@@ -7,6 +7,7 @@ import AddStudentModal from "../../components/AddStudentModal";
 import ReorderStudentModal from "../../components/ReorderStudentModal";
 import EditStudentModal from "../../components/EditStudentModal";
 import DeleteStudentModal from "../../components/DeleteStudentModal";
+import IncludeStudentModal from "../../components/IncludeStudentModal";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { Aluno, Turmas } from "../../types";
@@ -23,6 +24,7 @@ export default function TurmaDetailPage() {
     const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isIncludeModalOpen, setIsIncludeModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
@@ -54,6 +56,11 @@ export default function TurmaDetailPage() {
         setIsDeleteModalOpen(true);
     }, []);
 
+    const handleIncludeStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsIncludeModalOpen(true);
+    }, []);
+
     useEffect(() => {
         const turmaId = params.id;
 
@@ -81,10 +88,10 @@ export default function TurmaDetailPage() {
 
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent);
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent);
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
 
     const handleRowClick = (row: Record<string, unknown>) => {
         const aluno = row as Aluno;
@@ -133,6 +140,11 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
+    const handleCloseIncludeModal = () => {
+        setIsIncludeModalOpen(false);
+        setSelectedStudent(null);
+    };
+
     const handleConfirmReorder = (studentId: number, newTurmaId: number) => {
         const newTurma = dadosExemploTurmas.find(t => t.id === newTurmaId);
         if (newTurma) {
@@ -170,16 +182,38 @@ export default function TurmaDetailPage() {
     };
 
     const handleConfirmDelete = (studentId: number) => {
-        // Remover o aluno da lista local
+        // Obter a data atual no formato YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Marcar o aluno como excluído com a data da exclusão
         setAlunos(prevAlunos => 
-            prevAlunos.filter(aluno => aluno.id !== studentId)
+            prevAlunos.map(aluno => 
+                aluno.id === studentId 
+                    ? { ...aluno, excluded: true, exclusionDate: today }
+                    : aluno
+            )
         );
         
         // Aqui você pode adicionar lógica adicional como:
         // - Atualizar no banco de dados
         // - Mostrar notificação de sucesso
-        // - Atualizar contadores de turmas
-        console.log(`Aluno ${studentId} excluído com sucesso`);
+        console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
+    };
+
+    const handleConfirmInclude = (student: Aluno) => {
+        // Marcar o aluno como incluído (remover flag de exclusão e data)
+        setAlunos(prevAlunos => 
+            prevAlunos.map(aluno => 
+                aluno.id === student.id 
+                    ? { ...aluno, excluded: false, exclusionDate: undefined }
+                    : aluno
+            )
+        );
+        
+        // Aqui você pode adicionar lógica adicional como:
+        // - Atualizar no banco de dados
+        // - Mostrar notificação de sucesso
+        console.log(`Aluno ${student.id} incluído com sucesso`);
     };
 
     if (loading) {
@@ -294,6 +328,13 @@ export default function TurmaDetailPage() {
                 isOpen={isDeleteModalOpen}
                 onClose={handleCloseDeleteModal}
                 onConfirm={handleConfirmDelete}
+                student={selectedStudent}
+            />
+
+            <IncludeStudentModal
+                isOpen={isIncludeModalOpen}
+                onClose={handleCloseIncludeModal}
+                onConfirm={handleConfirmInclude}
                 student={selectedStudent}
             />
         </div>

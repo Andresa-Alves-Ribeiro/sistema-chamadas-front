@@ -11,6 +11,8 @@ export interface Aluno {
     name: string;
     grade: string;
     time: string;
+    excluded?: boolean;
+    exclusionDate?: string; // Data da exclusão no formato YYYY-MM-DD
     [key: string]: unknown;
 }
 
