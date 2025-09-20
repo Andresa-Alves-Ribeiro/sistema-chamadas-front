@@ -56,7 +56,8 @@ export function getAlunosColumns(
     daysOff: Set<string>, 
     onToggleDayOff: (dateKey: string) => void,
     onReorderStudent?: (student: Aluno) => void,
-    onEditStudent?: (student: Aluno) => void
+    onEditStudent?: (student: Aluno) => void,
+    onDeleteStudent?: (student: Aluno) => void
 ): Column<Aluno>[] {
     const startDate = new Date(2025, 7, 1); // Agosto = mês 7 (0-indexado)
     const endDate = new Date(2025, 11, 15); // Dezembro = mês 11 (0-indexado)
@@ -105,7 +106,7 @@ export function getAlunosColumns(
                     <OptionsDropdown
                         onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
                         onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
-                        onDelete={() => console.log('Excluir aluno:', row)}
+                        onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
                     />
                 );
             }
