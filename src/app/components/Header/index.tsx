@@ -29,6 +29,7 @@ export default function Header() {
                                 </div>
                                 <div className="hidden lg:block">
                                     <p className="text-sm font-medium text-white">Prof. Paulo Jeovani</p>
+                                    <p className="text-sm font-medium text-white/80">Violão</p>
                                 </div>
                             </div>
                         </div>

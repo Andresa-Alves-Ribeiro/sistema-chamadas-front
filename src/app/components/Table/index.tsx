@@ -54,23 +54,23 @@ export default function Table<T extends Record<string, unknown>>({
 
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-        <thead className="bg-gray-50">
+      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
           <tr>
             {columns.map((column, index) => (
               <th
                 key={index}
-                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                className={`px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200 ${
                   column.align === 'center' ? 'text-center' : 
                   column.align === 'right' ? 'text-right' : 'text-left'
                 }`}
                 style={{ width: column.width }}
               >
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
                   <span>{column.label}</span>
                   {column.sortable && (
                     <svg
-                      className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600"
+                      className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -88,19 +88,19 @@ export default function Table<T extends Record<string, unknown>>({
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-100">
           {data.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className={`hover:bg-gray-50 transition-colors duration-150 ${
+              className={`hover:bg-blue-50 transition-all duration-200 ${
                 onRowClick ? 'cursor-pointer' : ''
-              }`}
+              } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
               onClick={() => handleRowClick(row)}
             >
               {columns.map((column, colIndex) => (
                 <td
                   key={colIndex}
-                  className={`px-6 py-4 whitespace-nowrap text-sm ${
+                  className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${
                     column.align === 'center' ? 'text-center' : 
                     column.align === 'right' ? 'text-right' : 'text-left'
                   }`}

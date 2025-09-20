@@ -1,20 +1,21 @@
 export interface Turmas {
     id: number;
-    turma: string;
+    grade: string;
+    time: string;
+    studentsQuantity: number;
     [key: string]: unknown;
 }
 
 export interface Aluno {
     id: number;
-    nome: string;
-    turma: string;
-    presenca: boolean;
-    data: string;
+    name: string;
+    grade: string;
+    time: string;
     [key: string]: unknown;
 }
 
 export interface TurmaInfo {
-    nome: string;
-    horario: string;
-    quantidadeAlunos: number;
+    name: string;
+    time: string;
+    studentsQuantity: number;
 }
