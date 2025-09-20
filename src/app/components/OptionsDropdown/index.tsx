@@ -18,7 +18,13 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        // Verificar se o clique foi em um botão do dropdown
+        const target = event.target as HTMLElement;
+        const isDropdownButton = target.closest('[data-dropdown-button]');
+        
+        if (!isDropdownButton) {
+          setIsOpen(false);
+        }
       }
     };
 
@@ -64,7 +70,11 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
       <div className="py-2">
         {onReorder && (
           <button
-            onClick={() => handleOptionClick(onReorder)}
+            data-dropdown-button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOptionClick(onReorder);
+            }}
             className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
             type="button"
           >
@@ -76,7 +86,11 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
         )}
         {onEdit && (
           <button
-            onClick={() => handleOptionClick(onEdit)}
+            data-dropdown-button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOptionClick(onEdit);
+            }}
             className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
             type="button"
           >
@@ -88,7 +102,11 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder }: Options
         )}
         {onDelete && (
           <button
-            onClick={() => handleOptionClick(onDelete)}
+            data-dropdown-button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOptionClick(onDelete);
+            }}
             className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
             type="button"
           >

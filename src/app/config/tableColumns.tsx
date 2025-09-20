@@ -54,7 +54,8 @@ export const turmasColumns: Column<Turmas>[] = [
 export function getAlunosColumns(
     grade: string, 
     daysOff: Set<string>, 
-    onToggleDayOff: (dateKey: string) => void
+    onToggleDayOff: (dateKey: string) => void,
+    onReorderStudent?: (student: Aluno) => void
 ): Column<Aluno>[] {
     const startDate = new Date(2025, 7, 1); // Agosto = mês 7 (0-indexado)
     const endDate = new Date(2025, 11, 15); // Dezembro = mês 11 (0-indexado)
@@ -101,7 +102,7 @@ export function getAlunosColumns(
             render: (value: unknown, row: Aluno) => {
                 return (
                     <OptionsDropdown
-                        onReorder={() => console.log('Remanejar aluno:', row)}
+                        onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
                         onEdit={() => console.log('Editar aluno:', row)}
                         onDelete={() => console.log('Excluir aluno:', row)}
                     />

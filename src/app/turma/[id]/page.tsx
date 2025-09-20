@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Table from "../../components/Table";
 import AddStudentModal from "../../components/AddStudentModal";
+import ReorderStudentModal from "../../components/ReorderStudentModal";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { Aluno, Turmas } from "../../types";
@@ -17,6 +18,8 @@ export default function TurmaDetailPage() {
     const [alunos, setAlunos] = useState<Aluno[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
 
@@ -30,6 +33,11 @@ export default function TurmaDetailPage() {
             }
             return newSet;
         });
+    }, []);
+
+    const handleReorderStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsReorderModalOpen(true);
     }, []);
 
     useEffect(() => {
@@ -48,9 +56,6 @@ export default function TurmaDetailPage() {
 
                 setAlunos(alunosFiltrados);
                 
-                const columns = getAlunosColumns(turmaEncontrada.grade, daysOff, toggleDayOff);
-                setAlunosColumns(columns);
-                
                 document.title = `Turma ${turmaEncontrada.grade} - ${turmaEncontrada.time} - Sistema de Chamada`;
             } else {
                 router.push('/');
@@ -58,14 +63,14 @@ export default function TurmaDetailPage() {
         }
 
         setLoading(false);
-    }, [params.id, router, daysOff, toggleDayOff]);
+    }, [params.id, router]);
 
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff);
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent);
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent]);
 
     const handleRowClick = (row: Record<string, unknown>) => {
         const aluno = row as Aluno;
@@ -96,6 +101,31 @@ export default function TurmaDetailPage() {
 
             setAlunos(prevAlunos => [...prevAlunos, newStudent]);
             handleCloseModal();
+        }
+    };
+
+    const handleCloseReorderModal = () => {
+        setIsReorderModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleConfirmReorder = (studentId: number, newTurmaId: number) => {
+        const newTurma = dadosExemploTurmas.find(t => t.id === newTurmaId);
+        if (newTurma) {
+            // Atualizar o aluno na lista local
+            setAlunos(prevAlunos => 
+                prevAlunos.map(aluno => 
+                    aluno.id === studentId 
+                        ? { ...aluno, grade: newTurma.grade, time: newTurma.time }
+                        : aluno
+                )
+            );
+            
+            // Aqui você pode adicionar lógica adicional como:
+            // - Atualizar no banco de dados
+            // - Mostrar notificação de sucesso
+            // - Atualizar contadores de turmas
+            console.log(`Aluno ${studentId} transferido para turma ${newTurma.grade} - ${newTurma.time}`);
         }
     };
 
@@ -191,6 +221,13 @@ export default function TurmaDetailPage() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={handleSaveStudent}
+            />
+
+            <ReorderStudentModal
+                isOpen={isReorderModalOpen}
+                onClose={handleCloseReorderModal}
+                onConfirm={handleConfirmReorder}
+                student={selectedStudent}
             />
         </div>
     );

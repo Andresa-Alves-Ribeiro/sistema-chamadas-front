@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpDownIcon } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 
 export interface Column<T> {
@@ -39,7 +40,6 @@ export default function Table<T extends Record<string, unknown>>({
   };
 
   useEffect(() => {
-    // Detectar tipo de dispositivo e aplicar estilos específicos
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
@@ -47,7 +47,6 @@ export default function Table<T extends Record<string, unknown>>({
     if (isMobile && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       
-      // Estilos específicos para iOS
       if (isIOS) {
         (container.style as CSSStyleDeclaration & { webkitOverflowScrolling?: string }).webkitOverflowScrolling = 'touch';
         container.style.overflowX = 'auto';
@@ -57,7 +56,6 @@ export default function Table<T extends Record<string, unknown>>({
         container.style.overscrollBehaviorY = 'auto';
       }
       
-      // Estilos específicos para Android
       if (isAndroid) {
         container.style.overflowX = 'auto';
         container.style.overflowY = 'visible';
@@ -66,25 +64,20 @@ export default function Table<T extends Record<string, unknown>>({
         container.style.overscrollBehaviorY = 'auto';
       }
       
-      // Garantir que o scroll funcione
       container.style.position = 'relative';
       container.style.zIndex = '1';
 
-      // Adicionar event listeners para melhorar o comportamento de rolagem
       const handleTouchStart = (e: TouchEvent) => {
-        // Permitir que o evento continue para a página
         e.stopPropagation();
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        // Se o movimento for principalmente vertical, permitir rolagem da página
         if (e.touches.length === 1) {
           const touch = e.touches[0];
           const deltaX = Math.abs(touch.clientX - ((touch.target as HTMLElement & { startX?: number }).startX || 0));
           const deltaY = Math.abs(touch.clientY - ((touch.target as HTMLElement & { startY?: number }).startY || 0));
           
           if (deltaY > deltaX) {
-            // Movimento vertical - permitir rolagem da página
             e.stopPropagation();
           }
         }
@@ -170,19 +163,7 @@ export default function Table<T extends Record<string, unknown>>({
                   <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                     <span className="text-xs sm:text-sm truncate">{column.label}</span>
                     {column.sortable && (
-                      <svg
-                        className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400 cursor-pointer hover:text-slate-600 transition-colors flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      <ArrowUpDownIcon className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400 cursor-pointer hover:text-slate-600 transition-colors flex-shrink-0" />
                     )}
                   </div>
                 </th>
