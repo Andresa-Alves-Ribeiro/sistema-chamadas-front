@@ -19,15 +19,17 @@ export default function TurmaPage() {
     };
     
     return (
-        <div className="w-full">
-            <h2 className="text-2xl font-semibold mb-4">Lista de Presença</h2>
-            <Table
-                data={dadosExemploAlunos}
-                columns={alunosColumns}
-                onRowClick={handleRowClick}
-                emptyMessage="Nenhum aluno encontrado"
-                className="shadow-lg"
-            />
+        <div className="font-sans min-h-screen">
+            <main className="w-full max-w-6xl mx-auto p-8 pb-20 sm:p-20">
+                <h2 className="text-2xl font-semibold mb-4">Lista de Presença</h2>
+                <Table
+                    data={dadosExemploAlunos}
+                    columns={alunosColumns}
+                    onRowClick={handleRowClick}
+                    emptyMessage="Nenhum aluno encontrado"
+                    className="shadow-lg"
+                />
+            </main>
         </div>
     );
 }
