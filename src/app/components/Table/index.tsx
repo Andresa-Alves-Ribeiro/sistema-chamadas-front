@@ -71,14 +71,18 @@ export default function Table<T extends Record<string, unknown>>({
         </div>
       </div>
 
-      <div
-        className="table-scroll-container overflow-x-auto"
-        style={{
-          touchAction: 'pan-x',
-          WebkitOverflowScrolling: 'touch',
-          overflowY: 'visible'
-        }}
-      >
+      <div className="relative">
+        <div
+          className="table-scroll-container overflow-x-auto overflow-y-visible"
+          style={{
+            touchAction: 'pan-x pan-y',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            scrollBehavior: 'smooth',
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
         <table
           className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
           style={{
@@ -168,6 +172,7 @@ export default function Table<T extends Record<string, unknown>>({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

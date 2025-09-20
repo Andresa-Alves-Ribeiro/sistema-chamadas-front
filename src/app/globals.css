@@ -85,10 +85,12 @@ body {
 /* Garantir que tabelas sejam scrolláveis em mobile */
 @media (max-width: 640px) {
   .table-scroll-container {
-    touch-action: pan-x;
-    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    position: relative;
+    z-index: 1;
   }
   
   /* Melhorar a experiência de toque */
@@ -103,6 +105,18 @@ body {
   
   .table-scroll-container::-webkit-scrollbar-thumb {
     background: rgba(148, 163, 184, 0.5);
+  }
+  
+  /* Forçar rolagem suave em todos os elementos da tabela */
+  .table-scroll-container table {
+    touch-action: pan-x pan-y;
+  }
+  
+  /* Garantir que não há bloqueio de scroll */
+  .table-scroll-container table,
+  .table-scroll-container table tbody,
+  .table-scroll-container table thead {
+    pointer-events: auto;
   }
 }
 
