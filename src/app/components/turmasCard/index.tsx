@@ -1,28 +1,15 @@
-import Table, { Column } from "../Table";
+import Table from "../Table";
+import { dadosExemploTurmas } from "../../data/mockData";
+import { turmasColumns } from "../../config/tableColumns";
 
-interface Turmas {
-    id: number;
-    turma: string;
-    [key: string]: unknown;
-}
-
-const dadosExemplo: Turmas[] = [
-    { id: 1, turma: "1A" },
-    { id: 2, turma: "1B" },
-    { id: 3, turma: "1C" },
-    { id: 4, turma: "1D" },
-    { id: 5, turma: "1E" },
-];
-
-const columns: Column<Turmas>[] = [
-    { key: "id", label: "ID" },
-    { key: "turma", label: "Turma" },
-];
 
 export default function TurmasCard() {
-    return <div>
-        <h2>Segunda-feira 8h</h2>
-        <p>Alunos: 10</p>
-        <Table data={dadosExemplo} columns={columns} />
-    </div>;
+    return (
+        <div className="space-y-6">
+            <div>
+                <h3 className="text-lg font-medium mb-3">Turmas Disponíveis</h3>
+                <Table data={dadosExemploTurmas} columns={turmasColumns} />
+            </div>
+        </div>
+    );
 }
