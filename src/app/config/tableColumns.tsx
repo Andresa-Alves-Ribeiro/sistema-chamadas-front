@@ -30,12 +30,6 @@ export const alunosColumns: Column<Aluno>[] = [
         sortable: true,
     },
     {
-        key: "grade",
-        label: "Turma",
-        width: "100px",
-        align: "center",
-    },
-    {
         key: "presenca",
         label: "Presença",
         width: "120px",
@@ -46,12 +40,6 @@ export const alunosColumns: Column<Aluno>[] = [
         },
     },
     {
-        key: "data",
-        label: "Data",
-        width: "120px",
-        align: "center",
-    },
-    {
         key: "options",
         label: "Opções",
         width: "80px",
@@ -59,7 +47,7 @@ export const alunosColumns: Column<Aluno>[] = [
         render: (value: unknown, row: Aluno) => {
             return (
                 <OptionsDropdown
-                    onView={() => console.log('Visualizar aluno:', row)}
+                    onReorder={() => console.log('Remanejar aluno:', row)}
                     onEdit={() => console.log('Editar aluno:', row)}
                     onDelete={() => console.log('Excluir aluno:', row)}
                 />
