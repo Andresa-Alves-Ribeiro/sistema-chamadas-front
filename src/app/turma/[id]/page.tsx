@@ -140,46 +140,47 @@ export default function TurmaDetailPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
                     <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-4">
+                        <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-3 sm:px-6 py-3 sm:py-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h1 className="text-2xl font-bold text-white">
+                                    <h1 className="text-lg sm:text-2xl font-bold text-white">
                                         Turma {turma.grade} - {turma.time}
                                     </h1>
                                 </div>
                                 <div className="text-right flex items-center gap-2">
-                                    <div className="text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-lg">alunos</span></div>
+                                    <div className="text-xl sm:text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-sm sm:text-lg">alunos</span></div>
                                 </div>
                             </div>
                         </div>
                 </div>
 
                 <div className="bg-white rounded-b-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                        <div className="flex items-center justify-between">
+                    <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-slate-200 bg-slate-50">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                             <div>
-                                <h2 className="text-lg font-semibold text-slate-900">Lista de Presença</h2>
-                                <p className="text-sm text-slate-600 mt-1">
+                                <h2 className="text-base sm:text-lg font-semibold text-slate-900">Lista de Presença</h2>
+                                <p className="text-xs sm:text-sm text-slate-600 mt-1">
                                     Gerencie a presença dos alunos e visualize o histórico de chamadas
                                 </p>
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button
                                     onClick={handleAddStudent}
-                                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-slate-600 border border-slate-600 rounded-lg hover:bg-slate-700 transition-colors duration-200"
+                                    className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-slate-600 border border-slate-600 rounded-lg hover:bg-slate-700 transition-colors duration-200"
                                 >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                     </svg>
-                                    Adicionar Aluno
+                                    <span className="hidden sm:inline">Adicionar Aluno</span>
+                                    <span className="sm:hidden">Adicionar</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4">
+                    <div className="p-2 sm:p-4">
                         <Table
                             data={alunos}
                             columns={alunosColumns}
