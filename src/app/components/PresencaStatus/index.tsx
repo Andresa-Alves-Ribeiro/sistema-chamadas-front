@@ -9,6 +9,7 @@ interface PresencaStatusProps {
     isDayOff?: boolean;
     student?: Aluno;
     dateKey?: string;
+    currentTurmaId?: number;
 }
 
 // Função para verificar se a data é posterior à data de exclusão
@@ -39,7 +40,35 @@ function isDateBeforeInclusion(dateKey: string, inclusionDate: string): boolean 
     return cellDate < inclusion;
 }
 
-export default function PresencaStatus({ isDayOff = false, student, dateKey }: PresencaStatusProps) {
+// Função para verificar se a data é posterior à data de remanejamento
+function isDateAfterTransfer(dateKey: string, transferDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const transfer = new Date(transferDate);
+    
+    return cellDate >= transfer;
+}
+
+// Função para verificar se a data é anterior à data de remanejamento
+function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const transfer = new Date(transferDate);
+    
+    return cellDate < transfer;
+}
+
+export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId }: PresencaStatusProps) {
     const [status, setStatus] = useState<PresencaStatusType>("presente");
 
     // Verificar se o aluno está excluído e se a data é posterior à data de exclusão
@@ -47,10 +76,21 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey }: P
     const shouldShowInvalidExcluded = isStudentExcluded && dateKey && student.exclusionDate && isDateAfterExclusion(dateKey, student.exclusionDate);
     
     // Verificar se o aluno é novo e se a data é anterior à data de inclusão
-    const isStudentNew = student?.inclusionDate && !student?.excluded && dateKey;
+    const isStudentNew = student?.inclusionDate && !student?.excluded && !student?.transferred && dateKey;
     const shouldShowInvalidNew = isStudentNew && dateKey && student.inclusionDate && isDateBeforeInclusion(dateKey, student.inclusionDate);
     
-    const shouldShowInvalid = shouldShowInvalidExcluded || shouldShowInvalidNew;
+    // Verificar se o aluno foi remanejado
+    const isStudentTransferred = student?.transferred && student?.transferDate && dateKey && currentTurmaId;
+    
+    // Se está na turma original: datas posteriores ao remanejamento são inválidas
+    const isInOriginalTurma = isStudentTransferred && student.originalTurmaId === currentTurmaId;
+    const shouldShowInvalidTransferredOriginal = isInOriginalTurma && dateKey && student.transferDate && isDateAfterTransfer(dateKey, student.transferDate);
+    
+    // Se está na turma nova: datas anteriores ao remanejamento são inválidas
+    const isInNewTurma = isStudentTransferred && student.originalTurmaId !== currentTurmaId;
+    const shouldShowInvalidTransferredNew = isInNewTurma && dateKey && student.transferDate && isDateBeforeTransfer(dateKey, student.transferDate);
+    
+    const shouldShowInvalid = shouldShowInvalidExcluded || shouldShowInvalidNew || shouldShowInvalidTransferredOriginal || shouldShowInvalidTransferredNew;
 
     const handleClick = () => {
         if (isDayOff || shouldShowInvalid) return;
@@ -81,7 +121,15 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey }: P
         }
 
         if (shouldShowInvalid) {
-            const text = shouldShowInvalidNew ? "Inválido (novo)" : "Inválido";
+            let text = "Inválido";
+            if (shouldShowInvalidNew) {
+                text = "Inválido (novo)";
+            } else if (shouldShowInvalidTransferredOriginal) {
+                text = "Inválido (remanejado)";
+            } else if (shouldShowInvalidTransferredNew) {
+                text = "Inválido (remanejado)";
+            }
+            
             return {
                 className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm cursor-not-allowed",
                 icon: <Minus size={14} color="gray" />,

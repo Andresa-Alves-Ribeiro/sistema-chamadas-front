@@ -14,6 +14,9 @@ export interface Aluno {
     excluded?: boolean;
     exclusionDate?: string; // Data da exclusão no formato YYYY-MM-DD
     inclusionDate?: string; // Data da inclusão no formato YYYY-MM-DD
+    transferred?: boolean; // Se o aluno foi remanejado
+    transferDate?: string; // Data do remanejamento no formato YYYY-MM-DD
+    originalTurmaId?: number; // ID da turma original (para alunos remanejados)
     [key: string]: unknown;
 }
 

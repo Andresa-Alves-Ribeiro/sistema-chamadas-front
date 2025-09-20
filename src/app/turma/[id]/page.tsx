@@ -88,7 +88,7 @@ export default function TurmaDetailPage() {
 
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent);
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
             setAlunosColumns(columns);
         }
     }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
@@ -148,11 +148,22 @@ export default function TurmaDetailPage() {
     const handleConfirmReorder = (studentId: number, newTurmaId: number) => {
         const newTurma = dadosExemploTurmas.find(t => t.id === newTurmaId);
         if (newTurma) {
-            // Atualizar o aluno na lista local
+            // Obter a data atual no formato YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0];
+            const currentTurmaId = turma?.id;
+            
+            // Atualizar o aluno na lista local com informações de remanejamento
             setAlunos(prevAlunos => 
                 prevAlunos.map(aluno => 
                     aluno.id === studentId 
-                        ? { ...aluno, grade: newTurma.grade, time: newTurma.time }
+                        ? { 
+                            ...aluno, 
+                            grade: newTurma.grade, 
+                            time: newTurma.time,
+                            transferred: true,
+                            transferDate: today,
+                            originalTurmaId: currentTurmaId
+                          }
                         : aluno
                 )
             );
@@ -161,7 +172,7 @@ export default function TurmaDetailPage() {
             // - Atualizar no banco de dados
             // - Mostrar notificação de sucesso
             // - Atualizar contadores de turmas
-            console.log(`Aluno ${studentId} transferido para turma ${newTurma.grade} - ${newTurma.time}`);
+            console.log(`Aluno ${studentId} remanejado para turma ${newTurma.grade} - ${newTurma.time} em ${today}`);
         }
     };
 

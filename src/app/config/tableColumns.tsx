@@ -58,7 +58,8 @@ export function getAlunosColumns(
     onReorderStudent?: (student: Aluno) => void,
     onEditStudent?: (student: Aluno) => void,
     onDeleteStudent?: (student: Aluno) => void,
-    onIncludeStudent?: (student: Aluno) => void
+    onIncludeStudent?: (student: Aluno) => void,
+    currentTurmaId?: number
 ): Column<Aluno>[] {
     const startDate = new Date(2025, 7, 1); // Agosto = mês 7 (0-indexado)
     const endDate = new Date(2025, 11, 15); // Dezembro = mês 11 (0-indexado)
@@ -84,7 +85,7 @@ export function getAlunosColumns(
             isHeaderClickable: true,
             onHeaderClick: () => onToggleDayOff(dateKey),
             render: (value: unknown, row: Aluno) => {
-                return <PresencaStatus isDayOff={isDayOff} student={row} dateKey={dateKey} />;
+                return <PresencaStatus isDayOff={isDayOff} student={row} dateKey={dateKey} currentTurmaId={currentTurmaId} />;
             }
         };
     });
@@ -107,9 +108,14 @@ export function getAlunosColumns(
                                 desistência
                             </span>
                         )}
-                        {row.inclusionDate && !row.excluded && (
+                        {row.inclusionDate && !row.excluded && !row.transferred && (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
                                 novo
+                            </span>
+                        )}
+                        {row.transferred && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                                remanejado
                             </span>
                         )}
                     </div>
