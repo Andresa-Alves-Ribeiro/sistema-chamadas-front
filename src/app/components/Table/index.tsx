@@ -49,7 +49,7 @@ export default function Table<T extends Record<string, unknown>>({
       
       // Estilos específicos para iOS
       if (isIOS) {
-        (container.style as any).webkitOverflowScrolling = 'touch';
+        (container.style as CSSStyleDeclaration & { webkitOverflowScrolling?: string }).webkitOverflowScrolling = 'touch';
         container.style.overflowX = 'auto';
         container.style.overflowY = 'visible';
         container.style.touchAction = 'pan-x pan-y';
@@ -80,8 +80,8 @@ export default function Table<T extends Record<string, unknown>>({
         // Se o movimento for principalmente vertical, permitir rolagem da página
         if (e.touches.length === 1) {
           const touch = e.touches[0];
-          const deltaX = Math.abs(touch.clientX - (touch.target as any).startX || 0);
-          const deltaY = Math.abs(touch.clientY - (touch.target as any).startY || 0);
+          const deltaX = Math.abs(touch.clientX - ((touch.target as HTMLElement & { startX?: number }).startX || 0));
+          const deltaY = Math.abs(touch.clientY - ((touch.target as HTMLElement & { startY?: number }).startY || 0));
           
           if (deltaY > deltaX) {
             // Movimento vertical - permitir rolagem da página
