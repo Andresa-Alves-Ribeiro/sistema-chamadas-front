@@ -25,12 +25,32 @@ function isDateAfterExclusion(dateKey: string, exclusionDate: string): boolean {
     return cellDate >= exclusion;
 }
 
+// Função para verificar se a data é anterior à data de inclusão
+function isDateBeforeInclusion(dateKey: string, inclusionDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const inclusion = new Date(inclusionDate);
+    
+    return cellDate < inclusion;
+}
+
 export default function PresencaStatus({ isDayOff = false, student, dateKey }: PresencaStatusProps) {
     const [status, setStatus] = useState<PresencaStatusType>("presente");
 
     // Verificar se o aluno está excluído e se a data é posterior à data de exclusão
     const isStudentExcluded = student?.excluded && student?.exclusionDate && dateKey;
-    const shouldShowInvalid = isStudentExcluded && dateKey && student.exclusionDate && isDateAfterExclusion(dateKey, student.exclusionDate);
+    const shouldShowInvalidExcluded = isStudentExcluded && dateKey && student.exclusionDate && isDateAfterExclusion(dateKey, student.exclusionDate);
+    
+    // Verificar se o aluno é novo e se a data é anterior à data de inclusão
+    const isStudentNew = student?.inclusionDate && !student?.excluded && dateKey;
+    const shouldShowInvalidNew = isStudentNew && dateKey && student.inclusionDate && isDateBeforeInclusion(dateKey, student.inclusionDate);
+    
+    const shouldShowInvalid = shouldShowInvalidExcluded || shouldShowInvalidNew;
 
     const handleClick = () => {
         if (isDayOff || shouldShowInvalid) return;
@@ -61,10 +81,11 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey }: P
         }
 
         if (shouldShowInvalid) {
+            const text = shouldShowInvalidNew ? "Inválido (novo)" : "Inválido";
             return {
                 className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm cursor-not-allowed",
                 icon: <Minus size={14} color="gray" />,
-                text: "Inválido"
+                text: text
             };
         }
 

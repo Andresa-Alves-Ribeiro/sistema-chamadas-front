@@ -107,6 +107,11 @@ export function getAlunosColumns(
                                 desistência
                             </span>
                         )}
+                        {row.inclusionDate && !row.excluded && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                                novo
+                            </span>
+                        )}
                     </div>
                 );
             }

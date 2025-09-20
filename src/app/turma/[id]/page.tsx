@@ -201,11 +201,14 @@ export default function TurmaDetailPage() {
     };
 
     const handleConfirmInclude = (student: Aluno) => {
-        // Marcar o aluno como incluído (remover flag de exclusão e data)
+        // Obter a data atual no formato YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Marcar o aluno como incluído com a data da inclusão
         setAlunos(prevAlunos => 
             prevAlunos.map(aluno => 
                 aluno.id === student.id 
-                    ? { ...aluno, excluded: false, exclusionDate: undefined }
+                    ? { ...aluno, excluded: false, exclusionDate: undefined, inclusionDate: today }
                     : aluno
             )
         );
@@ -213,7 +216,7 @@ export default function TurmaDetailPage() {
         // Aqui você pode adicionar lógica adicional como:
         // - Atualizar no banco de dados
         // - Mostrar notificação de sucesso
-        console.log(`Aluno ${student.id} incluído com sucesso`);
+        console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
     };
 
     if (loading) {
