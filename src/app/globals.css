@@ -82,20 +82,28 @@ body {
   background: #94a3b8;
 }
 
+
 /* Garantir que tabelas sejam scrolláveis em mobile */
 @media (max-width: 640px) {
   .table-scroll-container {
-    touch-action: pan-x pan-y;
-    overscroll-behavior: contain;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     position: relative;
     z-index: 1;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    max-height: none !important;
+    height: auto !important;
   }
   
-  /* Melhorar a experiência de toque */
+  /* Melhorar a experiência de toque - APENAS horizontal */
   .table-scroll-container * {
-    touch-action: manipulation;
+    touch-action: pan-x;
   }
   
   /* Scrollbar mais sutil em mobile */
@@ -109,7 +117,8 @@ body {
   
   /* Forçar rolagem suave em todos os elementos da tabela */
   .table-scroll-container table {
-    touch-action: pan-x pan-y;
+    touch-action: pan-x;
+    pointer-events: auto;
   }
   
   /* Garantir que não há bloqueio de scroll */
@@ -117,6 +126,20 @@ body {
   .table-scroll-container table tbody,
   .table-scroll-container table thead {
     pointer-events: auto;
+  }
+  
+  /* Forçar hardware acceleration */
+  .table-scroll-container {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    will-change: scroll-position;
+  }
+  
+  /* Garantir que o scroll vertical da página funcione */
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
