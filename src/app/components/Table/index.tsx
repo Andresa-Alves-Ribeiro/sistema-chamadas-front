@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-// Tipos para o componente de tabela
 export interface Column<T> {
   key: keyof T;
   label: string;
@@ -56,7 +55,6 @@ export default function Table<T extends Record<string, unknown>>({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Indicador de scroll para mobile */}
       <div className="block sm:hidden mb-2">
         <div className="flex items-center justify-center space-x-2 text-xs text-slate-500">
           <div className="flex items-center space-x-1">
@@ -72,18 +70,22 @@ export default function Table<T extends Record<string, unknown>>({
           <span>para ver todos os dias</span>
         </div>
       </div>
-      
-      {/* Container com scroll horizontal otimizado para mobile */}
-      <div 
-        className="table-scroll-container overflow-x-auto overflow-y-visible"
-        style={{
-          touchAction: 'pan-x',
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
-        <table 
+
+      <div className="relative">
+        <div
+          className="table-scroll-container overflow-x-auto overflow-y-visible"
+          style={{
+            touchAction: 'pan-x pan-y',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            scrollBehavior: 'smooth',
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
+        <table
           className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
-          style={{ 
+          style={{
             minWidth: 'max-content',
             width: '100%'
           }}
@@ -93,14 +95,18 @@ export default function Table<T extends Record<string, unknown>>({
               {columns.map((column, index) => (
                 <th
                   key={index}
-                  className={`px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200 ${
-                    column.align === 'center' ? 'text-center' : 
-                    column.align === 'right' ? 'text-right' : 'text-left'
-                  } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''}`}
-                  style={{ 
+                  className={`px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200 ${column.align === 'center' ? 'text-center' :
+                      column.align === 'right' ? 'text-right' : 'text-left'
+                    } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''} ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''
+                    } ${column.key === 'options' ? 'min-w-[80px]' : ''}`}
+                  style={{
                     width: column.width,
-                    minWidth: column.key === 'name' ? '120px' : column.width || '70px',
-                    maxWidth: column.key === 'name' ? '200px' : column.width || '70px'
+                    minWidth: column.key === 'name' ? '120px' :
+                      column.key === 'options' ? '80px' :
+                        column.width || '90px',
+                    maxWidth: column.key === 'name' ? '200px' :
+                      column.key === 'options' ? '80px' :
+                        column.width || '90px'
                   }}
                   onClick={column.isHeaderClickable ? column.onHeaderClick : undefined}
                 >
@@ -130,26 +136,32 @@ export default function Table<T extends Record<string, unknown>>({
             {data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className={`hover:bg-blue-50 transition-all duration-200 ${
-                  onRowClick ? 'cursor-pointer' : ''
-                } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
-                onClick={() => handleRowClick(row)}
+                className={`hover:bg-blue-50 transition-all duration-200 ${onRowClick ? 'cursor-pointer' : ''
+                  } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                onClick={(e) => {
+                  if (!(e.target as HTMLElement).closest('button')) {
+                    handleRowClick(row);
+                  }
+                }}
               >
                 {columns.map((column, colIndex) => (
                   <td
                     key={colIndex}
-                    className={`px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-900 ${
-                      column.align === 'center' ? 'text-center' : 
-                      column.align === 'right' ? 'text-right' : 'text-left'
-                    }`}
+                    className={`px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-900 ${column.align === 'center' ? 'text-center' :
+                        column.align === 'right' ? 'text-right' : 'text-left'
+                      } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''} ${column.key === 'options' ? 'min-w-[80px]' : ''}`}
                     style={{
                       width: column.width,
-                      minWidth: column.key === 'name' ? '120px' : column.width || '70px',
-                      maxWidth: column.key === 'name' ? '200px' : column.width || '70px'
+                      minWidth: column.key === 'name' ? '120px' :
+                        column.key === 'options' ? '80px' :
+                          column.width || '90px',
+                      maxWidth: column.key === 'name' ? '200px' :
+                        column.key === 'options' ? '80px' :
+                          column.width || '90px'
                     }}
                   >
                     <div className="truncate">
-                      {column.render 
+                      {column.render
                         ? column.render(row[column.key], row)
                         : String(row[column.key] ?? '')
                       }
@@ -160,6 +172,7 @@ export default function Table<T extends Record<string, unknown>>({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

@@ -75,7 +75,7 @@ export function getAlunosColumns(
         return {
             key: dateKey,
             label: date,
-            width: "70px",
+            width: "90px",
             align: "center" as const,
             isHeaderClickable: true,
             onHeaderClick: () => onToggleDayOff(dateKey),
@@ -96,7 +96,7 @@ export function getAlunosColumns(
         {
             key: "options",
             label: "Opções",
-            width: "60px",
+            width: "80px",
             align: "center",
             render: (value: unknown, row: Aluno) => {
                 return (
