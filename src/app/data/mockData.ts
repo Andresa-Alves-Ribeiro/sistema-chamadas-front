@@ -1,30 +1,30 @@
 import { Turmas, Aluno } from "../types";
 
 export const dadosExemploTurmas: Turmas[] = [
-    { id: 1, grade: "Segunda-feira", time: "08:00", studentsQuantity: 10 },
-    { id: 2, grade: "Segunda-feira", time: "08:50", studentsQuantity: 10 },
-    { id: 3, grade: "Segunda-feira", time: "09:40", studentsQuantity: 10 },
-    { id: 4, grade: "Segunda-feira", time: "10:30", studentsQuantity: 10 },
-    { id: 5, grade: "Segunda-feira", time: "18:00", studentsQuantity: 10 },
-    { id: 5, grade: "Segunda-feira", time: "19:40", studentsQuantity: 10 },
-    { id: 5, grade: "Segunda-feira", time: "20:30", studentsQuantity: 10 },
+    { id: 1, grade: "Segunda-feira", time: "08:00", studentsQuantity: 5 },
+    { id: 2, grade: "Segunda-feira", time: "08:50", studentsQuantity: 6 },
+    { id: 3, grade: "Segunda-feira", time: "09:40", studentsQuantity: 9 },
+    { id: 4, grade: "Segunda-feira", time: "10:30", studentsQuantity: 8 },
+    { id: 5, grade: "Segunda-feira", time: "18:00", studentsQuantity: 4 },
+    { id: 6, grade: "Segunda-feira", time: "19:40", studentsQuantity: 10 },
+    { id: 7, grade: "Segunda-feira", time: "20:30", studentsQuantity: 1 },
 
-    { id: 3, grade: "Terça-feira", time: "18:00", studentsQuantity: 10 },
-    { id: 4, grade: "Terça-feira", time: "18:50", studentsQuantity: 10 },
+    { id: 8, grade: "Terça-feira", time: "18:00", studentsQuantity: 10 },
+    { id: 9, grade: "Terça-feira", time: "18:50", studentsQuantity: 7 },
 
-    { id: 5, grade: "Quarta-feira", time: "18:50", studentsQuantity: 10 },
-    { id: 5, grade: "Quarta-feira", time: "19:40", studentsQuantity: 10 },
-    { id: 5, grade: "Quarta-feira", time: "20:30", studentsQuantity: 10 },
+    { id: 10, grade: "Quarta-feira", time: "18:50", studentsQuantity: 8 },
+    { id: 11, grade: "Quarta-feira", time: "19:40", studentsQuantity: 5 },
+    { id: 12, grade: "Quarta-feira", time: "20:30", studentsQuantity: 1 },
 
-    { id: 5, grade: "Sexta-feira", time: "8:00", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "8:50", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "9:40", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "10:30", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "13:00", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "13:50", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "14:40", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "15:30", studentsQuantity: 10 },
-    { id: 5, grade: "Sexta-feira", time: "16:20", studentsQuantity: 10 }
+    { id: 13, grade: "Sexta-feira", time: "08:00", studentsQuantity: 4 },
+    { id: 14, grade: "Sexta-feira", time: "08:50", studentsQuantity: 7 },
+    { id: 15, grade: "Sexta-feira", time: "09:40", studentsQuantity: 4 },
+    { id: 16, grade: "Sexta-feira", time: "10:30", studentsQuantity: 4 },
+    { id: 17, grade: "Sexta-feira", time: "13:00", studentsQuantity: 3 },
+    { id: 18, grade: "Sexta-feira", time: "13:50", studentsQuantity: 5 },
+    { id: 19, grade: "Sexta-feira", time: "14:40", studentsQuantity: 9 },
+    { id: 20, grade: "Sexta-feira", time: "15:30", studentsQuantity: 7 },
+    { id: 21, grade: "Sexta-feira", time: "16:20", studentsQuantity: 7 }
 ];
 
 export const dadosExemploAlunos: Aluno[] = [

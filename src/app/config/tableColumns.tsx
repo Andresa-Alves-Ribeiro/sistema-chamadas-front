@@ -4,9 +4,9 @@ import PresencaStatus from "../components/PresencaStatus";
 import OptionsDropdown from "../components/OptionsDropdown";
 
 export const turmasColumns: Column<Turmas>[] = [
-    { key: "turma", label: "Turma" },
-    { key: "horario", label: "Horário" },
-    { key: "quantidadeAlunos", label: "Quantidade de Alunos" },
+    { key: "grade", label: "Turma" },
+    { key: "time", label: "Horário" },
+    { key: "studentsQuantity", label: "Quantidade de Alunos" },
     { 
         key: "options", 
         label: "Opções",
@@ -25,12 +25,12 @@ export const turmasColumns: Column<Turmas>[] = [
 
 export const alunosColumns: Column<Aluno>[] = [
     {
-        key: "nome",
+        key: "name",
         label: "Nome do Aluno",
         sortable: true,
     },
     {
-        key: "turma",
+        key: "grade",
         label: "Turma",
         width: "100px",
         align: "center",

@@ -4,12 +4,14 @@ import Table from "../Table";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { turmasColumns } from "../../config/tableColumns";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Turmas } from "../../types";
 
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDay, setSelectedDay] = useState("");
+    const router = useRouter();
 
-    // Filtrar turmas baseado na busca e dia selecionado
     const filteredTurmas = dadosExemploTurmas.filter(turma => {
         const matchesSearch = turma.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
             String(turma.time).includes(searchTerm);
@@ -17,14 +19,16 @@ export default function HomePage() {
         return matchesSearch && matchesDay;
     });
 
-    // Estatísticas
     const totalTurmas = dadosExemploTurmas.length;
     const totalAlunos = dadosExemploAlunos.length;
+
+    const handleTurmaClick = (turma: Turmas) => {
+        router.push(`/turma/${turma.id}`);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="px-6 py-8">
-                {/* Cards de Estatísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div className="bg-white rounded-lg shadow-sm border p-6">
                         <div className="flex items-center">
@@ -55,7 +59,6 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                {/* Seção de Turmas */}
                 <div className="bg-white rounded-lg shadow-sm border">
                     <div className="px-6 py-4 border-b border-gray-200">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -74,11 +77,11 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* Tabela */}
                     <div className="p-6">
                         <Table
                             data={filteredTurmas}
                             columns={turmasColumns}
+                            onRowClick={handleTurmaClick}
                             emptyMessage="Nenhuma turma encontrada com os filtros aplicados"
                         />
                     </div>
