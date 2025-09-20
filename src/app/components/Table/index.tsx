@@ -1,6 +1,37 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+// Componente para debug info que só renderiza no cliente
+function MobileDebugInfo() {
+  const [deviceInfo, setDeviceInfo] = useState<{device: string, browser: string} | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userAgent = navigator.userAgent;
+      const device = userAgent.includes('iPhone') ? 'iPhone' : 
+                    userAgent.includes('iPad') ? 'iPad' : 
+                    userAgent.includes('Android') ? 'Android' : 
+                    'Mobile';
+      
+      const browser = userAgent.includes('Chrome') ? 'Chrome' : 
+                     userAgent.includes('Safari') ? 'Safari' : 
+                     'Outro';
+      
+      setDeviceInfo({ device, browser });
+    }
+  }, []);
+
+  if (!deviceInfo) return null;
+
+  return (
+    <div className="text-center text-xs text-slate-400 mt-1">
+      <span>Dispositivo: {deviceInfo.device}</span>
+      <span className="mx-2">•</span>
+      <span>Navegador: {deviceInfo.browser}</span>
+    </div>
+  );
+}
 
 export interface Column<T> {
   key: keyof T;
@@ -43,30 +74,95 @@ export default function Table<T extends Record<string, unknown>>({
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
+    const isSamsung = /Samsung|SM-/.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
     
     if (isMobile && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       
+      // Resetar estilos primeiro
+      container.style.cssText = '';
+      
+      // Estilos base para todos os dispositivos móveis
+      container.style.position = 'relative';
+      container.style.zIndex = '1';
+      container.style.width = '100%';
+      container.style.maxWidth = '100%';
+      container.style.overflowX = 'auto';
+      container.style.overflowY = 'visible';
+      container.style.touchAction = 'pan-x';
+      (container.style as any).webkitOverflowScrolling = 'touch';
+      container.style.scrollBehavior = 'smooth';
+      container.style.overscrollBehaviorX = 'contain';
+      container.style.overscrollBehaviorY = 'auto';
+      
       // Estilos específicos para iOS
       if (isIOS) {
         (container.style as any).webkitOverflowScrolling = 'touch';
-        container.style.overflowX = 'auto';
-        container.style.overflowY = 'visible';
         container.style.touchAction = 'pan-x';
+        // Forçar hardware acceleration no iOS
+        container.style.transform = 'translateZ(0)';
+        container.style.willChange = 'scroll-position';
       }
       
       // Estilos específicos para Android
       if (isAndroid) {
-        container.style.overflowX = 'auto';
-        container.style.overflowY = 'visible';
+        container.style.touchAction = 'pan-x';
+        container.style.overscrollBehaviorX = 'contain';
+        container.style.overscrollBehaviorY = 'auto';
+        // Melhorar performance no Android
+        container.style.transform = 'translateZ(0)';
+        container.style.willChange = 'scroll-position';
+      }
+      
+      // Estilos específicos para Samsung
+      if (isSamsung) {
+        container.style.touchAction = 'pan-x';
+        container.style.overscrollBehaviorX = 'contain';
+        container.style.overscrollBehaviorY = 'auto';
+        // Samsung tem problemas específicos com scroll
+        (container.style as any).msTouchAction = 'pan-x';
+        (container.style as any).msOverflowStyle = 'scrollbar';
+      }
+      
+      // Estilos específicos para Chrome mobile
+      if (isChrome && isMobile) {
         container.style.touchAction = 'pan-x';
         container.style.overscrollBehaviorX = 'contain';
         container.style.overscrollBehaviorY = 'auto';
       }
       
-      // Garantir que o scroll funcione
-      container.style.position = 'relative';
-      container.style.zIndex = '1';
+      // Estilos específicos para Safari mobile
+      if (isSafari && isMobile) {
+        (container.style as any).webkitOverflowScrolling = 'touch';
+        container.style.touchAction = 'pan-x';
+        container.style.transform = 'translateZ(0)';
+      }
+      
+      // Adicionar event listeners para debug
+      const handleTouchStart = (e: TouchEvent) => {
+        console.log('Touch start detected on table container');
+      };
+      
+      const handleTouchMove = (e: TouchEvent) => {
+        console.log('Touch move detected on table container');
+      };
+      
+      const handleScroll = (e: Event) => {
+        console.log('Scroll event detected on table container');
+      };
+      
+      container.addEventListener('touchstart', handleTouchStart, { passive: true });
+      container.addEventListener('touchmove', handleTouchMove, { passive: true });
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // Cleanup
+      return () => {
+        container.removeEventListener('touchstart', handleTouchStart);
+        container.removeEventListener('touchmove', handleTouchMove);
+        container.removeEventListener('scroll', handleScroll);
+      };
     }
   }, []);
 
@@ -103,12 +199,28 @@ export default function Table<T extends Record<string, unknown>>({
           <div className="text-slate-400">•</div>
           <span>para ver todos os dias</span>
         </div>
+        
+        {/* Debug info para mobile */}
+        <MobileDebugInfo />
       </div>
 
       <div className="relative">
         <div
           ref={scrollContainerRef}
           className="table-scroll-container"
+          style={{
+            // Fallback inline styles para garantir funcionamento
+            overflowX: 'auto',
+            overflowY: 'visible',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-x',
+            overscrollBehaviorX: 'contain',
+            overscrollBehaviorY: 'auto',
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            maxWidth: '100%'
+          }}
         >
         <table
           className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"

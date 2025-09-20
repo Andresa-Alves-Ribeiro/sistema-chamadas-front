@@ -56,17 +56,22 @@ body {
   background: #a8a8a8;
 }
 
-/* Scroll horizontal otimizado para mobile */
+/* Container de scroll da tabela - estilos base */
 .table-scroll-container {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
   position: relative;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  z-index: 1;
 }
 
+/* Scrollbar personalizada */
 .table-scroll-container::-webkit-scrollbar {
   height: 8px;
 }
@@ -85,27 +90,32 @@ body {
   background: #94a3b8;
 }
 
+/* Tabela dentro do container */
+.table-scroll-container table {
+  min-width: max-content;
+  width: 100%;
+  border-collapse: collapse;
+}
 
-/* Garantir que tabelas sejam scrolláveis em mobile */
-@media (max-width: 640px) {
+/* Estilos específicos para dispositivos móveis */
+@media (max-width: 768px) {
   .table-scroll-container {
-    position: relative;
-    overflow-x: auto;
-    overflow-y: visible;
+    /* Forçar scroll horizontal em mobile */
+    overflow-x: auto !important;
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    touch-action: manipulation;
+    touch-action: pan-x;
     overscroll-behavior-x: contain;
     overscroll-behavior-y: auto;
-    z-index: 1;
-    width: 100%;
-    max-width: 100%;
+    
+    /* Melhorar performance */
+    transform: translateZ(0);
+    will-change: scroll-position;
   }
   
   /* Scrollbar mais sutil em mobile */
   .table-scroll-container::-webkit-scrollbar {
     height: 6px;
-    background: transparent;
   }
   
   .table-scroll-container::-webkit-scrollbar-thumb {
@@ -117,34 +127,26 @@ body {
     background: rgba(148, 163, 184, 0.8);
   }
   
-  /* Tabela dentro do container */
-  .table-scroll-container table {
-    min-width: max-content;
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  /* Garantir que o scroll vertical da página funcione */
+  /* Garantir que a página possa rolar verticalmente */
   body, html {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     height: 100%;
   }
   
   /* Container principal da página */
-  main, #__next {
-    overflow-x: hidden;
-    overflow-y: auto;
+  main, #__next, [data-nextjs-scroll-focus-boundary] {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 }
 
-/* CSS específico para dispositivos touch */
+/* Estilos específicos para dispositivos touch */
 @media (hover: none) and (pointer: coarse) {
   .table-scroll-container {
-    overflow-x: auto;
-    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x;
     overscroll-behavior-x: contain;
@@ -153,13 +155,6 @@ body {
   
   .table-scroll-container table {
     touch-action: pan-x;
-  }
-  
-  body, html {
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
   }
 }
 
@@ -168,8 +163,6 @@ body {
   /* iOS Safari */
   .table-scroll-container {
     -webkit-overflow-scrolling: touch;
-    overflow-x: auto;
-    overflow-y: visible;
     touch-action: pan-x;
   }
 }
@@ -177,89 +170,9 @@ body {
 @supports not (-webkit-touch-callout: none) {
   /* Android Chrome e outros */
   .table-scroll-container {
-    overflow-x: auto;
-    overflow-y: visible;
     touch-action: pan-x;
     overscroll-behavior-x: contain;
     overscroll-behavior-y: auto;
-  }
-}
-
-/* Fallback para navegadores antigos */
-.table-scroll-container {
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-/* Garantir funcionamento em todos os dispositivos móveis */
-@media (max-width: 768px) {
-  .table-scroll-container {
-    position: relative;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    touch-action: pan-x;
-    overscroll-behavior-x: contain;
-    overscroll-behavior-y: auto;
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .table-scroll-container table {
-    min-width: max-content;
-    width: 100%;
-    touch-action: pan-x;
-  }
-  
-  /* Forçar scroll vertical na página */
-  body, html {
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-    height: 100%;
-  }
-  
-  /* Container principal */
-  main, #__next, [data-nextjs-scroll-focus-boundary] {
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Forçar comportamento correto em todos os navegadores móveis */
-@media screen and (max-width: 768px) {
-  .table-scroll-container {
-    /* Fallback para navegadores que não suportam touch-action */
-    -ms-touch-action: pan-x;
-    touch-action: pan-x;
-    
-    /* Forçar scroll horizontal */
-    overflow-x: scroll;
-    overflow-y: visible;
-    
-    /* Melhorar performance */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: scroll-position;
-  }
-  
-  /* Garantir que a página possa rolar verticalmente */
-  body {
-    overflow-x: hidden !important;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-  }
-  
-  html {
-    overflow-x: hidden !important;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch;
   }
 }
 
