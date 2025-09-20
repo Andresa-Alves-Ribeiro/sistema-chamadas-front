@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Table from "../../components/Table";
 import AddStudentModal from "../../components/AddStudentModal";
-import { alunosColumns } from "../../config/tableColumns";
+import { getAlunosColumns } from "../../config/tableColumns";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { Aluno, Turmas } from "../../types";
+import { Column } from "../../components/Table";
 
 export default function TurmaDetailPage() {
     const params = useParams();
@@ -14,8 +15,21 @@ export default function TurmaDetailPage() {
     const [turma, setTurma] = useState<Turmas | null>(null);
     const [alunos, setAlunos] = useState<Aluno[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
+    const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
+
+    const toggleDayOff = useCallback((dateKey: string) => {
+        setDaysOff(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(dateKey)) {
+                newSet.delete(dateKey);
+            } else {
+                newSet.add(dateKey);
+            }
+            return newSet;
+        });
+    }, []);
 
     useEffect(() => {
         const turmaId = params.id;
@@ -32,6 +46,11 @@ export default function TurmaDetailPage() {
                 );
 
                 setAlunos(alunosFiltrados);
+                
+                // Gerar colunas dinâmicas baseadas no dia da semana da turma
+                const columns = getAlunosColumns(turmaEncontrada.grade, daysOff, toggleDayOff);
+                setAlunosColumns(columns);
+                
                 document.title = `Turma ${turmaEncontrada.grade} - ${turmaEncontrada.time} - Sistema de Chamada`;
             } else {
                 router.push('/');
@@ -39,7 +58,15 @@ export default function TurmaDetailPage() {
         }
 
         setLoading(false);
-    }, [params.id, router]);
+    }, [params.id, router, daysOff, toggleDayOff]);
+
+    // Atualizar colunas quando daysOff mudar
+    useEffect(() => {
+        if (turma) {
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff);
+            setAlunosColumns(columns);
+        }
+    }, [daysOff, turma, toggleDayOff]);
 
     const handleRowClick = (row: Record<string, unknown>) => {
         const aluno = row as Aluno;
@@ -51,13 +78,6 @@ export default function TurmaDetailPage() {
     };
 
 
-    const handleMarkAllPresent = () => {
-        console.log("Marcar todos como presentes:", Array.from(selectedStudents));
-    };
-
-    const handleMarkAllAbsent = () => {
-        console.log("Marcar todos como ausentes:", Array.from(selectedStudents));
-    };
 
     const handleAddStudent = () => {
         setIsModalOpen(true);
@@ -120,7 +140,7 @@ export default function TurmaDetailPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                     <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-4">
                             <div className="flex items-center justify-between">

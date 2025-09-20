@@ -10,6 +10,8 @@ export interface Column<T> {
   width?: string;
   align?: 'left' | 'center' | 'right';
   sortable?: boolean;
+  onHeaderClick?: () => void;
+  isHeaderClickable?: boolean;
 }
 
 export interface TableProps<T> {
@@ -63,8 +65,9 @@ export default function Table<T extends Record<string, unknown>>({
                 className={`px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200 ${
                   column.align === 'center' ? 'text-center' : 
                   column.align === 'right' ? 'text-right' : 'text-left'
-                }`}
+                } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''}`}
                 style={{ width: column.width }}
+                onClick={column.isHeaderClickable ? column.onHeaderClick : undefined}
               >
                 <div className="flex items-center space-x-2">
                   <span>{column.label}</span>
