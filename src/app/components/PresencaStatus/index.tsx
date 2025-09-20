@@ -6,10 +6,9 @@ type PresencaStatusType = "presente" | "falta" | "falta_justificada";
 interface PresencaStatusProps {
     presente?: boolean;
     isDayOff?: boolean;
-    onDayOffChange?: (isDayOff: boolean) => void;
 }
 
-export default function PresencaStatus({ isDayOff = false, onDayOffChange }: PresencaStatusProps) {
+export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps) {
     const [status, setStatus] = useState<PresencaStatusType>("presente");
 
     const handleClick = () => {

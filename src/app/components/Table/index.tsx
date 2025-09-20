@@ -92,14 +92,14 @@ export default function Table<T extends Record<string, unknown>>({
       container.style.overflowX = 'auto';
       container.style.overflowY = 'visible';
       container.style.touchAction = 'pan-x';
-      (container.style as any).webkitOverflowScrolling = 'touch';
+      (container.style as CSSStyleDeclaration & { webkitOverflowScrolling?: string }).webkitOverflowScrolling = 'touch';
       container.style.scrollBehavior = 'smooth';
       container.style.overscrollBehaviorX = 'contain';
       container.style.overscrollBehaviorY = 'auto';
       
       // Estilos específicos para iOS
       if (isIOS) {
-        (container.style as any).webkitOverflowScrolling = 'touch';
+        (container.style as CSSStyleDeclaration & { webkitOverflowScrolling?: string }).webkitOverflowScrolling = 'touch';
         container.style.touchAction = 'pan-x';
         // Forçar hardware acceleration no iOS
         container.style.transform = 'translateZ(0)';
@@ -122,8 +122,8 @@ export default function Table<T extends Record<string, unknown>>({
         container.style.overscrollBehaviorX = 'contain';
         container.style.overscrollBehaviorY = 'auto';
         // Samsung tem problemas específicos com scroll
-        (container.style as any).msTouchAction = 'pan-x';
-        (container.style as any).msOverflowStyle = 'scrollbar';
+        (container.style as CSSStyleDeclaration & { msTouchAction?: string }).msTouchAction = 'pan-x';
+        (container.style as CSSStyleDeclaration & { msOverflowStyle?: string }).msOverflowStyle = 'scrollbar';
       }
       
       // Estilos específicos para Chrome mobile
@@ -135,21 +135,21 @@ export default function Table<T extends Record<string, unknown>>({
       
       // Estilos específicos para Safari mobile
       if (isSafari && isMobile) {
-        (container.style as any).webkitOverflowScrolling = 'touch';
+        (container.style as CSSStyleDeclaration & { webkitOverflowScrolling?: string }).webkitOverflowScrolling = 'touch';
         container.style.touchAction = 'pan-x';
         container.style.transform = 'translateZ(0)';
       }
       
       // Adicionar event listeners para debug
-      const handleTouchStart = (e: TouchEvent) => {
+      const handleTouchStart = () => {
         console.log('Touch start detected on table container');
       };
       
-      const handleTouchMove = (e: TouchEvent) => {
+      const handleTouchMove = () => {
         console.log('Touch move detected on table container');
       };
       
-      const handleScroll = (e: Event) => {
+      const handleScroll = () => {
         console.log('Scroll event detected on table container');
       };
       

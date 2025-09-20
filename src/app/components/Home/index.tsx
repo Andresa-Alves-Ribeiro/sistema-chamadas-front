@@ -3,21 +3,13 @@
 import Table from "../Table";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { turmasColumns } from "../../config/tableColumns";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Turmas } from "../../types";
 
 export default function HomePage() {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedDay, setSelectedDay] = useState("");
     const router = useRouter();
 
-    const filteredTurmas = dadosExemploTurmas.filter(turma => {
-        const matchesSearch = turma.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            String(turma.time).includes(searchTerm);
-        const matchesDay = selectedDay === "" || turma.grade === selectedDay;
-        return matchesSearch && matchesDay;
-    });
+    const filteredTurmas = dadosExemploTurmas;
 
     const totalTurmas = dadosExemploTurmas.length;
     const totalAlunos = dadosExemploAlunos.length;
