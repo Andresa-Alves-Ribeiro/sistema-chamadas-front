@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export interface Column<T> {
   key: keyof T;
@@ -30,11 +30,15 @@ export default function Table<T extends Record<string, unknown>>({
   emptyMessage = 'Nenhum dado encontrado',
   loading = false,
 }: TableProps<T>) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const handleRowClick = (row: T) => {
     if (onRowClick) {
       onRowClick(row);
     }
   };
+
+  // Removido o JavaScript personalizado para evitar conflitos com scroll vertical
 
   if (loading) {
     return (
@@ -73,14 +77,17 @@ export default function Table<T extends Record<string, unknown>>({
 
       <div className="relative">
         <div
+          ref={scrollContainerRef}
           className="table-scroll-container overflow-x-auto overflow-y-visible"
           style={{
-            touchAction: 'pan-x pan-y',
+            touchAction: 'pan-x',
             WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain',
+            overscrollBehaviorX: 'contain',
+            overscrollBehaviorY: 'auto',
             scrollBehavior: 'smooth',
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
+            maxHeight: 'none'
           }}
         >
         <table
