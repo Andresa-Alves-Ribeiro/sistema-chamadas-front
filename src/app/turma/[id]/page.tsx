@@ -4,10 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Table from "../../components/Table";
 import AddStudentModal from "../../components/AddStudentModal";
+import ReorderStudentModal from "../../components/ReorderStudentModal";
+import EditStudentModal from "../../components/EditStudentModal";
+import DeleteStudentModal from "../../components/DeleteStudentModal";
+import IncludeStudentModal from "../../components/IncludeStudentModal";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { Aluno, Turmas } from "../../types";
 import { Column } from "../../components/Table";
+import { ArrowLeftIcon } from "lucide-react";
 
 export default function TurmaDetailPage() {
     const params = useParams();
@@ -16,6 +21,11 @@ export default function TurmaDetailPage() {
     const [alunos, setAlunos] = useState<Aluno[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isIncludeModalOpen, setIsIncludeModalOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
 
@@ -29,6 +39,26 @@ export default function TurmaDetailPage() {
             }
             return newSet;
         });
+    }, []);
+
+    const handleReorderStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsReorderModalOpen(true);
+    }, []);
+
+    const handleEditStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsEditModalOpen(true);
+    }, []);
+
+    const handleDeleteStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsDeleteModalOpen(true);
+    }, []);
+
+    const handleIncludeStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsIncludeModalOpen(true);
     }, []);
 
     useEffect(() => {
@@ -47,10 +77,6 @@ export default function TurmaDetailPage() {
 
                 setAlunos(alunosFiltrados);
                 
-                // Gerar colunas dinâmicas baseadas no dia da semana da turma
-                const columns = getAlunosColumns(turmaEncontrada.grade, daysOff, toggleDayOff);
-                setAlunosColumns(columns);
-                
                 document.title = `Turma ${turmaEncontrada.grade} - ${turmaEncontrada.time} - Sistema de Chamada`;
             } else {
                 router.push('/');
@@ -58,15 +84,14 @@ export default function TurmaDetailPage() {
         }
 
         setLoading(false);
-    }, [params.id, router, daysOff, toggleDayOff]);
+    }, [params.id, router]);
 
-    // Atualizar colunas quando daysOff mudar
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff);
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
 
     const handleRowClick = (row: Record<string, unknown>) => {
         const aluno = row as Aluno;
@@ -76,8 +101,6 @@ export default function TurmaDetailPage() {
     const handleBackClick = () => {
         router.push('/');
     };
-
-
 
     const handleAddStudent = () => {
         setIsModalOpen(true);
@@ -100,6 +123,111 @@ export default function TurmaDetailPage() {
             setAlunos(prevAlunos => [...prevAlunos, newStudent]);
             handleCloseModal();
         }
+    };
+
+    const handleCloseReorderModal = () => {
+        setIsReorderModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleCloseIncludeModal = () => {
+        setIsIncludeModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleConfirmReorder = (studentId: number, newTurmaId: number) => {
+        const newTurma = dadosExemploTurmas.find(t => t.id === newTurmaId);
+        if (newTurma) {
+            // Obter a data atual no formato YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0];
+            const currentTurmaId = turma?.id;
+            
+            // Atualizar o aluno na lista local com informações de remanejamento
+            setAlunos(prevAlunos => 
+                prevAlunos.map(aluno => 
+                    aluno.id === studentId 
+                        ? { 
+                            ...aluno, 
+                            grade: newTurma.grade, 
+                            time: newTurma.time,
+                            transferred: true,
+                            transferDate: today,
+                            originalTurmaId: currentTurmaId
+                          }
+                        : aluno
+                )
+            );
+            
+            // Aqui você pode adicionar lógica adicional como:
+            // - Atualizar no banco de dados
+            // - Mostrar notificação de sucesso
+            // - Atualizar contadores de turmas
+            console.log(`Aluno ${studentId} remanejado para turma ${newTurma.grade} - ${newTurma.time} em ${today}`);
+        }
+    };
+
+    const handleSaveStudentEdit = (studentId: number, newName: string) => {
+        // Atualizar o nome do aluno na lista local
+        setAlunos(prevAlunos => 
+            prevAlunos.map(aluno => 
+                aluno.id === studentId 
+                    ? { ...aluno, name: newName }
+                    : aluno
+            )
+        );
+        
+        // Aqui você pode adicionar lógica adicional como:
+        // - Atualizar no banco de dados
+        // - Mostrar notificação de sucesso
+        console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
+    };
+
+    const handleConfirmDelete = (studentId: number) => {
+        // Obter a data atual no formato YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Marcar o aluno como excluído com a data da exclusão
+        setAlunos(prevAlunos => 
+            prevAlunos.map(aluno => 
+                aluno.id === studentId 
+                    ? { ...aluno, excluded: true, exclusionDate: today }
+                    : aluno
+            )
+        );
+        
+        // Aqui você pode adicionar lógica adicional como:
+        // - Atualizar no banco de dados
+        // - Mostrar notificação de sucesso
+        console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
+    };
+
+    const handleConfirmInclude = (student: Aluno) => {
+        // Obter a data atual no formato YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Marcar o aluno como incluído com a data da inclusão
+        setAlunos(prevAlunos => 
+            prevAlunos.map(aluno => 
+                aluno.id === student.id 
+                    ? { ...aluno, excluded: false, exclusionDate: undefined, inclusionDate: today }
+                    : aluno
+            )
+        );
+        
+        // Aqui você pode adicionar lógica adicional como:
+        // - Atualizar no banco de dados
+        // - Mostrar notificação de sucesso
+        console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
     };
 
     if (loading) {
@@ -128,9 +256,7 @@ export default function TurmaDetailPage() {
                         onClick={handleBackClick}
                         className="btn-primary"
                     >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
+                        <ArrowLeftIcon className="w-5 h-5 mr-2" />
                         Voltar ao início
                     </button>
                 </div>
@@ -196,6 +322,34 @@ export default function TurmaDetailPage() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={handleSaveStudent}
+            />
+
+            <ReorderStudentModal
+                isOpen={isReorderModalOpen}
+                onClose={handleCloseReorderModal}
+                onConfirm={handleConfirmReorder}
+                student={selectedStudent}
+            />
+
+            <EditStudentModal
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                onSave={handleSaveStudentEdit}
+                student={selectedStudent}
+            />
+
+            <DeleteStudentModal
+                isOpen={isDeleteModalOpen}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleConfirmDelete}
+                student={selectedStudent}
+            />
+
+            <IncludeStudentModal
+                isOpen={isIncludeModalOpen}
+                onClose={handleCloseIncludeModal}
+                onConfirm={handleConfirmInclude}
+                student={selectedStudent}
             />
         </div>
     );

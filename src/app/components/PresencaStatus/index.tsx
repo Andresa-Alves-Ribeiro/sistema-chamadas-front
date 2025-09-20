@@ -1,19 +1,100 @@
 import { useState } from "react";
 import { CheckCircle, XCircle, AlertCircle, Minus } from "lucide-react";
+import { Aluno } from "../../types";
 
-type PresencaStatusType = "presente" | "falta" | "falta_justificada";
+type PresencaStatusType = "presente" | "falta" | "falta_justificada" | "invalido";
 
 interface PresencaStatusProps {
     presente?: boolean;
     isDayOff?: boolean;
+    student?: Aluno;
+    dateKey?: string;
+    currentTurmaId?: number;
 }
 
-export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps) {
+// Função para verificar se a data é posterior à data de exclusão
+function isDateAfterExclusion(dateKey: string, exclusionDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const exclusion = new Date(exclusionDate);
+    
+    return cellDate >= exclusion;
+}
+
+// Função para verificar se a data é anterior à data de inclusão
+function isDateBeforeInclusion(dateKey: string, inclusionDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const inclusion = new Date(inclusionDate);
+    
+    return cellDate < inclusion;
+}
+
+// Função para verificar se a data é posterior à data de remanejamento
+function isDateAfterTransfer(dateKey: string, transferDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const transfer = new Date(transferDate);
+    
+    return cellDate >= transfer;
+}
+
+// Função para verificar se a data é anterior à data de remanejamento
+function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
+    // Converter dateKey (formato: "date_01_08") para data
+    const dateParts = dateKey.replace('date_', '').split('_');
+    const day = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
+    const year = 2025; // Ano fixo baseado no sistema
+    
+    const cellDate = new Date(year, month, day);
+    const transfer = new Date(transferDate);
+    
+    return cellDate < transfer;
+}
+
+export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId }: PresencaStatusProps) {
     const [status, setStatus] = useState<PresencaStatusType>("presente");
 
+    // Verificar se o aluno está excluído e se a data é posterior à data de exclusão
+    const isStudentExcluded = student?.excluded && student?.exclusionDate && dateKey;
+    const shouldShowInvalidExcluded = isStudentExcluded && dateKey && student.exclusionDate && isDateAfterExclusion(dateKey, student.exclusionDate);
+    
+    // Verificar se o aluno é novo e se a data é anterior à data de inclusão
+    const isStudentNew = student?.inclusionDate && !student?.excluded && !student?.transferred && dateKey;
+    const shouldShowInvalidNew = isStudentNew && dateKey && student.inclusionDate && isDateBeforeInclusion(dateKey, student.inclusionDate);
+    
+    // Verificar se o aluno foi remanejado
+    const isStudentTransferred = student?.transferred && student?.transferDate && dateKey && currentTurmaId;
+    
+    // Se está na turma original: datas posteriores ao remanejamento são inválidas
+    const isInOriginalTurma = isStudentTransferred && student.originalTurmaId === currentTurmaId;
+    const shouldShowInvalidTransferredOriginal = isInOriginalTurma && dateKey && student.transferDate && isDateAfterTransfer(dateKey, student.transferDate);
+    
+    // Se está na turma nova: datas anteriores ao remanejamento são inválidas
+    const isInNewTurma = isStudentTransferred && student.originalTurmaId !== currentTurmaId;
+    const shouldShowInvalidTransferredNew = isInNewTurma && dateKey && student.transferDate && isDateBeforeTransfer(dateKey, student.transferDate);
+    
+    const shouldShowInvalid = shouldShowInvalidExcluded || shouldShowInvalidNew || shouldShowInvalidTransferredOriginal || shouldShowInvalidTransferredNew;
+
     const handleClick = () => {
-        if (isDayOff) return; // Não permite cliques quando o dia está marcado como sem aula
-        
+        if (isDayOff || shouldShowInvalid) return;
+
         switch (status) {
             case "presente":
                 setStatus("falta");
@@ -22,6 +103,9 @@ export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps
                 setStatus("falta_justificada");
                 break;
             case "falta_justificada":
+                setStatus("invalido");
+                break;
+            case "invalido":
                 setStatus("presente");
                 break;
         }
@@ -33,6 +117,23 @@ export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps
                 className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm cursor-not-allowed",
                 icon: <Minus size={14} color="gray" />,
                 text: "Sem aula"
+            };
+        }
+
+        if (shouldShowInvalid) {
+            let text = "Inválido";
+            if (shouldShowInvalidNew) {
+                text = "Inválido (novo)";
+            } else if (shouldShowInvalidTransferredOriginal) {
+                text = "Inválido (remanejado)";
+            } else if (shouldShowInvalidTransferredNew) {
+                text = "Inválido (remanejado)";
+            }
+            
+            return {
+                className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm cursor-not-allowed",
+                icon: <Minus size={14} color="gray" />,
+                text: text
             };
         }
 
@@ -54,6 +155,12 @@ export default function PresencaStatus({ isDayOff = false }: PresencaStatusProps
                     className: "bg-yellow-100 text-yellow-800 border border-yellow-200 shadow-sm hover:bg-yellow-200 cursor-pointer",
                     icon: <AlertCircle size={14} color="#ca8a04" />,
                     text: "F. Justificada"
+                };
+            case "invalido":
+                return {
+                    className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm",
+                    icon: <Minus size={14} color="gray" />,
+                    text: "Inválido"
                 };
         }
     };
