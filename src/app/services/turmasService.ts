@@ -1,5 +1,5 @@
 import api from './api';
-import { Grade } from '../types';
+import { Grade, GradeWithStudents } from '../types';
 
 export interface CreateTurmaData {
   grade: string;
@@ -28,19 +28,19 @@ export const turmasService = {
       return [];
     }
   },
-
-  async getTurmaById(id: number): Promise<Grade> {
+  
+  async getGradeWithStudentsById(id: number): Promise<GradeWithStudents> {
     try {
       const response = await api.get(`/api/grades/${id}`);
       const apiData = response.data;
       
-      if (apiData.success && apiData.data) {
-        return apiData.data;
+      if (apiData.success) {
+        return apiData;
       }
       
-      return response.data;
+      throw new Error('Resposta da API não contém success: true');
     } catch (error) {
-      console.error(`Erro ao buscar turma ${id}:`, error);
+      console.error(`Erro ao buscar turma com alunos ${id}:`, error);
       throw error;
     }
   },

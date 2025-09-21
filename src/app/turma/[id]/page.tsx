@@ -12,8 +12,7 @@ import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno, Turmas } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
-import { useTurma } from "../../hooks/useTurmas";
-import { useAlunosByTurma } from "../../hooks/useAlunos";
+import { useTurmaWithStudents } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
 import { turmasService } from "../../services/turmasService";
 
@@ -22,14 +21,12 @@ export default function TurmaDetailPage() {
     const router = useRouter();
     const turmaId = Number(params.id);
     
-    const { turma, loading: turmaLoading, error: turmaError } = useTurma(turmaId);
-    const { alunos, loading: alunosLoading, error: alunosError, reorderAlunos } = useAlunosByTurma(
-        turma?.grade || '', 
-        turma?.time || ''
-    );
+    const { turmaData, loading: turmaLoading, error: turmaError } = useTurmaWithStudents(turmaId);
     const { createAluno, updateAluno, deleteAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
     
-    const loading = turmaLoading || alunosLoading;
+    const turma = turmaData?.grade || null;
+    const alunos = turmaData?.students || [];
+    const loading = turmaLoading;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);

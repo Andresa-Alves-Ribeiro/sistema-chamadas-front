@@ -3,7 +3,16 @@ export interface Grade {
     grade: string;
     time: string;
     studentsQuantity: number;
+    created_at?: string;
+    updated_at?: string;
     [key: string]: unknown;
+}
+
+export interface GradeWithStudents {
+    success: boolean;
+    grade: Grade;
+    students: Student[];
+    count: number;
 }
 
 export interface Student {
