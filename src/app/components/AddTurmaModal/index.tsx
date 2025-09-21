@@ -71,15 +71,15 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
                             Horário
                         </label>
                         <input
-                            type="text"
+                            type="time"
                             id="turmaTime"
                             value={turmaTime}
                             onChange={(e) => setTurmaTime(e.target.value)}
-                            placeholder="Ex: 08:00"
                             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             onKeyDown={handleKeyDown}
                         />
                     </div>
+
                 </div>
 
                 <div className="px-6 py-4 border-t border-slate-200 flex justify-end space-x-3">
