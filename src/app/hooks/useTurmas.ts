@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { turmasService } from '../services/turmasService';
-import { Turmas, GradeWithStudents } from '../types';
+import { Turmas, GradeWithStudents, Grade } from '../types';
 
 export const useTurmas = () => {
   const [turmas, setTurmas] = useState<Turmas[]>([]);
@@ -12,7 +12,6 @@ export const useTurmas = () => {
       setLoading(true);
       setError(null);
       const data = await turmasService.getAllTurmas();
-      // Garantir que data seja sempre um array
       setTurmas(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar turmas');
@@ -71,7 +70,7 @@ export const useTurmas = () => {
 };
 
 export const useTurma = (id: number) => {
-  const [turma, setTurma] = useState<Turmas | null>(null);
+  const [turma, setTurma] = useState<Grade | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,8 +78,8 @@ export const useTurma = (id: number) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await turmasService.getTurmaById(id);
-      setTurma(data);
+      const data = await turmasService.getGradeWithStudentsById(id);
+      setTurma(data.grade);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar turma');
       console.error('Erro ao buscar turma:', err);

@@ -15,7 +15,6 @@ export default function HomePage() {
     
     const { turmas, loading, error, createTurma } = useTurmas();
 
-    // Garantir que turmas seja sempre um array
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const filteredTurmas = turmasArray;
     const totalTurmas = turmasArray.length;
@@ -35,12 +34,10 @@ export default function HomePage() {
 
     const handleSaveTurma = async (turmaData: { name: string; time: string }) => {
         try {
-            // Converter name para grade para compatibilidade com a API
             await createTurma({ grade: turmaData.name, time: turmaData.time });
             setIsModalOpen(false);
         } catch (error) {
             console.error("Erro ao criar turma:", error);
-            // Aqui você pode adicionar uma notificação de erro
         }
     };
 
@@ -83,7 +80,7 @@ export default function HomePage() {
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button 
                                     onClick={handleOpenModal}
-                                    className="inline-flex items-center w-max px-4 py-2 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
+                                    className="inline-flex items-center w-max px-4 py-2 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors cursor-pointer"
                                 >
                                     <PlusIcon className="w-4 h-4 mr-2" />
                                     Nova Turma
