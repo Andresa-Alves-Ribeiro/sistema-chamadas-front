@@ -2,21 +2,24 @@
 
 import Table from "../Table";
 import AddTurmaModal from "../AddTurmaModal";
-import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
 import { turmasColumns } from "../../config/tableColumns";
 import { useRouter } from "next/navigation";
 import { Turmas } from "../../types";
 import { Notebook, PlusIcon, UsersRound } from "lucide-react";
 import { useState } from "react";
+import { useTurmas } from "../../hooks/useTurmas";
 
 export default function HomePage() {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    const { turmas, loading, error, createTurma } = useTurmas();
 
-    const filteredTurmas = dadosExemploTurmas;
-
-    const totalTurmas = dadosExemploTurmas.length;
-    const totalAlunos = dadosExemploAlunos.length;
+    // Garantir que turmas seja sempre um array
+    const turmasArray = Array.isArray(turmas) ? turmas : [];
+    const filteredTurmas = turmasArray;
+    const totalTurmas = turmasArray.length;
+    const totalAlunos = turmasArray.reduce((total, turma) => total + turma.studentsQuantity, 0);
 
     const handleTurmaClick = (turma: Turmas) => {
         router.push(`/turma/${turma.id}`);
@@ -30,9 +33,15 @@ export default function HomePage() {
         setIsModalOpen(false);
     };
 
-    const handleSaveTurma = (turmaData: { name: string; time: string }) => {
-        console.log("Nova turma:", turmaData);
-        setIsModalOpen(false);
+    const handleSaveTurma = async (turmaData: { name: string; time: string }) => {
+        try {
+            // Converter name para grade para compatibilidade com a API
+            await createTurma({ grade: turmaData.name, time: turmaData.time });
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error("Erro ao criar turma:", error);
+            // Aqui você pode adicionar uma notificação de erro
+        }
     };
 
     return (
@@ -84,10 +93,16 @@ export default function HomePage() {
                     </div>
 
                     <div className="p-6">
+                        {error && (
+                            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-red-600 text-sm">Erro ao carregar turmas: {error}</p>
+                            </div>
+                        )}
                         <Table
                             data={filteredTurmas}
                             columns={turmasColumns}
                             onRowClick={handleTurmaClick}
+                            loading={loading}
                             emptyMessage="Nenhuma turma encontrada com os filtros aplicados"
                         />
                     </div>
