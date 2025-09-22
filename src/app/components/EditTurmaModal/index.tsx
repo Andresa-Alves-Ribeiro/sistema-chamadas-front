@@ -21,11 +21,22 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
         }
     }, [turma]);
 
+    const formatTime = (time: string): string => {
+        // Remove segundos se existirem e garante formato HH:MM
+        if (time.includes(':')) {
+            const parts = time.split(':');
+            if (parts.length >= 2) {
+                return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+            }
+        }
+        return time;
+    };
+
     const handleSave = () => {
         if (turmaName.trim() && turmaTime.trim() && turma) {
             onSave(turma.id, {
                 grade: turmaName.trim(),
-                time: turmaTime.trim()
+                time: formatTime(turmaTime.trim())
             });
             handleClose();
         }

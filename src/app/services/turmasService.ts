@@ -12,6 +12,17 @@ export interface UpdateTurmaData {
 }
 
 export const turmasService = {
+  formatTime(time: string): string {
+    // Remove segundos se existirem e garante formato HH:MM
+    if (time.includes(':')) {
+      const parts = time.split(':');
+      if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+      }
+    }
+    return time;
+  },
+
   async getAllTurmas(): Promise<Grade[]> {
     try {
       const response = await api.get('/api/grades');
@@ -47,7 +58,13 @@ export const turmasService = {
 
   async createTurma(data: CreateTurmaData): Promise<Grade> {
     try {
-      const response = await api.post('/api/grades', data);
+      // Valida e formata o campo time
+      const formattedData = {
+        ...data,
+        time: this.formatTime(data.time)
+      };
+      
+      const response = await api.post('/api/grades', formattedData);
       const apiData = response.data;
       
       if (apiData.success && apiData.data) {
@@ -63,7 +80,13 @@ export const turmasService = {
 
   async updateTurma(id: string | number, data: UpdateTurmaData): Promise<Grade> {
     try {
-      const response = await api.put(`/api/grades/${id}`, data);
+      // Valida e formata o campo time se presente
+      const formattedData = { ...data };
+      if (formattedData.time) {
+        formattedData.time = this.formatTime(formattedData.time);
+      }
+      
+      const response = await api.put(`/api/grades/${id}`, formattedData);
       const apiData = response.data;
       
       if (apiData.success && apiData.data) {

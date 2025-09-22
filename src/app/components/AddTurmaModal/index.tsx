@@ -12,11 +12,22 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
     const [turmaName, setTurmaName] = useState("");
     const [turmaTime, setTurmaTime] = useState("");
 
+    const formatTime = (time: string): string => {
+        // Remove segundos se existirem e garante formato HH:MM
+        if (time.includes(':')) {
+            const parts = time.split(':');
+            if (parts.length >= 2) {
+                return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+            }
+        }
+        return time;
+    };
+
     const handleSave = () => {
         if (turmaName.trim() && turmaTime.trim()) {
             onSave({
                 name: turmaName.trim(),
-                time: turmaTime.trim()
+                time: formatTime(turmaTime.trim())
             });
             setTurmaName("");
             setTurmaTime("");
