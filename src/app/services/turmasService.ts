@@ -29,7 +29,7 @@ export const turmasService = {
     }
   },
   
-  async getGradeWithStudentsById(id: number): Promise<GradeWithStudents> {
+  async getGradeWithStudentsById(id: string | number): Promise<GradeWithStudents> {
     try {
       const response = await api.get(`/api/grades/${id}`);
       const apiData = response.data;
@@ -61,7 +61,7 @@ export const turmasService = {
     }
   },
 
-  async updateTurma(id: number, data: UpdateTurmaData): Promise<Grade> {
+  async updateTurma(id: string | number, data: UpdateTurmaData): Promise<Grade> {
     try {
       const response = await api.put(`/api/grades/${id}`, data);
       const apiData = response.data;
@@ -77,7 +77,7 @@ export const turmasService = {
     }
   },
 
-  async deleteTurma(id: number): Promise<void> {
+  async deleteTurma(id: string | number): Promise<void> {
     try {
       await api.delete(`/api/grades/${id}`);
     } catch (error) {

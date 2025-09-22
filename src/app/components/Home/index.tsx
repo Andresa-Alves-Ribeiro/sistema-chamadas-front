@@ -2,7 +2,8 @@
 
 import Table from "../Table";
 import AddTurmaModal from "../AddTurmaModal";
-import { turmasColumns } from "../../config/tableColumns";
+import EditTurmaModal from "../EditTurmaModal";
+import { getTurmasColumns } from "../../config/tableColumns";
 import { useRouter } from "next/navigation";
 import { Turmas } from "../../types";
 import { Notebook, PlusIcon, UsersRound } from "lucide-react";
@@ -12,8 +13,10 @@ import { useTurmas } from "../../hooks/useTurmas";
 export default function HomePage() {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedTurma, setSelectedTurma] = useState<Turmas | null>(null);
     
-    const { turmas, loading, error, createTurma } = useTurmas();
+    const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
 
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const filteredTurmas = turmasArray;
@@ -39,6 +42,36 @@ export default function HomePage() {
         } catch (error) {
             console.error("Erro ao criar turma:", error);
         }
+    };
+
+    const handleEditTurma = (turma: Turmas) => {
+        setSelectedTurma(turma);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveEditTurma = async (id: string | number, turmaData: { grade: string; time: string }) => {
+        try {
+            await updateTurma(id, turmaData);
+            setIsEditModalOpen(false);
+            setSelectedTurma(null);
+        } catch (error) {
+            console.error("Erro ao atualizar turma:", error);
+        }
+    };
+
+    const handleDeleteTurma = async (turma: Turmas) => {
+        if (window.confirm(`Tem certeza que deseja excluir a turma "${turma.grade}"?`)) {
+            try {
+                await deleteTurma(turma.id);
+            } catch (error) {
+                console.error("Erro ao excluir turma:", error);
+            }
+        }
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedTurma(null);
     };
 
     return (
@@ -97,7 +130,7 @@ export default function HomePage() {
                         )}
                         <Table
                             data={filteredTurmas}
-                            columns={turmasColumns}
+                            columns={getTurmasColumns(handleEditTurma, handleDeleteTurma)}
                             onRowClick={handleTurmaClick}
                             loading={loading}
                             emptyMessage="Nenhuma turma encontrada com os filtros aplicados"
@@ -110,6 +143,13 @@ export default function HomePage() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={handleSaveTurma}
+            />
+
+            <EditTurmaModal
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                onSave={handleSaveEditTurma}
+                turma={selectedTurma || undefined}
             />
         </div>
     );

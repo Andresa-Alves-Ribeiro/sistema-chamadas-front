@@ -33,7 +33,7 @@ export const useTurmas = () => {
     }
   };
 
-  const updateTurma = async (id: number, turmaData: { grade?: string; time?: string }) => {
+  const updateTurma = async (id: string | number, turmaData: { grade?: string; time?: string }) => {
     try {
       const turmaAtualizada = await turmasService.updateTurma(id, turmaData);
       setTurmas(prev => prev.map(t => t.id === id ? turmaAtualizada : t));
@@ -44,7 +44,7 @@ export const useTurmas = () => {
     }
   };
 
-  const deleteTurma = async (id: number) => {
+  const deleteTurma = async (id: string | number) => {
     try {
       await turmasService.deleteTurma(id);
       setTurmas(prev => prev.filter(t => t.id !== id));
@@ -69,7 +69,7 @@ export const useTurmas = () => {
   };
 };
 
-export const useTurma = (id: number) => {
+export const useTurma = (id: string | number) => {
   const [turma, setTurma] = useState<Grade | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export const useTurma = (id: number) => {
   };
 };
 
-export const useTurmaWithStudents = (id: number) => {
+export const useTurmaWithStudents = (id: string | number) => {
   const [turmaData, setTurmaData] = useState<GradeWithStudents | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

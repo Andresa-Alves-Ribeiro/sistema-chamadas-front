@@ -31,25 +31,30 @@ function getDatesForDayOfWeek(dayOfWeek: number, startDate: Date, endDate: Date)
     return dates;
 }
 
-export const turmasColumns: Column<Turmas>[] = [
-    { key: "grade", label: "Turma" },
-    { key: "time", label: "Horário" },
-    { key: "studentsQuantity", label: "Quantidade de Alunos" },
-    { 
-        key: "options", 
-        label: "Opções",
-        width: "80px",
-        align: "center",
-        render: (value: unknown, row: Turmas) => {
-            return (
-                <OptionsDropdown
-                    onEdit={() => console.log('Editar turma:', row)}
-                    onDelete={() => console.log('Excluir turma:', row)}
-                />
-            );
-        }
-    },
-];
+export function getTurmasColumns(
+    onEditTurma?: (turma: Turmas) => void,
+    onDeleteTurma?: (turma: Turmas) => void
+): Column<Turmas>[] {
+    return [
+        { key: "grade", label: "Turma" },
+        { key: "time", label: "Horário" },
+        { key: "studentsQuantity", label: "Quantidade de Alunos" },
+        { 
+            key: "options", 
+            label: "Opções",
+            width: "80px",
+            align: "center",
+            render: (value: unknown, row: Turmas) => {
+                return (
+                    <OptionsDropdown
+                        onEdit={onEditTurma ? () => onEditTurma(row) : undefined}
+                        onDelete={onDeleteTurma ? () => onDeleteTurma(row) : undefined}
+                    />
+                );
+            }
+        },
+    ];
+}
 
 export function getAlunosColumns(
     grade: string, 
