@@ -21,7 +21,10 @@ export default function HomePage() {
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const filteredTurmas = turmasArray;
     const totalTurmas = turmasArray.length;
-    const totalAlunos = turmasArray.reduce((total, turma) => total + turma.studentsQuantity, 0);
+    const totalAlunos = turmasArray.reduce((total, turma) => {
+        const studentsQuantity = turma?.studentsQuantity ?? 0;
+        return total + (typeof studentsQuantity === 'number' ? studentsQuantity : 0);
+    }, 0);
 
     const handleTurmaClick = (turma: Turmas) => {
         router.push(`/turma/${turma.id}`);
@@ -85,7 +88,7 @@ export default function HomePage() {
                             </div>
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">Total de Turmas</p>
-                                <p className="text-2xl font-bold text-gray-900">{totalTurmas}</p>
+                                <p className="text-2xl font-bold text-gray-900">{isNaN(totalTurmas) ? 0 : totalTurmas}</p>
                             </div>
                         </div>
                     </div>
@@ -97,7 +100,7 @@ export default function HomePage() {
                             </div>
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">Total de Alunos</p>
-                                <p className="text-2xl font-bold text-gray-900">{totalAlunos}</p>
+                                <p className="text-2xl font-bold text-gray-900">{isNaN(totalAlunos) ? 0 : totalAlunos}</p>
                             </div>
                         </div>
                     </div>
