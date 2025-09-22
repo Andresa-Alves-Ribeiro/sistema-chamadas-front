@@ -13,7 +13,6 @@ export interface UpdateTurmaData {
 
 export const turmasService = {
   formatTime(time: string): string {
-    // Remove segundos se existirem e garante formato HH:MM
     if (time.includes(':')) {
       const parts = time.split(':');
       if (parts.length >= 2) {
@@ -58,7 +57,6 @@ export const turmasService = {
 
   async createTurma(data: CreateTurmaData): Promise<Grade> {
     try {
-      // Valida e formata o campo time
       const formattedData = {
         ...data,
         time: this.formatTime(data.time)
@@ -80,7 +78,6 @@ export const turmasService = {
 
   async updateTurma(id: string | number, data: UpdateTurmaData): Promise<Grade> {
     try {
-      // Valida e formata o campo time se presente
       const formattedData = { ...data };
       if (formattedData.time) {
         formattedData.time = this.formatTime(formattedData.time);
@@ -105,22 +102,6 @@ export const turmasService = {
       await api.delete(`/api/grades/${id}`);
     } catch (error) {
       console.error(`Erro ao deletar turma ${id}:`, error);
-      throw error;
-    }
-  },
-
-  async getTurmasStats(): Promise<{ totalTurmas: number; totalAlunos: number }> {
-    try {
-      const response = await api.get('/api/grades/stats');
-      const apiData = response.data;
-      
-      if (apiData.success && apiData.data) {
-        return apiData.data;
-      }
-      
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao buscar estatísticas das turmas:', error);
       throw error;
     }
   }

@@ -24,11 +24,11 @@ export const alunosService = {
         try {
             const response = await api.get('/api/students');
             const apiData = response.data;
-            
+
             if (apiData.success && Array.isArray(apiData.data)) {
                 return apiData.data;
             }
-            
+
             return Array.isArray(response.data) ? response.data : [];
         } catch (error) {
             console.error('Erro ao buscar alunos:', error);
@@ -40,11 +40,11 @@ export const alunosService = {
         try {
             const response = await api.get(`/api/students/${id}`);
             const apiData = response.data;
-            
+
             if (apiData.success && apiData.data) {
                 return apiData.data;
             }
-            
+
             return response.data;
         } catch (error) {
             console.error(`Erro ao buscar aluno ${id}:`, error);
@@ -58,11 +58,11 @@ export const alunosService = {
                 params: { grade, time }
             });
             const apiData = response.data;
-            
+
             if (apiData.success && Array.isArray(apiData.data)) {
                 return apiData.data;
             }
-            
+
             return Array.isArray(response.data) ? response.data : [];
         } catch (error) {
             console.error(`Erro ao buscar alunos da turma ${grade} ${time}:`, error);
@@ -74,11 +74,11 @@ export const alunosService = {
         try {
             const response = await api.post('/api/students', data);
             const apiData = response.data;
-            
+
             if (apiData.success && apiData.data) {
                 return apiData.data;
             }
-            
+
             return response.data;
         } catch (error) {
             console.error('Erro ao criar aluno:', error);
@@ -90,11 +90,11 @@ export const alunosService = {
         try {
             const response = await api.put(`/api/students/${id}`, data);
             const apiData = response.data;
-            
+
             if (apiData.success && apiData.data) {
                 return apiData.data;
             }
-            
+
             return response.data;
         } catch (error) {
             console.error(`Erro ao atualizar aluno ${id}:`, error);
@@ -115,11 +115,11 @@ export const alunosService = {
         try {
             const response = await api.patch(`/api/students/${id}/exclude`, { exclusionDate });
             const apiData = response.data;
-            
+
             if (apiData.success && apiData.data) {
                 return apiData.data;
             }
-            
+
             return response.data;
         } catch (error) {
             console.error(`Erro ao excluir aluno ${id}:`, error);
@@ -131,11 +131,11 @@ export const alunosService = {
         try {
             const response = await api.patch(`/api/students/${id}/include`, { inclusionDate });
             const apiData = response.data;
-            
+
             if (apiData.success && apiData.data) {
                 return apiData.data;
             }
-            
+
             return response.data;
         } catch (error) {
             console.error(`Erro ao incluir aluno ${id}:`, error);
@@ -147,11 +147,11 @@ export const alunosService = {
         try {
             const response = await api.patch(`/api/students/${id}/transfer`, data);
             const apiData = response.data;
-            
+
             if (apiData.success && apiData.data) {
                 return apiData.data;
             }
-            
+
             return response.data;
         } catch (error) {
             console.error(`Erro ao transferir aluno ${id}:`, error);
@@ -164,6 +164,22 @@ export const alunosService = {
             await api.patch(`/api/turmas/${turmaId}/reorder`, { studentIds });
         } catch (error) {
             console.error(`Erro ao reordenar alunos da turma ${turmaId}:`, error);
+            throw error;
+        }
+    },
+
+    async getAlunosStats(): Promise<{ totalAlunos: number }> {
+        try {
+            const response = await api.get('/api/students/count');
+            const apiData = response.data;
+            
+            if (apiData.success && apiData.totalStudents) {
+                return { totalAlunos: apiData.totalStudents };
+            }
+
+            return { totalAlunos: apiData.totalStudents || 0 };
+        } catch (error) {
+            console.error('Erro ao buscar estatísticas dos alunos:', error);
             throw error;
         }
     }

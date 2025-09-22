@@ -8,8 +8,9 @@ import { getTurmasColumns } from "../../config/tableColumns";
 import { useRouter } from "next/navigation";
 import { Turmas } from "../../types";
 import { Notebook, PlusIcon, UsersRound } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTurmas } from "../../hooks/useTurmas";
+import { useAlunos } from "../../hooks/useAlunos";
 
 export default function HomePage() {
     const router = useRouter();
@@ -20,14 +21,32 @@ export default function HomePage() {
     const [turmaToDelete, setTurmaToDelete] = useState<Turmas | null>(null);
     
     const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
+    const { getAlunosStats } = useAlunos();
+    
+    const [totalAlunos, setTotalAlunos] = useState<number>(0);
+    const [loadingStats, setLoadingStats] = useState(true);
 
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const filteredTurmas = turmasArray;
     const totalTurmas = turmasArray.length;
-    const totalAlunos = turmasArray.reduce((total, turma) => {
-        const studentsQuantity = turma?.studentsQuantity ?? 0;
-        return total + (typeof studentsQuantity === 'number' ? studentsQuantity : 0);
-    }, 0);
+
+    // Buscar estatísticas dos alunos
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoadingStats(true);
+                const stats = await getAlunosStats();
+                setTotalAlunos(stats.totalAlunos || 0);
+            } catch (error) {
+                console.error('Erro ao buscar estatísticas dos alunos:', error);
+                setTotalAlunos(0);
+            } finally {
+                setLoadingStats(false);
+            }
+        };
+
+        fetchStats();
+    }, []); // Removido getAlunosStats da dependência para evitar loop infinito
 
     const handleTurmaClick = (turma: Turmas) => {
         router.push(`/turma/${turma.id}`);
@@ -90,6 +109,8 @@ export default function HomePage() {
         setSelectedTurma(null);
     };
 
+    console.log(totalAlunos);
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="px-6 py-8 pb-28">
@@ -113,7 +134,9 @@ export default function HomePage() {
                             </div>
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">Total de Alunos</p>
-                                <p className="text-2xl font-bold text-gray-900">{isNaN(totalAlunos) ? 0 : totalAlunos}</p>
+                                <p className="text-2xl font-bold text-gray-900">
+                                    {loadingStats ? '...' : (isNaN(totalAlunos) ? 0 : totalAlunos)}
+                                </p>
                             </div>
                         </div>
                     </div>

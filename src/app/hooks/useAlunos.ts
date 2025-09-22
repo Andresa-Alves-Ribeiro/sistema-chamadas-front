@@ -90,6 +90,16 @@ export const useAlunos = () => {
     fetchAlunos();
   }, []);
 
+  const getAlunosStats = async () => {
+    try {
+      const stats = await alunosService.getAlunosStats();
+      return stats;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar estatísticas dos alunos');
+      throw err;
+    }
+  };
+
   return {
     alunos,
     loading,
@@ -101,6 +111,7 @@ export const useAlunos = () => {
     excludeAluno,
     includeAluno,
     transferAluno,
+    getAlunosStats,
   };
 };
 
