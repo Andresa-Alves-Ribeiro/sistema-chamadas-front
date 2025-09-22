@@ -3,6 +3,7 @@
 import Table from "../Table";
 import AddTurmaModal from "../AddTurmaModal";
 import EditTurmaModal from "../EditTurmaModal";
+import DeleteTurmaModal from "../DeleteTurmaModal";
 import { getTurmasColumns } from "../../config/tableColumns";
 import { useRouter } from "next/navigation";
 import { Turmas } from "../../types";
@@ -14,7 +15,9 @@ export default function HomePage() {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedTurma, setSelectedTurma] = useState<Turmas | null>(null);
+    const [turmaToDelete, setTurmaToDelete] = useState<Turmas | null>(null);
     
     const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
 
@@ -62,14 +65,24 @@ export default function HomePage() {
         }
     };
 
-    const handleDeleteTurma = async (turma: Turmas) => {
-        if (window.confirm(`Tem certeza que deseja excluir a turma "${turma.grade}"?`)) {
-            try {
-                await deleteTurma(turma.id);
-            } catch (error) {
-                console.error("Erro ao excluir turma:", error);
-            }
+    const handleDeleteTurma = (turma: Turmas) => {
+        setTurmaToDelete(turma);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDeleteTurma = async (turmaId: number) => {
+        try {
+            await deleteTurma(turmaId);
+            setIsDeleteModalOpen(false);
+            setTurmaToDelete(null);
+        } catch (error) {
+            console.error("Erro ao excluir turma:", error);
         }
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setTurmaToDelete(null);
     };
 
     const handleCloseEditModal = () => {
@@ -79,7 +92,7 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="px-6 py-8">
+            <div className="px-6 py-8 pb-28">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div className="bg-white rounded-lg shadow-sm border p-6">
                         <div className="flex items-center">
@@ -153,6 +166,13 @@ export default function HomePage() {
                 onClose={handleCloseEditModal}
                 onSave={handleSaveEditTurma}
                 turma={selectedTurma || undefined}
+            />
+
+            <DeleteTurmaModal
+                isOpen={isDeleteModalOpen}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleConfirmDeleteTurma}
+                turma={turmaToDelete}
             />
         </div>
     );
