@@ -31,12 +31,26 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude
       }
     };
 
+    const updatePosition = () => {
+      if (isOpen && buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setPosition({
+          top: rect.bottom + 8,
+          left: rect.right - 208 // 208px = width of dropdown
+        });
+      }
+    };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', updatePosition);
+      window.addEventListener('resize', updatePosition);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [isOpen]);
 
@@ -44,8 +58,8 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setPosition({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.right + window.scrollX - 208 // 208px = width of dropdown
+        top: rect.bottom + 8,
+        left: rect.right - 208 // 208px = width of dropdown
       });
     }
     setIsOpen(!isOpen);
