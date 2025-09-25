@@ -92,7 +92,7 @@ export const useTurma = (id: string | number) => {
     if (id) {
       fetchTurma();
     }
-  }, [id]);
+  }, [id, fetchTurma]);
 
   return {
     turma,
@@ -125,7 +125,7 @@ export const useTurmaWithStudents = (id: string | number) => {
     if (id) {
       fetchTurmaWithStudents();
     }
-  }, [id]);
+  }, [id, fetchTurmaWithStudents]);
 
   return {
     turmaData,

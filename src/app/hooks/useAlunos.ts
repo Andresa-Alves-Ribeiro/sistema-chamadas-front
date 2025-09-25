@@ -150,7 +150,7 @@ export const useAlunosByTurma = (grade: string, time: string) => {
     if (grade && time) {
       fetchAlunosByTurma();
     }
-  }, [grade, time]);
+  }, [grade, time, fetchAlunosByTurma]);
 
   return {
     alunos,

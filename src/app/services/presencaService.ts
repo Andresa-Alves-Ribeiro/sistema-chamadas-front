@@ -37,7 +37,7 @@ export const presencaService = {
   // Buscar presenças por aluno
   async getPresencasByAluno(alunoId: number, dataInicio?: string, dataFim?: string): Promise<PresencaData[]> {
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (dataInicio) params.dataInicio = dataInicio;
       if (dataFim) params.dataFim = dataFim;
 
@@ -102,7 +102,7 @@ export const presencaService = {
   },
 
   // Buscar relatório de presenças
-  async getRelatorioPresencas(turmaId: number, dataInicio: string, dataFim: string): Promise<any> {
+  async getRelatorioPresencas(turmaId: number, dataInicio: string, dataFim: string): Promise<Record<string, unknown>> {
     try {
       const response = await api.get(`/presencas/relatorio/${turmaId}`, {
         params: { dataInicio, dataFim }

@@ -10,7 +10,7 @@ import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
 import OccurrenceModal from "../../components/OccurrenceModal";
 import { getAlunosColumns } from "../../config/tableColumns";
-import { Aluno, Turmas } from "../../types";
+import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
@@ -22,8 +22,8 @@ export default function TurmaDetailPage() {
     const router = useRouter();
     const turmaId = Number(params.id);
     
-    const { turmaData, loading: turmaLoading, error: turmaError } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, deleteAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
+    const { turmaData, loading: turmaLoading } = useTurmaWithStudents(turmaId);
+    const { createAluno, updateAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
     
     const turma = turmaData?.grade || null;
     const alunos = turmaData?.students || [];

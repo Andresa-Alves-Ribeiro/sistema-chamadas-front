@@ -45,7 +45,7 @@ export default function HomePage() {
         };
 
         fetchStats();
-    }, []);
+    }, [getAlunosStats]);
 
     const handleTurmaClick = (turma: Turmas) => {
         router.push(`/turma/${turma.id}`);
