@@ -8,6 +8,7 @@ import ReorderStudentModal from "../../components/ReorderStudentModal";
 import EditStudentModal from "../../components/EditStudentModal";
 import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
+import OccurrenceModal from "../../components/OccurrenceModal";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno, Turmas } from "../../types";
 import { Column } from "../../components/Table";
@@ -32,6 +33,7 @@ export default function TurmaDetailPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isIncludeModalOpen, setIsIncludeModalOpen] = useState(false);
+    const [isOccurrenceModalOpen, setIsOccurrenceModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
@@ -68,6 +70,11 @@ export default function TurmaDetailPage() {
         setIsIncludeModalOpen(true);
     }, []);
 
+    const handleOccurrencesStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsOccurrenceModalOpen(true);
+    }, []);
+
     useEffect(() => {
         if (turma) {
             document.title = `Turma ${turma.grade} - ${turma.time} - Sistema de Chamada`;
@@ -76,10 +83,10 @@ export default function TurmaDetailPage() {
 
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, undefined, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
 
     const handleRowClick = (row: Record<string, unknown>) => {
         const aluno = row as Aluno;
@@ -131,6 +138,11 @@ export default function TurmaDetailPage() {
 
     const handleCloseIncludeModal = () => {
         setIsIncludeModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleCloseOccurrenceModal = () => {
+        setIsOccurrenceModalOpen(false);
         setSelectedStudent(null);
     };
 
@@ -302,6 +314,14 @@ export default function TurmaDetailPage() {
                 onConfirm={handleConfirmInclude}
                 student={selectedStudent}
             />
+
+            {selectedStudent && (
+                <OccurrenceModal
+                    isOpen={isOccurrenceModalOpen}
+                    onClose={handleCloseOccurrenceModal}
+                    student={selectedStudent}
+                />
+            )}
         </div>
     );
 }
