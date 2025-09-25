@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Turmas } from '../types';
-import { Upload, FileText, Users, Calendar, Clock } from 'lucide-react';
+import { FileText, Users, Calendar, Clock } from 'lucide-react';
 import './arquivos.css';
 import { useTurmas } from '../hooks/useTurmas';
 import { useAlunos } from '../hooks/useAlunos';
@@ -56,13 +56,6 @@ export default function ArquivosPage() {
                             Visualize e gerencie os arquivos enviados pelos alunos
                         </p>
                     </div>
-                    <button
-                        onClick={() => router.push('/arquivos/upload')}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 animate-fade-in-up"
-                    >
-                        <Upload size={20} className="animate-bounce-slow" />
-                        Novo Upload
-                    </button>
                 </div>
 
                 <div className="space-y-8">
@@ -99,7 +92,7 @@ export default function ArquivosPage() {
                                                             {turma.studentsQuantity} alunos
                                                         </p>
                                                     </div>
-                                                    <div className="text-right">
+                                                    <div className="text-right flex items-center gap-2">
                                                         <p className="text-sm text-slate-600">Total de arquivos</p>
                                                         <p className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                                             {totalArquivos}
