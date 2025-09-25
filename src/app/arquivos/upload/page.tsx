@@ -113,16 +113,9 @@ export default function UploadPage() {
         }
     };
 
-    const handleAlunoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const alunoId = parseInt(event.target.value);
-        const aluno = alunos.find(a => a.id === alunoId);
-        setAlunoSelecionado(aluno || null);
-    };
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
                 <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-8 hover-lift animate-fade-in-up">
                     <div className="flex items-center gap-4">
                         <button
@@ -146,48 +139,6 @@ export default function UploadPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Seleção de Aluno */}
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.1s' }}>
-                        <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                            <div className="p-1.5 bg-blue-100 rounded-lg">
-                                <Sparkles className="text-blue-600" size={18} />
-                            </div>
-                            Selecionar Aluno
-                        </h2>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    Aluno
-                                </label>
-                                <select
-                                    value={alunoSelecionado?.id || ''}
-                                    onChange={handleAlunoChange}
-                                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-                                >
-                                    <option value="">Selecione um aluno</option>
-                                    {dadosExemploAlunos.map(aluno => (
-                                        <option key={aluno.id} value={aluno.id}>
-                                            {aluno.name} - {aluno.grade} {aluno.time}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {alunoSelecionado && (
-                                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 animate-slide-in-right">
-                                    <h3 className="font-medium text-slate-900">
-                                        {alunoSelecionado.name}
-                                    </h3>
-                                    <p className="text-sm text-slate-600">
-                                        {alunoSelecionado.grade} às {alunoSelecionado.time}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Upload de Arquivos */}
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.2s' }}>
                         <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                             <div className="p-1.5 bg-purple-100 rounded-lg">
@@ -226,9 +177,17 @@ export default function UploadPage() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.2s' }}>
+                        <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                            <div className="p-1.5 bg-green-100 rounded-lg">
+                                <File className="text-green-600" size={18} />
+                            </div>
+                            Arquivos Selecionados ({selectedFiles.length})
+                        </h2>
+                    </div>
                 </div>
 
-                {/* Lista de Arquivos Selecionados */}
                 {selectedFiles.length > 0 && (
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mt-6 hover-lift card-glow animate-fade-in-up">
                         <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">

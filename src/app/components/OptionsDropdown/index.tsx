@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownUp, UserPen, UserRoundX, UserPlus } from 'lucide-react';
+import { ArrowDownUp, UserPen, UserRoundX, UserPlus, CircleAlert } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Aluno } from '../../types';
@@ -9,11 +9,12 @@ interface OptionsDropdownProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onReorder?: () => void;
+  onOccurrences?: () => void;
   onInclude?: () => void;
   student?: Aluno;
 }
 
-export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude, student }: OptionsDropdownProps) {
+export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurrences, onInclude, student }: OptionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -21,7 +22,6 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        // Verificar se o clique foi em um botão do dropdown
         const target = event.target as HTMLElement;
         const isDropdownButton = target.closest('[data-dropdown-button]');
         
@@ -84,23 +84,7 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude
         backgroundColor: 'white'
       }}
     >
-      <div className="py-2">
-        {onReorder && (
-          <button
-            data-dropdown-button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOptionClick(onReorder);
-            }}
-            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
-            type="button"
-          >
-            <div className="p-1.5 bg-blue-100 rounded-md mr-3">
-              <ArrowDownUp size={16} color="blue" />
-            </div>
-            <span className="font-medium">Remanejar</span>
-          </button>
-        )}
+      <div className="py-2">     
         {onEdit && (
           <button
             data-dropdown-button
@@ -117,7 +101,38 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onInclude
             <span className="font-medium">Editar</span>
           </button>
         )}
-        {/* Botão de Excluir ou Incluir baseado no status do aluno */}
+        {onReorder && (
+          <button
+            data-dropdown-button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOptionClick(onReorder);
+            }}
+            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+            type="button"
+          >
+            <div className="p-1.5 bg-blue-100 rounded-md mr-3">
+              <ArrowDownUp size={16} color="blue" />
+            </div>
+            <span className="font-medium">Remanejar</span>
+          </button>
+        )}
+        {onOccurrences && (
+          <button
+            data-dropdown-button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOptionClick(onOccurrences);
+            }}
+            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200"
+            type="button"
+          >
+            <div className="p-1.5 bg-yellow-100 rounded-md mr-3">
+              <CircleAlert size={16} className="text-yellow-600" />
+            </div>
+            <span className="font-medium">Ocorrências</span>
+          </button>
+        )}
         {student?.excluded ? (
           onInclude && (
             <button

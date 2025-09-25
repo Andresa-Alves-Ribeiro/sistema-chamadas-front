@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Turmas } from '../types';
-import { Upload, FileText, Users, Calendar, Clock, Sparkles } from 'lucide-react';
+import { Upload, FileText, Users, Calendar, Clock } from 'lucide-react';
 import './arquivos.css';
 import { useTurmas } from '../hooks/useTurmas';
 import { useAlunos } from '../hooks/useAlunos';
@@ -11,13 +10,11 @@ import { useArquivos } from '../hooks/useArquivos';
 
 export default function ArquivosPage() {
     const router = useRouter();
-    const [selectedTurma, setSelectedTurma] = useState<number | null>(null);
     
-    const { turmas, loading: turmasLoading } = useTurmas();
-    const { alunos, loading: alunosLoading } = useAlunos();
-    const { arquivos, loading: arquivosLoading } = useArquivos();
+    const { turmas } = useTurmas();
+    const { alunos } = useAlunos();
+    const { arquivos } = useArquivos();
     
-    // Agrupar turmas por dia da semana
     const turmasPorDia = turmas.reduce((acc, turma) => {
         if (!acc[turma.grade]) {
             acc[turma.grade] = [];
@@ -26,7 +23,6 @@ export default function ArquivosPage() {
         return acc;
     }, {} as Record<string, Turmas[]>);
     
-    const loading = turmasLoading || alunosLoading || arquivosLoading;
 
     const handleAlunoClick = (alunoId: number) => {
         router.push(`/arquivos/aluno/${alunoId}`);
@@ -41,14 +37,13 @@ export default function ArquivosPage() {
     const getArquivosPorTurma = (turma: Turmas) => {
         const alunosDaTurma = getAlunosPorTurma(turma);
         return arquivos.filter(arquivo => 
-            alunosDaTurma.some(aluno => aluno.id === arquivo.alunoId)
+            alunosDaTurma.some(aluno => aluno.id === arquivo.studentId)
         );
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
             <div className="w-full">
-                {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <div className="animate-fade-in-up">
                         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
@@ -70,7 +65,6 @@ export default function ArquivosPage() {
                     </button>
                 </div>
 
-                {/* Grid de Turmas */}
                 <div className="space-y-8">
                     {Object.entries(turmasPorDia).map(([dia, turmas], index) => (
                         <div key={dia} className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -89,7 +83,7 @@ export default function ArquivosPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {turmas.map((turma, turmaIndex) => {
                                         const arquivosDaTurma = getArquivosPorTurma(turma);
-                                        const totalArquivos = arquivosDaTurma.reduce((sum, aluno) => sum + aluno.quantidadeArquivos, 0);
+                                        const totalArquivos = arquivosDaTurma.length;
                                         
                                         return (
                                             <div key={turma.id} className="bg-gradient-to-br from-slate-50 to-blue-50/50 rounded-xl p-5 border border-slate-200 hover-lift card-glow stagger-animation" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}>
@@ -116,8 +110,8 @@ export default function ArquivosPage() {
                                                 <div className="space-y-2 max-h-60 overflow-y-auto">
                                                     {arquivosDaTurma.map((arquivo, alunoIndex) => (
                                                         <div
-                                                            key={arquivo.alunoId}
-                                                            onClick={() => handleAlunoClick(arquivo.alunoId)}
+                                                            key={arquivo.studentId}
+                                                            onClick={() => handleAlunoClick(arquivo.studentId)}
                                                             className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-300 hover-lift"
                                                             style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05) + (alunoIndex * 0.02)}s` }}
                                                         >
@@ -127,16 +121,16 @@ export default function ArquivosPage() {
                                                                 </div>
                                                                 <div>
                                                                     <p className="font-medium text-slate-900 text-sm">
-                                                                        {arquivo.alunoNome}
+                                                                        {alunos.find(aluno => aluno.id === arquivo.studentId)?.name || 'Aluno não encontrado'}
                                                                     </p>
                                                                     <p className="text-xs text-slate-500">
-                                                                        {arquivo.quantidadeArquivos} arquivo(s)
+                                                                        1 arquivo
                                                                     </p>
                                                                 </div>
                                                             </div>
                                                             <div className="text-right">
                                                                 <p className="text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 px-3 py-1 rounded-full shadow-md">
-                                                                    {arquivo.quantidadeArquivos}
+                                                                    1
                                                                 </p>
                                                             </div>
                                                         </div>

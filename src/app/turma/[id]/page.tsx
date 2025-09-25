@@ -76,7 +76,7 @@ export default function TurmaDetailPage() {
 
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, undefined, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
             setAlunosColumns(columns);
         }
     }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
@@ -136,8 +136,8 @@ export default function TurmaDetailPage() {
 
     const handleConfirmReorder = async (studentId: number, newTurmaId: number) => {
         try {
-            // Buscar a nova turma
-            const newTurma = await turmasService.getTurmaById(newTurmaId);
+            const newTurmaData = await turmasService.getGradeWithStudentsById(newTurmaId);
+            const newTurma = newTurmaData.grade;
             const today = new Date().toISOString().split('T')[0];
             
             await transferAluno(studentId, {
@@ -149,7 +149,6 @@ export default function TurmaDetailPage() {
             console.log(`Aluno ${studentId} remanejado para turma ${newTurma.grade} - ${newTurma.time} em ${today}`);
         } catch (error) {
             console.error("Erro ao remanejar aluno:", error);
-            // Aqui você pode adicionar uma notificação de erro
         }
     };
 
@@ -159,7 +158,6 @@ export default function TurmaDetailPage() {
             console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
         } catch (error) {
             console.error("Erro ao atualizar aluno:", error);
-            // Aqui você pode adicionar uma notificação de erro
         }
     };
 
@@ -170,7 +168,6 @@ export default function TurmaDetailPage() {
             console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
         } catch (error) {
             console.error("Erro ao excluir aluno:", error);
-            // Aqui você pode adicionar uma notificação de erro
         }
     };
 
@@ -181,7 +178,6 @@ export default function TurmaDetailPage() {
             console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
         } catch (error) {
             console.error("Erro ao incluir aluno:", error);
-            // Aqui você pode adicionar uma notificação de erro
         }
     };
 

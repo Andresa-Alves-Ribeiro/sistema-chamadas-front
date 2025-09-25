@@ -30,7 +30,6 @@ export default function HomePage() {
     const filteredTurmas = turmasArray;
     const totalTurmas = turmasArray.length;
 
-    // Buscar estatísticas dos alunos
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -46,7 +45,7 @@ export default function HomePage() {
         };
 
         fetchStats();
-    }, []); // Removido getAlunosStats da dependência para evitar loop infinito
+    }, []);
 
     const handleTurmaClick = (turma: Turmas) => {
         router.push(`/turma/${turma.id}`);

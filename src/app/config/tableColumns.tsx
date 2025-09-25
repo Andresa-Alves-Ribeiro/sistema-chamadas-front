@@ -33,7 +33,9 @@ function getDatesForDayOfWeek(dayOfWeek: number, startDate: Date, endDate: Date)
 
 export function getTurmasColumns(
     onEditTurma?: (turma: Turmas) => void,
-    onDeleteTurma?: (turma: Turmas) => void
+    onDeleteTurma?: (turma: Turmas) => void,
+    onReorderTurma?: (turma: Turmas) => void,
+    onOccurrencesTurma?: (turma: Turmas) => void
 ): Column<Turmas>[] {
     return [
         { key: "grade", label: "Turma" },
@@ -49,6 +51,8 @@ export function getTurmasColumns(
                     <OptionsDropdown
                         onEdit={onEditTurma ? () => onEditTurma(row) : undefined}
                         onDelete={onDeleteTurma ? () => onDeleteTurma(row) : undefined}
+                        onReorder={onReorderTurma ? () => onReorderTurma(row) : undefined}
+                        onOccurrences={onOccurrencesTurma ? () => onOccurrencesTurma(row) : undefined}
                     />
                 );
             }
@@ -61,6 +65,7 @@ export function getAlunosColumns(
     daysOff: Set<string>, 
     onToggleDayOff: (dateKey: string) => void,
     onReorderStudent?: (student: Aluno) => void,
+    onOccurrencesStudent?: (student: Aluno) => void,
     onEditStudent?: (student: Aluno) => void,
     onDeleteStudent?: (student: Aluno) => void,
     onIncludeStudent?: (student: Aluno) => void,
@@ -137,6 +142,7 @@ export function getAlunosColumns(
                 return (
                     <OptionsDropdown
                         onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
+                        onOccurrences={onOccurrencesStudent ? () => onOccurrencesStudent(row) : undefined}
                         onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
                         onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
                         onInclude={onIncludeStudent ? () => onIncludeStudent(row) : undefined}
