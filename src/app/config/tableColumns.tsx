@@ -31,31 +31,41 @@ function getDatesForDayOfWeek(dayOfWeek: number, startDate: Date, endDate: Date)
     return dates;
 }
 
-export const turmasColumns: Column<Turmas>[] = [
-    { key: "grade", label: "Turma" },
-    { key: "time", label: "Horário" },
-    { key: "studentsQuantity", label: "Quantidade de Alunos" },
-    { 
-        key: "options", 
-        label: "Opções",
-        width: "80px",
-        align: "center",
-        render: (value: unknown, row: Turmas) => {
-            return (
-                <OptionsDropdown
-                    onEdit={() => console.log('Editar turma:', row)}
-                    onDelete={() => console.log('Excluir turma:', row)}
-                />
-            );
-        }
-    },
-];
+export function getTurmasColumns(
+    onEditTurma?: (turma: Turmas) => void,
+    onDeleteTurma?: (turma: Turmas) => void,
+    onReorderTurma?: (turma: Turmas) => void,
+    onOccurrencesTurma?: (turma: Turmas) => void
+): Column<Turmas>[] {
+    return [
+        { key: "grade", label: "Turma" },
+        { key: "time", label: "Horário" },
+        { key: "studentsQuantity", label: "Quantidade de Alunos" },
+        { 
+            key: "options", 
+            label: "Opções",
+            width: "80px",
+            align: "center",
+            render: (value: unknown, row: Turmas) => {
+                return (
+                    <OptionsDropdown
+                        onEdit={onEditTurma ? () => onEditTurma(row) : undefined}
+                        onDelete={onDeleteTurma ? () => onDeleteTurma(row) : undefined}
+                        onReorder={onReorderTurma ? () => onReorderTurma(row) : undefined}
+                        onOccurrences={onOccurrencesTurma ? () => onOccurrencesTurma(row) : undefined}
+                    />
+                );
+            }
+        },
+    ];
+}
 
 export function getAlunosColumns(
     grade: string, 
     daysOff: Set<string>, 
     onToggleDayOff: (dateKey: string) => void,
     onReorderStudent?: (student: Aluno) => void,
+    onOccurrencesStudent?: (student: Aluno) => void,
     onEditStudent?: (student: Aluno) => void,
     onDeleteStudent?: (student: Aluno) => void,
     onIncludeStudent?: (student: Aluno) => void,
@@ -132,6 +142,7 @@ export function getAlunosColumns(
                 return (
                     <OptionsDropdown
                         onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
+                        onOccurrences={onOccurrencesStudent ? () => onOccurrencesStudent(row) : undefined}
                         onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
                         onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
                         onInclude={onIncludeStudent ? () => onIncludeStudent(row) : undefined}

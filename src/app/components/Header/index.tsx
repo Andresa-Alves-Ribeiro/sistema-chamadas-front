@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, BookOpen, Menu, X } from 'lucide-react';
+import { User, BookOpen, Menu, X, FileText, Home } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Header() {
@@ -22,6 +22,22 @@ export default function Header() {
                     </div>
 
                     <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
+                        <div className="flex items-center space-x-2 lg:space-x-3">
+                            <Link 
+                                href="/" 
+                                className="px-3 py-2 text-white hover:text-gray-300 transition-colors flex items-center gap-2"
+                            >
+                                <Home size={16} />
+                                Início
+                            </Link>
+                            <Link 
+                                href="/arquivos" 
+                                className="px-3 py-2 text-white hover:text-gray-300 transition-colors flex items-center gap-2"
+                            >
+                                <FileText size={16} />
+                                Arquivos
+                            </Link>
+                        </div>
                         <div className="flex items-center space-x-2 lg:space-x-3 border-l border-slate-500 pl-2 lg:pl-4">
                             <div className="flex items-center space-x-2">
                                 <div className="bg-white p-1.5 lg:p-2 rounded-full">
@@ -48,6 +64,23 @@ export default function Header() {
                 {isMobileMenuOpen && (
                     <div className="md:hidden border-t border-slate-500 py-4">
                         <nav className="flex flex-col space-y-4">
+                            <div className="px-2">
+                                <Link 
+                                    href="/" 
+                                    className="block px-3 py-2 text-white hover:text-gray-300 transition-colors"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Início
+                                </Link>
+                                <Link 
+                                    href="/arquivos" 
+                                    className="flex items-center gap-2 px-3 py-2 text-white hover:text-gray-300 transition-colors"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FileText size={16} />
+                                    Arquivos
+                                </Link>
+                            </div>
                             <div className="border-t border-slate-500 pt-4 mt-4">
                                 <div className="flex items-center space-x-3 px-2 py-2">
                                     <div className="bg-white p-2 rounded-full">

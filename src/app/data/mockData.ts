@@ -1,6 +1,6 @@
-import { Turmas, Aluno } from "../types";
+import { Grade, Student, File, FileByStudent } from "../types";
 
-export const dadosExemploTurmas: Turmas[] = [
+export const dadosExemploTurmas: Grade[] = [
     { id: 1, grade: "Segunda-feira", time: "08:00", studentsQuantity: 5 },
     { id: 2, grade: "Segunda-feira", time: "08:50", studentsQuantity: 6 },
     { id: 3, grade: "Segunda-feira", time: "09:40", studentsQuantity: 9 },
@@ -27,7 +27,7 @@ export const dadosExemploTurmas: Turmas[] = [
     { id: 21, grade: "Sexta-feira", time: "16:20", studentsQuantity: 7 }
 ];
 
-export const dadosExemploAlunos: Aluno[] = [
+export const dadosExemploAlunos: Student[] = [
     { id: 1, name: "Cecilia Cordeiro Banin", grade: "Segunda-feira", time: "08:00" },
     { id: 2, name: "Eduardo Rampazzo", grade: "Segunda-feira", time: "08:00" },
     { id: 3, name: "João Victor Santana Da Silva", grade: "Segunda-feira", time: "08:00" },
@@ -152,4 +152,67 @@ export const dadosExemploAlunos: Aluno[] = [
     { id: 122, name: "Fernanda Santana F. De Oliveira", grade: "Sexta-feira", time: "16:20" },
     { id: 123, name: "Heloísa De Jesus Cardoso", grade: "Sexta-feira", time: "16:20" },
     { id: 124, name: "Lucas Dos Santos Pires", grade: "Sexta-feira", time: "16:20" },
-]
+];
+
+// Dados mock para arquivos dos alunos
+export const dadosExemploArquivos: File[] = [
+    // Arquivos para alguns alunos da turma Segunda-feira 08:00
+    { id: 1, name: "Exercício 1 - Matemática", format: "PDF", size: "2.3 MB", uploadDate: "2024-01-15", studentId: 1 },
+    { id: 2, name: "Projeto História", format: "DOCX", size: "1.8 MB", uploadDate: "2024-01-18", studentId: 1 },
+    { id: 3, name: "Projeto História", format: "DOCX", size: "1.8 MB", uploadDate: "2024-01-18", studentId: 1 },
+    { id: 4, name: "Relatório Química", format: "PDF", size: "3.1 MB", uploadDate: "2024-01-20", studentId: 2 },
+    { id: 4, name: "Apresentação Física", format: "PPTX", size: "5.2 MB", uploadDate: "2024-01-22", studentId: 2 },
+    { id: 5, name: "Trabalho Literatura", format: "PDF", size: "1.5 MB", uploadDate: "2024-01-25", studentId: 3 },
+    { id: 6, name: "Exercício Geografia", format: "PDF", size: "2.0 MB", uploadDate: "2024-01-28", studentId: 3 },
+    { id: 7, name: "Projeto Biologia", format: "PDF", size: "4.7 MB", uploadDate: "2024-01-30", studentId: 4 },
+    { id: 8, name: "Relatório Filosofia", format: "DOCX", size: "2.1 MB", uploadDate: "2024-02-02", studentId: 4 },
+    { id: 9, name: "Trabalho Sociologia", format: "PDF", size: "3.3 MB", uploadDate: "2024-02-05", studentId: 5 },
+    { id: 10, name: "Exercício Inglês", format: "PDF", size: "1.2 MB", uploadDate: "2024-02-08", studentId: 5 },
+
+    // Arquivos para alguns alunos da turma Segunda-feira 08:50
+    { id: 11, name: "Projeto Arte", format: "PDF", size: "6.8 MB", uploadDate: "2024-02-10", studentId: 6 },
+    { id: 12, name: "Relatório Educação Física", format: "DOCX", size: "1.9 MB", uploadDate: "2024-02-12", studentId: 6 },
+    { id: 13, name: "Trabalho Espanhol", format: "PDF", size: "2.4 MB", uploadDate: "2024-02-15", studentId: 7 },
+    { id: 14, name: "Exercício Português", format: "PDF", size: "1.7 MB", uploadDate: "2024-02-18", studentId: 7 },
+    { id: 15, name: "Projeto Informática", format: "ZIP", size: "8.5 MB", uploadDate: "2024-02-20", studentId: 8 },
+    { id: 16, name: "Relatório Química Orgânica", format: "PDF", size: "3.6 MB", uploadDate: "2024-02-22", studentId: 8 },
+    { id: 17, name: "Trabalho Matemática Avançada", format: "PDF", size: "4.2 MB", uploadDate: "2024-02-25", studentId: 9 },
+    { id: 18, name: "Exercício Física Moderna", format: "PDF", size: "2.8 MB", uploadDate: "2024-02-28", studentId: 9 },
+    { id: 19, name: "Projeto História do Brasil", format: "DOCX", size: "5.1 MB", uploadDate: "2024-03-02", studentId: 10 },
+    { id: 20, name: "Relatório Biologia Molecular", format: "PDF", size: "3.9 MB", uploadDate: "2024-03-05", studentId: 10 },
+
+    // Arquivos para alguns alunos da turma Segunda-feira 09:40
+    { id: 21, name: "Trabalho Filosofia Moderna", format: "PDF", size: "2.7 MB", uploadDate: "2024-03-08", studentId: 12 },
+    { id: 22, name: "Exercício Sociologia Contemporânea", format: "PDF", size: "1.6 MB", uploadDate: "2024-03-10", studentId: 12 },
+    { id: 23, name: "Projeto Literatura Brasileira", format: "DOCX", size: "4.3 MB", uploadDate: "2024-03-12", studentId: 13 },
+    { id: 24, name: "Relatório Geografia Física", format: "PDF", size: "3.2 MB", uploadDate: "2024-03-15", studentId: 13 },
+    { id: 25, name: "Trabalho Química Analítica", format: "PDF", size: "2.9 MB", uploadDate: "2024-03-18", studentId: 14 },
+    { id: 26, name: "Exercício Física Quântica", format: "PDF", size: "3.4 MB", uploadDate: "2024-03-20", studentId: 14 },
+    { id: 27, name: "Projeto História Antiga", format: "DOCX", size: "5.7 MB", uploadDate: "2024-03-22", studentId: 15 },
+    { id: 28, name: "Relatório Biologia Celular", format: "PDF", size: "4.1 MB", uploadDate: "2024-03-25", studentId: 15 },
+    { id: 29, name: "Trabalho Matemática Discreta", format: "PDF", size: "2.2 MB", uploadDate: "2024-03-28", studentId: 16 },
+    { id: 30, name: "Exercício Inglês Técnico", format: "PDF", size: "1.8 MB", uploadDate: "2024-03-30", studentId: 16 },
+
+    // Arquivos para alguns alunos da turma Terça-feira 18:00
+    { id: 31, name: "Projeto Engenharia de Software", format: "ZIP", size: "12.3 MB", uploadDate: "2024-04-02", studentId: 52 },
+    { id: 32, name: "Relatório Banco de Dados", format: "PDF", size: "3.8 MB", uploadDate: "2024-04-05", studentId: 52 },
+    { id: 33, name: "Trabalho Redes de Computadores", format: "PDF", size: "4.5 MB", uploadDate: "2024-04-08", studentId: 53 }
+];
+
+// Função para agrupar arquivos por aluno
+export const agruparArquivosPorAluno = (): FileByStudent[] => {
+    const arquivosPorAluno: { [key: number]: FileByStudent } = {};
+
+    dadosExemploAlunos.forEach(aluno => {
+        const arquivosDoAluno = dadosExemploArquivos.filter(arquivo => arquivo.studentId === aluno.id);
+
+        arquivosPorAluno[aluno.id] = {
+            studentId: aluno.id,
+            studentName: aluno.name,
+            quantityFiles: arquivosDoAluno.length,
+            files: arquivosDoAluno
+        };
+    });
+
+    return Object.values(arquivosPorAluno);
+};

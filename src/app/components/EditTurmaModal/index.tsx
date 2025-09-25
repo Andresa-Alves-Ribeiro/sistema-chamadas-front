@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Turmas } from "../../types";
 
-interface AddTurmaModalProps {
+interface EditTurmaModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (turmaData: { name: string; time: string }) => void;
+    onSave: (id: string | number, turmaData: { grade: string; time: string }) => void;
+    turma?: Turmas;
 }
 
-export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModalProps) {
+export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditTurmaModalProps) {
     const [turmaName, setTurmaName] = useState("");
     const [turmaTime, setTurmaTime] = useState("");
+
+    useEffect(() => {
+        if (turma) {
+            setTurmaName(turma.grade);
+            setTurmaTime(turma.time);
+        }
+    }, [turma]);
 
     const formatTime = (time: string): string => {
         // Remove segundos se existirem e garante formato HH:MM
@@ -24,13 +33,12 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
     };
 
     const handleSave = () => {
-        if (turmaName.trim() && turmaTime.trim()) {
-            onSave({
-                name: turmaName.trim(),
+        if (turmaName.trim() && turmaTime.trim() && turma) {
+            onSave(turma.id, {
+                grade: turmaName.trim(),
                 time: formatTime(turmaTime.trim())
             });
-            setTurmaName("");
-            setTurmaTime("");
+            handleClose();
         }
     };
 
@@ -48,15 +56,15 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !turma) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
                 <div className="px-6 py-4 border-b border-slate-200">
-                    <h3 className="text-lg font-semibold text-slate-900">Criar Nova Turma</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">Editar Turma</h3>
                     <p className="text-sm text-slate-600 mt-1">
-                        Preencha as informações da turma para criá-la
+                        Atualize as informações da turma
                     </p>
                 </div>
 
@@ -70,7 +78,7 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
                             id="turmaName"
                             value={turmaName}
                             onChange={(e) => setTurmaName(e.target.value)}
-                            placeholder="Ex: Segunda-feira"
+                            placeholder="Ex: 6º Ano"
                             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             autoFocus
                             onKeyDown={handleKeyDown}
@@ -105,7 +113,7 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
                         disabled={!turmaName.trim() || !turmaTime.trim()}
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:border-slate-400 disabled:cursor-not-allowed transition-colors duration-200"
                     >
-                        Criar Turma
+                        Salvar Alterações
                     </button>
                 </div>
             </div>
