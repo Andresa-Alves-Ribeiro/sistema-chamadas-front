@@ -13,7 +13,6 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
     const [turmaTime, setTurmaTime] = useState("");
 
     const formatTime = (time: string): string => {
-        // Remove segundos se existirem e garante formato HH:MM
         if (time.includes(':')) {
             const parts = time.split(':');
             if (parts.length >= 2) {

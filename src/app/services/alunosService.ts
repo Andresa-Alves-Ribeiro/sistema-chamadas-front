@@ -14,8 +14,7 @@ export interface UpdateAlunoData {
 }
 
 export interface TransferAlunoData {
-    newGrade: string;
-    newTime: string;
+    newGradeId: number;
     transferDate: string;
 }
 
@@ -52,10 +51,10 @@ export const alunosService = {
         }
     },
 
-    async getAlunosByTurma(grade: string, time: string): Promise<Student[]> {
+    async getAlunosByTurma(gradeId: number): Promise<Student[]> {
         try {
             const response = await api.get(`/api/students/turma`, {
-                params: { grade, time }
+                params: { gradeId }
             });
             const apiData = response.data;
 
@@ -65,7 +64,7 @@ export const alunosService = {
 
             return Array.isArray(response.data) ? response.data : [];
         } catch (error) {
-            console.error(`Erro ao buscar alunos da turma ${grade} ${time}:`, error);
+            console.error(`Erro ao buscar alunos da turma ${gradeId}:`, error);
             return [];
         }
     },

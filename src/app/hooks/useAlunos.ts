@@ -75,7 +75,7 @@ export const useAlunos = () => {
     }
   };
 
-  const transferAluno = async (id: number, transferData: { newGrade: string; newTime: string; transferDate: string }) => {
+  const transferAluno = async (id: number, transferData: { newGradeId: number; transferDate: string }) => {
     try {
       const alunoTransferido = await alunosService.transferAluno(id, transferData);
       setAlunos(prev => prev.map(a => a.id === id ? alunoTransferido : a));
@@ -115,7 +115,7 @@ export const useAlunos = () => {
   };
 };
 
-export const useAlunosByTurma = (grade: string, time: string) => {
+export const useAlunosByTurma = (gradeId: number) => {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export const useAlunosByTurma = (grade: string, time: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await alunosService.getAlunosByTurma(grade, time);
+      const data = await alunosService.getAlunosByTurma(gradeId);
       setAlunos(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar alunos da turma');
@@ -147,10 +147,10 @@ export const useAlunosByTurma = (grade: string, time: string) => {
   };
 
   useEffect(() => {
-    if (grade && time) {
+    if (gradeId) {
       fetchAlunosByTurma();
     }
-  }, [grade, time]);
+  }, [gradeId]);
 
   return {
     alunos,
