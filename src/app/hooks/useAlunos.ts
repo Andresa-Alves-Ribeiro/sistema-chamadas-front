@@ -64,6 +64,16 @@ export const useAlunos = () => {
     }
   };
 
+  const deleteAlunoPermanently = async (id: number) => {
+    try {
+      await alunosService.deleteAluno(id);
+      setAlunos(prev => prev.filter(a => a.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao deletar aluno permanentemente');
+      throw err;
+    }
+  };
+
   const includeAluno = async (id: number, inclusionDate: string) => {
     try {
       const alunoIncluido = await alunosService.includeAluno(id, inclusionDate);
@@ -108,6 +118,7 @@ export const useAlunos = () => {
     createAluno,
     updateAluno,
     deleteAluno,
+    deleteAlunoPermanently,
     excludeAluno,
     includeAluno,
     transferAluno,

@@ -23,7 +23,7 @@ export default function TurmaDetailPage() {
     const turmaId = Number(params.id);
     
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
+    const { createAluno, updateAluno, deleteAlunoPermanently, includeAluno, transferAluno } = useAlunos();
     
     const turma = turmaData?.grade || null;
     const alunos = turmaData?.students || [];
@@ -170,12 +170,12 @@ export default function TurmaDetailPage() {
 
     const handleConfirmDelete = async (studentId: number) => {
         try {
-            const today = new Date().toISOString().split('T')[0];
-            await excludeAluno(studentId, today);
-            console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
+            await deleteAlunoPermanently(studentId);
+            await fetchTurmaWithStudents();
+            console.log(`Aluno ${studentId} deletado permanentemente`);
         } catch (error) {
-            console.error("Erro ao excluir aluno:", error);
-            toast.error("Erro ao excluir aluno");
+            console.error("Erro ao deletar aluno:", error);
+            toast.error("Erro ao deletar aluno");
         }
     };
 
