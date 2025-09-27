@@ -85,7 +85,7 @@ export const useAlunos = () => {
     }
   };
 
-  const transferAluno = async (id: number, transferData: { newGradeId: number; transferDate: string }) => {
+  const transferAluno = async (id: number, transferData: { newGradeId: string }) => {
     try {
       const alunoTransferido = await alunosService.transferAluno(id, transferData);
       setAlunos(prev => prev.map(a => a.id === id ? alunoTransferido : a));

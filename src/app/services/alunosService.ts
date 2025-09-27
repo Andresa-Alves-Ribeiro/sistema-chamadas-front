@@ -13,8 +13,7 @@ export interface UpdateAlunoData {
 }
 
 export interface TransferAlunoData {
-    newGradeId: number;
-    transferDate: string;
+    newGradeId: string;
 }
 
 export const alunosService = {
@@ -109,22 +108,6 @@ export const alunosService = {
         }
     },
 
-    async excludeAluno(id: number, exclusionDate: string): Promise<Student> {
-        try {
-            const response = await api.patch(`/api/students/${id}/exclude`, { exclusionDate });
-            const apiData = response.data;
-
-            if (apiData.success && apiData.data) {
-                return apiData.data;
-            }
-
-            return response.data;
-        } catch (error) {
-            console.error(`Erro ao excluir aluno ${id}:`, error);
-            throw error;
-        }
-    },
-
     async includeAluno(id: number, inclusionDate: string): Promise<Student> {
         try {
             const response = await api.patch(`/api/students/${id}/include`, { inclusionDate });
@@ -143,7 +126,7 @@ export const alunosService = {
 
     async transferAluno(id: number, data: TransferAlunoData): Promise<Student> {
         try {
-            const response = await api.patch(`/api/students/${id}/transfer`, data);
+            const response = await api.put(`/api/students/${id}/transfer`, data);
             const apiData = response.data;
 
             if (apiData.success && apiData.data) {

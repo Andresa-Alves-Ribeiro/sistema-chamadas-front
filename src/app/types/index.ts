@@ -20,12 +20,13 @@ export interface Student {
     name: string;
     grade: string;
     time: string;
+    gradeId?: string;
     excluded?: boolean;
     exclusionDate?: string;
     inclusionDate?: string;
     transferred?: boolean;
     transferDate?: string;
-    originalGradeId?: number;
+    originalGradeId?: string;
     [key: string]: unknown;
 }
 

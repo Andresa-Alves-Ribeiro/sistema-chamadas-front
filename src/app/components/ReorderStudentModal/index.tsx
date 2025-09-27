@@ -9,7 +9,7 @@ import { dadosExemploTurmas } from '../../data/mockData';
 interface ReorderStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (studentId: number, newTurmaId: number) => void;
+  onConfirm: (studentId: number, newTurmaId: string) => void;
   student: Aluno | null;
 }
 
@@ -19,7 +19,7 @@ export default function ReorderStudentModal({
   onConfirm, 
   student 
 }: ReorderStudentModalProps) {
-  const [selectedTurmaId, setSelectedTurmaId] = useState<number | ''>('');
+  const [selectedTurmaId, setSelectedTurmaId] = useState<string>('');
   const [availableTurmas, setAvailableTurmas] = useState<Turmas[]>([]);
 
   useEffect(() => {
@@ -135,7 +135,7 @@ export default function ReorderStudentModal({
             </label>
             <select
               value={selectedTurmaId}
-              onChange={(e) => setSelectedTurmaId(Number(e.target.value))}
+              onChange={(e) => setSelectedTurmaId(e.target.value)}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="">Selecione uma turma...</option>

@@ -141,16 +141,14 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
-    const handleConfirmReorder = async (studentId: number, newTurmaId: number) => {
+    const handleConfirmReorder = async (studentId: number, newTurmaId: string) => {
         try {
-            const today = new Date().toISOString().split('T')[0];
-            
             await transferAluno(studentId, {
-                newGradeId: newTurmaId,
-                transferDate: today
+                newGradeId: newTurmaId
             });
             
-            console.log(`Aluno ${studentId} remanejado para turma ${newTurmaId} em ${today}`);
+            await fetchTurmaWithStudents();
+            console.log(`Aluno ${studentId} remanejado para turma ${newTurmaId}`);
         } catch (error) {
             console.error("Erro ao remanejar aluno:", error);
             toast.error("Erro ao remanejar aluno");
