@@ -34,7 +34,7 @@ export const useAlunos = () => {
 
   const updateAluno = async (id: number, alunoData: { name?: string; grade?: string; time?: string }) => {
     try {
-      const alunoAtualizado = await alunosService.updateAluno(id, alunoData);
+      const alunoAtualizado = await alunosService.editAluno(id, alunoData);
       setAlunos(prev => prev.map(a => a.id === id ? alunoAtualizado : a));
       return alunoAtualizado;
     } catch (err) {

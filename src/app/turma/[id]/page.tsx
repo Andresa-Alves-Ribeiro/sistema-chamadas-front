@@ -10,12 +10,11 @@ import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
 import OccurrenceModal from "../../components/OccurrenceModal";
 import { getAlunosColumns } from "../../config/tableColumns";
-import { Aluno, Turmas } from "../../types";
+import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
-import { turmasService } from "../../services/turmasService";
 import { toast } from "react-hot-toast";
 
 export default function TurmaDetailPage() {
@@ -23,8 +22,8 @@ export default function TurmaDetailPage() {
     const router = useRouter();
     const turmaId = Number(params.id);
     
-    const { turmaData, loading: turmaLoading, error: turmaError, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, deleteAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
+    const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
+    const { createAluno, updateAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
     
     const turma = turmaData?.grade || null;
     const alunos = turmaData?.students || [];
@@ -161,6 +160,7 @@ export default function TurmaDetailPage() {
     const handleSaveStudentEdit = async (studentId: number, newName: string) => {
         try {
             await updateAluno(studentId, { name: newName });
+            await fetchTurmaWithStudents();
             console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
         } catch (error) {
             console.error("Erro ao atualizar aluno:", error);

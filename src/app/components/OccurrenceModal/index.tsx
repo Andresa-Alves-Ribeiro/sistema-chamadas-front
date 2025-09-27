@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Upload, File, Download, Trash2, AlertCircle, Save, FileText, Calendar } from "lucide-react";
-import { useArquivosByAluno } from "../../hooks/useArquivos";
-import { useOccurrences } from "../../hooks/useOccurrences";
+import { X, AlertCircle, Save, FileText, Calendar } from "lucide-react";
 import { Aluno } from "../../types";
 
 interface OccurrenceModalProps {
@@ -15,79 +13,21 @@ interface OccurrenceModalProps {
 
 export default function OccurrenceModal({ isOpen, onClose, student }: OccurrenceModalProps) {
   const [newObservation, setNewObservation] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [observations, setObservations] = useState<Array<{
+    id: number;
+    observations: string;
+    createdAt: string;
+  }>>([]);
 
-  const {
-    arquivos,
-    loading: arquivosLoading,
-    error: arquivosError,
-    uploadArquivo,
-    deleteArquivo,
-    downloadArquivo
-  } = useArquivosByAluno(student.id);
-
-  const {
-    observations,
-    loading: observationsLoading,
-    error: observationsError,
-    createObservation
-  } = useOccurrences(student.id);
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploading(true);
-    try {
-      for (let i = 0; i < files.length; i++) {
-        await uploadArquivo(files[i]);
-      }
-    } catch (error) {
-      console.error("Erro ao fazer upload:", error);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  const handleDownload = async (arquivoId: number, fileName: string) => {
-    try {
-      const blob = await downloadArquivo(arquivoId);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Erro ao baixar arquivo:", error);
-    }
-  };
-
-  const handleDeleteFile = async (arquivoId: number) => {
-    if (window.confirm("Tem certeza que deseja excluir este arquivo?")) {
-      try {
-        await deleteArquivo(arquivoId);
-      } catch (error) {
-        console.error("Erro ao excluir arquivo:", error);
-      }
-    }
-  };
-
-  const handleSave = async () => {
+  const handleSave = () => {
     if (newObservation.trim()) {
-      try {
-        await createObservation(newObservation.trim());
-        setNewObservation("");
-        // Não fecha o modal para permitir adicionar mais observações
-      } catch (error) {
-        console.error("Erro ao salvar observações:", error);
-      }
+      const newObs = {
+        id: Date.now(), // ID temporário
+        observations: newObservation.trim(),
+        createdAt: new Date().toISOString()
+      };
+      setObservations(prev => [...prev, newObs]);
+      setNewObservation("");
     }
   };
 
@@ -181,113 +121,6 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Upload className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900">Upload de Arquivos</h3>
-                  <p className="text-sm text-slate-600">Adicione documentos relacionados às ocorrências</p>
-                </div>
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
-              >
-                <Upload size={16} className="mr-2" />
-                {isUploading ? "Enviando..." : "Selecionar Arquivos"}
-              </button>
-            </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              onChange={handleFileUpload}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt"
-            />
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-slate-600">
-                <span className="font-medium text-blue-700">Formatos aceitos:</span> PDF, DOC, DOCX, JPG, JPEG, PNG, GIF, TXT
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-slate-100 rounded-lg">
-                <FileText className="w-5 h-5 text-slate-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Arquivos Enviados</h3>
-                <p className="text-sm text-slate-600">Documentos relacionados às ocorrências</p>
-              </div>
-            </div>
-
-            {arquivosLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-slate-600">Carregando arquivos...</span>
-              </div>
-            ) : arquivosError ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-600 text-center">Erro ao carregar arquivos: {arquivosError}</p>
-              </div>
-            ) : arquivos.length === 0 ? (
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
-                <File size={48} className="text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500 font-medium">Nenhum arquivo enviado ainda</p>
-                <p className="text-sm text-slate-400 mt-1">Use o botão acima para adicionar arquivos</p>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {arquivos.map((arquivo) => (
-                  <div
-                    key={arquivo.id}
-                    className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition-shadow"
-                  >
-                    <div className="flex items-center flex-1">
-                      <div className="p-2 bg-slate-100 rounded-lg mr-3">
-                        <File className="w-4 h-4 text-slate-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">{arquivo.name}</p>
-                        <div className="flex items-center space-x-2 text-xs text-slate-500 mt-1">
-                          <span className="bg-slate-100 px-2 py-1 rounded">{arquivo.format}</span>
-                          <span>{arquivo.size}</span>
-                          <span className="flex items-center">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {new Date(arquivo.uploadDate).toLocaleDateString('pt-BR')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleDownload(arquivo.id, arquivo.name)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Baixar arquivo"
-                      >
-                        <Download size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteFile(arquivo.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Excluir arquivo"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
@@ -334,16 +167,7 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
               </div>
             </div>
 
-            {observationsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                <span className="ml-2 text-slate-600">Carregando observações...</span>
-              </div>
-            ) : observationsError ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-600 text-center">Erro ao carregar observações: {observationsError}</p>
-              </div>
-            ) : observations.length === 0 ? (
+            {observations.length === 0 ? (
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
                 <FileText size={48} className="text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500 font-medium">Nenhuma observação registrada ainda</p>

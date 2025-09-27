@@ -84,7 +84,7 @@ export const alunosService = {
         }
     },
 
-    async updateAluno(id: number, data: UpdateAlunoData): Promise<Student> {
+    async editAluno(id: number, data: UpdateAlunoData): Promise<Student> {
         try {
             const response = await api.put(`/api/students/${id}`, data);
             const apiData = response.data;
