@@ -21,7 +21,7 @@ export const useAlunos = () => {
     }
   };
 
-  const createAluno = async (alunoData: { name: string; grade: string; time: string }) => {
+  const createAluno = async (alunoData: { name: string; gradeId: string }) => {
     try {
       const novoAluno = await alunosService.createAluno(alunoData);
       setAlunos(prev => [...prev, novoAluno]);

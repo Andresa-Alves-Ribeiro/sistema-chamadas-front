@@ -3,8 +3,7 @@ import { Student } from '../types';
 
 export interface CreateAlunoData {
     name: string;
-    grade: string;
-    time: string;
+    gradeId: string;
 }
 
 export interface UpdateAlunoData {

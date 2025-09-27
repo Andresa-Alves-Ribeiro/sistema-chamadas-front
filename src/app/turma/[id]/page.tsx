@@ -16,13 +16,14 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
 import { turmasService } from "../../services/turmasService";
+import { toast } from "react-hot-toast";
 
 export default function TurmaDetailPage() {
     const params = useParams();
     const router = useRouter();
     const turmaId = Number(params.id);
     
-    const { turmaData, loading: turmaLoading, error: turmaError } = useTurmaWithStudents(turmaId);
+    const { turmaData, loading: turmaLoading, error: turmaError, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
     const { createAluno, updateAluno, deleteAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
     
     const turma = turmaData?.grade || null;
@@ -88,11 +89,6 @@ export default function TurmaDetailPage() {
         }
     }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
 
-    const handleRowClick = (row: Record<string, unknown>) => {
-        const aluno = row as Aluno;
-        console.log("Aluno clicado:", aluno);
-    };
-
     const handleBackClick = () => {
         router.push('/');
     };
@@ -110,13 +106,13 @@ export default function TurmaDetailPage() {
             try {
                 await createAluno({
                     name: studentName,
-                    grade: turma.grade,
-                    time: turma.time
+                    gradeId: turma.id.toString()
                 });
+                await fetchTurmaWithStudents();
                 handleCloseModal();
             } catch (error) {
                 console.error("Erro ao criar aluno:", error);
-                // Aqui você pode adicionar uma notificação de erro
+                toast.error("Erro ao criar aluno");
             }
         }
     };
@@ -158,6 +154,7 @@ export default function TurmaDetailPage() {
             console.log(`Aluno ${studentId} remanejado para turma ${newTurmaId} em ${today}`);
         } catch (error) {
             console.error("Erro ao remanejar aluno:", error);
+            toast.error("Erro ao remanejar aluno");
         }
     };
 
@@ -167,6 +164,7 @@ export default function TurmaDetailPage() {
             console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
         } catch (error) {
             console.error("Erro ao atualizar aluno:", error);
+            toast.error("Erro ao atualizar aluno");
         }
     };
 
@@ -177,6 +175,7 @@ export default function TurmaDetailPage() {
             console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
         } catch (error) {
             console.error("Erro ao excluir aluno:", error);
+            toast.error("Erro ao excluir aluno");
         }
     };
 
@@ -187,6 +186,7 @@ export default function TurmaDetailPage() {
             console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
         } catch (error) {
             console.error("Erro ao incluir aluno:", error);
+            toast.error("Erro ao incluir aluno");
         }
     };
 
@@ -270,7 +270,6 @@ export default function TurmaDetailPage() {
                         <Table
                             data={alunos}
                             columns={alunosColumns}
-                            onRowClick={handleRowClick}
                             emptyMessage="Nenhum aluno encontrado nesta turma"
                             className="shadow-none border-0"
                         />
