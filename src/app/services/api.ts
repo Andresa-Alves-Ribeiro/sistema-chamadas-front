@@ -18,7 +18,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     console.log(`🚀 Requisição: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
@@ -30,13 +30,10 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log(`✅ Resposta: ${response.status} ${response.config.url}`);
-    
-    // Mostrar toast de sucesso para operações que modificam dados
     const method = response.config.method?.toUpperCase();
     if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
       const url = response.config.url || '';
-      
+
       if (url.includes('/students')) {
         if (method === 'POST') toast.success('Aluno criado com sucesso!');
         else if (method === 'PUT') toast.success('Aluno atualizado com sucesso!');
@@ -54,19 +51,22 @@ api.interceptors.response.use(
         if (method === 'POST') toast.success('Presença registrada com sucesso!');
         else if (method === 'PUT') toast.success('Presença atualizada com sucesso!');
         else if (method === 'DELETE') toast.success('Presença removida com sucesso!');
+      } else if (url.includes('/occurrences')) {
+        if (method === 'POST') toast.success('Ocorrência registrada com sucesso!');
+        else if (method === 'PUT') toast.success('Ocorrência atualizada com sucesso!');
+        else if (method === 'DELETE') toast.success('Ocorrência removida com sucesso!');
       }
     }
-    
+
     return response;
   },
   (error: AxiosError) => {
     console.error('❌ Erro na resposta:', error.response?.status, error.message);
-    
-    // Mostrar toast de erro baseado no status
+
     const status = error.response?.status;
     const method = error.config?.method?.toUpperCase();
     const url = error.config?.url || '';
-    
+
     if (status === 401) {
       toast.error('Sessão expirada. Redirecionando para login...');
       localStorage.removeItem('authToken');
@@ -99,13 +99,17 @@ api.interceptors.response.use(
         if (method === 'POST') toast.error('Erro ao registrar presença');
         else if (method === 'PUT') toast.error('Erro ao atualizar presença');
         else if (method === 'DELETE') toast.error('Erro ao remover presença');
+      } else if (url.includes('/occurrences')) {
+        if (method === 'POST') toast.error('Erro ao registrar ocorrência');
+        else if (method === 'PUT') toast.error('Erro ao atualizar ocorrência');
+        else if (method === 'DELETE') toast.error('Erro ao remover ocorrência');
       } else {
         toast.error('Erro na operação. Tente novamente');
       }
     } else {
       toast.error('Erro de conexão. Verifique sua internet');
     }
-    
+
     return Promise.reject(error);
   }
 );

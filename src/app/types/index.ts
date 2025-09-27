@@ -52,6 +52,47 @@ export interface FileByStudent {
     files: File[];
 }
 
+export interface OccurrenceFile {
+  id: number;
+  occurrence_id: number;
+  file_name: string;
+  original_name: string;
+  file_path: string;
+  file_url: string;
+  file_size: string;
+  mime_type: string;
+  upload_date: string;
+  created_at: string;
+}
+
+export interface Occurrence {
+  id: number;
+  student_id: number;
+  observation: string;
+  occurrence_date: string;
+  created_at: string;
+  updated_at: string | null;
+  students: {
+    id: number;
+    name: string;
+    grade: string;
+    time: string;
+  };
+  files: OccurrenceFile[];
+}
+
+export interface CreateOccurrenceRequest {
+  studentId: number;
+  observation: string;
+  files?: globalThis.File[];
+}
+
+export interface CreateOccurrenceResponse {
+  success: boolean;
+  message: string;
+  data: Occurrence;
+}
+
 // Alias para compatibilidade
 export type Turmas = Grade;
 export type Aluno = Student;
