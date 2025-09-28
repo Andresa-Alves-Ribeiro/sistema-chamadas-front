@@ -69,7 +69,7 @@ function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
 }
 
 export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId }: PresencaStatusProps) {
-    const [status, setStatus] = useState<PresencaStatusType>("presente");
+    const [status, setStatus] = useState<PresencaStatusType>("invalido");
 
     // Verificar se o aluno está excluído e se a data é posterior à data de exclusão
     const isStudentExcluded = student?.excluded && student?.exclusionDate && dateKey;
@@ -96,6 +96,9 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey, cur
         if (isDayOff || shouldShowInvalid) return;
 
         switch (status) {
+            case "invalido":
+                setStatus("presente");
+                break;
             case "presente":
                 setStatus("falta");
                 break;
@@ -104,9 +107,6 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey, cur
                 break;
             case "falta_justificada":
                 setStatus("invalido");
-                break;
-            case "invalido":
-                setStatus("presente");
                 break;
         }
     };
