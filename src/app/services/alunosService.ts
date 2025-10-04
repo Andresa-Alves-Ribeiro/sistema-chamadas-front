@@ -73,7 +73,6 @@ export const alunosService = {
             const apiData = response.data;
 
             if (apiData.success && Array.isArray(apiData.data)) {
-                console.log('Alunos encontrados:', apiData.data);
                 return apiData.data;
             }
 
@@ -144,9 +143,6 @@ export const alunosService = {
     async transferAluno(id: number, data: TransferAlunoData): Promise<TransferStudentResponse> {
         try {
             const url = `/students/${id}/transfer`;
-            console.log(`🔄 Transferindo aluno ${id} para turma ${data.newGradeId}`);
-            console.log(`📡 URL da requisição: ${url}`);
-            console.log(`📦 Dados enviados:`, data);
             
             const response = await api.put(url, data);
             const apiData = response.data;

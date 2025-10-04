@@ -25,7 +25,6 @@ export const turmasService = {
   async getAllTurmas(): Promise<Grade[]> {
     try {
       const response = await api.get('/grades');
-      console.log('Resposta da API /api/grades:', response.data);
       
       const apiData = response.data;
       if (apiData.success && Array.isArray(apiData.data)) {

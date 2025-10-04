@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { alunosService } from '../services/alunosService';
 import { Aluno, TransferStudentResponse } from '../types';
 
@@ -53,27 +53,6 @@ export const useAlunos = () => {
     }
   };
 
-  const excludeAluno = async (id: number, exclusionDate: string) => {
-    try {
-      const alunoExcluido = await alunosService.excludeAluno(id, exclusionDate);
-      setAlunos(prev => prev.map(a => a.id === id ? alunoExcluido : a));
-      return alunoExcluido;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir aluno');
-      throw err;
-    }
-  };
-
-  const deleteAlunoPermanently = async (id: number) => {
-    try {
-      await alunosService.deleteAluno(id);
-      setAlunos(prev => prev.filter(a => a.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao deletar aluno permanentemente');
-      throw err;
-    }
-  };
-
   const includeAluno = async (id: number, inclusionDate: string) => {
     try {
       const alunoIncluido = await alunosService.includeAluno(id, inclusionDate);
@@ -105,7 +84,7 @@ export const useAlunos = () => {
     fetchAlunos();
   }, []);
 
-  const getAlunosStats = async () => {
+  const getAlunosStats = useCallback(async () => {
     try {
       const stats = await alunosService.getAlunosStats();
       return stats;
@@ -113,7 +92,7 @@ export const useAlunos = () => {
       setError(err instanceof Error ? err.message : 'Erro ao buscar estatísticas dos alunos');
       throw err;
     }
-  };
+  }, []);
 
   return {
     alunos,
@@ -123,8 +102,6 @@ export const useAlunos = () => {
     createAluno,
     updateAluno,
     deleteAluno,
-    deleteAlunoPermanently,
-    excludeAluno,
     includeAluno,
     transferAluno,
     getAlunosStats,
@@ -166,7 +143,6 @@ export const useAlunosByTurma = (gradeId: number) => {
     if (gradeId) {
       fetchAlunosByTurma();
     }
-  }, [grade, time, fetchAlunosByTurma]);
   }, [gradeId]);
 
   return {
@@ -183,7 +159,7 @@ export const useAlunosByGradeId = (gradeId: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAlunosByGradeId = async () => {
+  const fetchAlunosByGradeId = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -195,7 +171,7 @@ export const useAlunosByGradeId = (gradeId: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [gradeId]);
 
   const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
     try {
@@ -213,7 +189,7 @@ export const useAlunosByGradeId = (gradeId: string) => {
     if (gradeId) {
       fetchAlunosByGradeId();
     }
-  }, [gradeId]);
+  }, [gradeId, fetchAlunosByGradeId]);
 
   return {
     alunos,

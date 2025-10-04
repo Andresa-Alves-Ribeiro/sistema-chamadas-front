@@ -145,8 +145,6 @@ export default function HomePage() {
         setSelectedTurma(null);
     };
 
-    console.log(totalAlunos);
-
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="px-6 py-8 pb-28">

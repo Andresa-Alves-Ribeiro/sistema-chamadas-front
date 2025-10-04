@@ -12,7 +12,6 @@ import OccurrenceModal from "../../components/OccurrenceModal";
 import TransferInfoPopup from "../../components/TransferInfoPopup";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno } from "../../types";
-import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
@@ -23,13 +22,14 @@ export default function TurmaDetailPage() {
     const params = useParams();
     const router = useRouter();
     const turmaId = Number(params.id);
-    
+
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, deleteAlunoPermanently, includeAluno, transferAluno } = useAlunos();
+    const { createAluno, updateAluno, includeAluno, transferAluno } = useAlunos();
     const { alunos, loading: alunosLoading, fetchAlunosByGradeId } = useAlunosByGradeId(turmaId.toString());
-    
+
     const turma = turmaData?.grade || null;
-    const loading = turmaLoading || alunosLoading;
+    const [initialLoading, setInitialLoading] = useState(true);
+    const loading = initialLoading && (turmaLoading || alunosLoading);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -100,13 +100,13 @@ export default function TurmaDetailPage() {
         setStatusMap(prev => {
             const newMap = new Map(prev);
             const currentDateStatus = newMap.get(dateKey);
-            
+
             const statusCounts = new Map<"presente" | "falta" | "falta_justificada" | "invalido", number>();
             alunos.forEach(aluno => {
                 const currentStatus = currentDateStatus?.get(aluno.id) || "invalido";
                 statusCounts.set(currentStatus, (statusCounts.get(currentStatus) || 0) + 1);
             });
-            
+
             let mostCommonStatus: "presente" | "falta" | "falta_justificada" | "invalido" = "invalido";
             let maxCount = 0;
             statusCounts.forEach((count, status) => {
@@ -115,7 +115,7 @@ export default function TurmaDetailPage() {
                     mostCommonStatus = status as "presente" | "falta" | "falta_justificada" | "invalido";
                 }
             });
-            
+
             let nextStatus: "presente" | "falta" | "falta_justificada" | "invalido";
             if (mostCommonStatus === "invalido") {
                 nextStatus = "presente";
@@ -128,12 +128,12 @@ export default function TurmaDetailPage() {
             } else {
                 nextStatus = "presente";
             }
-            
+
             const newDateStatusMap = new Map<number, "presente" | "falta" | "falta_justificada" | "invalido">();
             alunos.forEach(aluno => {
                 newDateStatusMap.set(aluno.id, nextStatus);
             });
-            
+
             newMap.set(dateKey, newDateStatusMap);
             return newMap;
         });
@@ -145,6 +145,12 @@ export default function TurmaDetailPage() {
         }
     }, [turma]);
 
+    useEffect(() => {
+        if (!turmaLoading && !alunosLoading) {
+            setInitialLoading(false);
+        }
+    }, [turmaLoading, alunosLoading]);
+
     const handleStudentNameClick = useCallback((student: Aluno) => {
         if (student.transferred) {
             setSelectedStudent(student);
@@ -155,14 +161,14 @@ export default function TurmaDetailPage() {
     useEffect(() => {
         if (turma) {
             const columns = getAlunosColumns(
-                turma.grade, 
-                daysOff, 
-                toggleDayOff, 
-                handleReorderStudent, 
-                handleOccurrencesStudent, 
-                handleEditStudent, 
-                handleDeleteStudent, 
-                handleIncludeStudent, 
+                turma.grade,
+                daysOff,
+                toggleDayOff,
+                handleReorderStudent,
+                handleOccurrencesStudent,
+                handleEditStudent,
+                handleDeleteStudent,
+                handleIncludeStudent,
                 turma.id,
                 statusMap,
                 handleStatusChange,
@@ -232,20 +238,12 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
-    const handleConfirmReorder = async (studentId: number, newTurmaId: string) => {
+    const handleConfirmReorder = async () => {
         try {
-            const transferResponse = await transferAluno(studentId, {
-                newGradeId: newTurmaId
-            });
-            
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
-            
-            console.log(`Aluno ${studentId} remanejado com sucesso:`, transferResponse.message);
-            console.log('Aluno original atualizado:', transferResponse.data.originalStudent);
-            console.log('Novo aluno criado:', transferResponse.data.newStudent);
-        } catch (error) {
-            console.error("Erro ao remanejar aluno:", error);
+            toast.success("Aluno remanejado com sucesso");
+        } catch {
             toast.error("Erro ao remanejar aluno");
         }
     };
@@ -255,21 +253,18 @@ export default function TurmaDetailPage() {
             await updateAluno(studentId, { name: newName });
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
-            console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
-        } catch (error) {
-            console.error("Erro ao atualizar aluno:", error);
+            toast.success("Aluno atualizado com sucesso");
+        } catch {
             toast.error("Erro ao atualizar aluno");
         }
     };
 
-    const handleConfirmDelete = async (studentId: number) => {
+    const handleConfirmDelete = async () => {
         try {
-            await deleteAlunoPermanently(studentId);
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
-            console.log(`Aluno ${studentId} deletado permanentemente`);
-        } catch (error) {
-            console.error("Erro ao deletar aluno:", error);
+            toast.success("Aluno deletado com sucesso");
+        } catch {
             toast.error("Erro ao deletar aluno");
         }
     };
@@ -279,9 +274,8 @@ export default function TurmaDetailPage() {
             const today = new Date().toISOString().split('T')[0];
             await includeAluno(student.id, today);
             await fetchAlunosByGradeId();
-            console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
-        } catch (error) {
-            console.error("Erro ao incluir aluno:", error);
+            toast.success("Aluno incluído com sucesso");
+        } catch {
             toast.error("Erro ao incluir aluno");
         }
     };
@@ -323,19 +317,19 @@ export default function TurmaDetailPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             <div className="w-full px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-                    <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-3 sm:px-6 py-3 sm:py-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h1 className="text-lg sm:text-2xl font-bold text-white">
-                                        Turma {turma.grade} - {turma.time}
-                                    </h1>
-                                </div>
-                                <div className="text-right flex items-center gap-2">
-                                    <div className="text-xl sm:text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-sm sm:text-lg">alunos</span></div>
-                                </div>
+                <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-3 sm:px-6 py-3 sm:py-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-lg sm:text-2xl font-bold text-white">
+                                    Turma {turma.grade} - {turma.time}
+                                </h1>
+                            </div>
+                            <div className="text-right flex items-center gap-2">
+                                <div className="text-xl sm:text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-sm sm:text-lg">alunos</span></div>
                             </div>
                         </div>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-b-xl shadow-sm border border-slate-200 overflow-hidden">
