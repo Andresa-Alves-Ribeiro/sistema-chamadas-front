@@ -166,6 +166,7 @@ export const useAlunosByTurma = (gradeId: number) => {
     if (gradeId) {
       fetchAlunosByTurma();
     }
+  }, [grade, time, fetchAlunosByTurma]);
   }, [gradeId]);
 
   return {

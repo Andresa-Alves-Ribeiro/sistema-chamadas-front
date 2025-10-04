@@ -63,7 +63,7 @@ export const useOccurrences = (studentId: number) => {
     if (studentId) {
       fetchObservations();
     }
-  }, [studentId]);
+  }, [studentId, fetchObservations]);
 
   return {
     observations,

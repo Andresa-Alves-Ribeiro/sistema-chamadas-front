@@ -121,7 +121,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     if (alunoId) {
       fetchArquivosByAluno();
     }
-  }, [alunoId]);
+  }, [alunoId, fetchArquivosByAluno]);
 
   return {
     arquivos,

@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Aluno, Arquivo } from '../../../types';
-import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio, Sparkles } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio } from 'lucide-react';
 import '../../arquivos.css';
 import { useAlunos } from '../../../hooks/useAlunos';
 import { useArquivosByAluno } from '../../../hooks/useArquivos';
@@ -14,7 +12,7 @@ export default function AlunoArquivosPage() {
     const alunoId = parseInt(params.id as string);
     
     const { alunos } = useAlunos();
-    const { arquivos, loading, error } = useArquivosByAluno(alunoId);
+    const { arquivos } = useArquivosByAluno(alunoId);
     
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
@@ -124,7 +122,7 @@ export default function AlunoArquivosPage() {
                             <div>
                                 <p className="text-sm text-slate-600">Último Upload</p>
                                 <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                    {arquivos.length > 0 ? formatarData(arquivos[arquivos.length - 1].dataUpload) : 'N/A'}
+                                    {arquivos.length > 0 ? formatarData(arquivos[arquivos.length - 1].uploadDate) : 'N/A'}
                                 </p>
                             </div>
                         </div>
@@ -138,7 +136,7 @@ export default function AlunoArquivosPage() {
                             <div>
                                 <p className="text-sm text-slate-600">Tipos de Arquivo</p>
                                 <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    {new Set(arquivos.map(a => a.formato)).size}
+                                    {new Set(arquivos.map(a => a.format)).size}
                                 </p>
                             </div>
                         </div>
@@ -166,21 +164,21 @@ export default function AlunoArquivosPage() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <div className="p-2 bg-blue-100 rounded-lg">
-                                                {getFileIcon(arquivo.formato)}
+                                                {getFileIcon(arquivo.format)}
                                             </div>
                                             <div>
                                                 <h3 className="font-medium text-slate-900">
-                                                    {arquivo.nome}
+                                                    {arquivo.name}
                                                 </h3>
                                                 <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
                                                     <span className="flex items-center gap-1 bg-blue-100 px-3 py-1 rounded-full text-blue-700">
                                                         <File className="size-4" />
-                                                        {arquivo.formato}
+                                                        {arquivo.format}
                                                     </span>
-                                                    <span className="bg-slate-100 px-3 py-1 rounded-full">{arquivo.tamanho}</span>
+                                                    <span className="bg-slate-100 px-3 py-1 rounded-full">{arquivo.size}</span>
                                                     <span className="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full text-green-700">
                                                         <Calendar className="size-4" />
-                                                        {formatarData(arquivo.dataUpload)}
+                                                        {formatarData(arquivo.uploadDate)}
                                                     </span>
                                                 </div>
                                             </div>

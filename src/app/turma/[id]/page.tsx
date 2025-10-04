@@ -12,6 +12,7 @@ import OccurrenceModal from "../../components/OccurrenceModal";
 import TransferInfoPopup from "../../components/TransferInfoPopup";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno } from "../../types";
+import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
