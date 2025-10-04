@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { turmasService } from '../services/turmasService';
 import { Turmas, GradeWithStudents, Grade } from '../types';
 
@@ -107,7 +107,7 @@ export const useTurmaWithStudents = (id: string | number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTurmaWithStudents = async () => {
+  const fetchTurmaWithStudents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -119,7 +119,7 @@ export const useTurmaWithStudents = (id: string | number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) {

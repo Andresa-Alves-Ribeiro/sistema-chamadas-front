@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { alunosService } from '../services/alunosService';
-import { Aluno } from '../types';
+import { Aluno, TransferStudentResponse } from '../types';
 
 export const useAlunos = () => {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
@@ -21,7 +21,7 @@ export const useAlunos = () => {
     }
   };
 
-  const createAluno = async (alunoData: { name: string; grade: string; time: string }) => {
+  const createAluno = async (alunoData: { name: string; gradeId: string }) => {
     try {
       const novoAluno = await alunosService.createAluno(alunoData);
       setAlunos(prev => [...prev, novoAluno]);
@@ -34,7 +34,7 @@ export const useAlunos = () => {
 
   const updateAluno = async (id: number, alunoData: { name?: string; grade?: string; time?: string }) => {
     try {
-      const alunoAtualizado = await alunosService.updateAluno(id, alunoData);
+      const alunoAtualizado = await alunosService.editAluno(id, alunoData);
       setAlunos(prev => prev.map(a => a.id === id ? alunoAtualizado : a));
       return alunoAtualizado;
     } catch (err) {
@@ -53,17 +53,6 @@ export const useAlunos = () => {
     }
   };
 
-  const excludeAluno = async (id: number, exclusionDate: string) => {
-    try {
-      const alunoExcluido = await alunosService.excludeAluno(id, exclusionDate);
-      setAlunos(prev => prev.map(a => a.id === id ? alunoExcluido : a));
-      return alunoExcluido;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir aluno');
-      throw err;
-    }
-  };
-
   const includeAluno = async (id: number, inclusionDate: string) => {
     try {
       const alunoIncluido = await alunosService.includeAluno(id, inclusionDate);
@@ -75,11 +64,16 @@ export const useAlunos = () => {
     }
   };
 
-  const transferAluno = async (id: number, transferData: { newGrade: string; newTime: string; transferDate: string }) => {
+  const transferAluno = async (id: number, transferData: { newGradeId: string }): Promise<TransferStudentResponse> => {
     try {
-      const alunoTransferido = await alunosService.transferAluno(id, transferData);
-      setAlunos(prev => prev.map(a => a.id === id ? alunoTransferido : a));
-      return alunoTransferido;
+      const transferResponse = await alunosService.transferAluno(id, transferData);
+      
+      // Atualizar o aluno original na lista atual
+      setAlunos(prev => prev.map(a => 
+        a.id === id ? transferResponse.data.originalStudent : a
+      ));
+      
+      return transferResponse;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao transferir aluno');
       throw err;
@@ -90,7 +84,7 @@ export const useAlunos = () => {
     fetchAlunos();
   }, []);
 
-  const getAlunosStats = async () => {
+  const getAlunosStats = useCallback(async () => {
     try {
       const stats = await alunosService.getAlunosStats();
       return stats;
@@ -98,7 +92,7 @@ export const useAlunos = () => {
       setError(err instanceof Error ? err.message : 'Erro ao buscar estatísticas dos alunos');
       throw err;
     }
-  };
+  }, []);
 
   return {
     alunos,
@@ -108,14 +102,13 @@ export const useAlunos = () => {
     createAluno,
     updateAluno,
     deleteAluno,
-    excludeAluno,
     includeAluno,
     transferAluno,
     getAlunosStats,
   };
 };
 
-export const useAlunosByTurma = (grade: string, time: string) => {
+export const useAlunosByTurma = (gradeId: number) => {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +117,7 @@ export const useAlunosByTurma = (grade: string, time: string) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await alunosService.getAlunosByTurma(grade, time);
+      const data = await alunosService.getAlunosByTurma(gradeId);
       setAlunos(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar alunos da turma');
@@ -147,16 +140,62 @@ export const useAlunosByTurma = (grade: string, time: string) => {
   };
 
   useEffect(() => {
-    if (grade && time) {
+    if (gradeId) {
       fetchAlunosByTurma();
     }
-  }, [grade, time, fetchAlunosByTurma]);
+  }, [gradeId]);
 
   return {
     alunos,
     loading,
     error,
     fetchAlunosByTurma,
+    reorderAlunos,
+  };
+};
+
+export const useAlunosByGradeId = (gradeId: string) => {
+  const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAlunosByGradeId = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await alunosService.getAlunosByGradeId(gradeId);
+      setAlunos(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar alunos da turma');
+      console.error('Erro ao buscar alunos da turma:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [gradeId]);
+
+  const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
+    try {
+      await alunosService.reorderAlunos(turmaId, alunoIds);
+      // Atualizar a ordem local
+      const alunosReordenados = alunoIds.map(id => alunos.find(a => a.id === id)).filter(Boolean) as Aluno[];
+      setAlunos(alunosReordenados);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao reordenar alunos');
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    if (gradeId) {
+      fetchAlunosByGradeId();
+    }
+  }, [gradeId, fetchAlunosByGradeId]);
+
+  return {
+    alunos,
+    loading,
+    error,
+    fetchAlunosByGradeId,
     reorderAlunos,
   };
 };

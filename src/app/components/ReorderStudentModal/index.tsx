@@ -9,7 +9,7 @@ import { dadosExemploTurmas } from '../../data/mockData';
 interface ReorderStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (studentId: number, newTurmaId: number) => void;
+  onConfirm: (studentId: number, newTurmaId: string) => void;
   student: Aluno | null;
 }
 
@@ -19,13 +19,11 @@ export default function ReorderStudentModal({
   onConfirm, 
   student 
 }: ReorderStudentModalProps) {
-  const [selectedTurmaId, setSelectedTurmaId] = useState<number | ''>('');
+  const [selectedTurmaId, setSelectedTurmaId] = useState<string>('');
   const [availableTurmas, setAvailableTurmas] = useState<Turmas[]>([]);
 
   useEffect(() => {
-    if (isOpen && student) {
-      // Filtrar turmas disponíveis (excluir a turma atual do aluno)
-      
+    if (isOpen && student) {  
       const filteredTurmas = dadosExemploTurmas.filter(t => 
         !(t.grade === student.grade && t.time === student.time)
       );
@@ -49,7 +47,7 @@ export default function ReorderStudentModal({
 
   if (!isOpen || !student) return null;
 
-  const selectedTurma = dadosExemploTurmas.find(t => t.id === selectedTurmaId);
+  const selectedTurma = dadosExemploTurmas.find(t => t.id === Number(selectedTurmaId));
 
   const modalContent = (
     <div 
@@ -84,7 +82,7 @@ export default function ReorderStudentModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Remanejar Aluno</h2>
-              <p className="text-sm text-slate-600">Transferir aluno para outra turma</p>
+              <p className="text-sm text-slate-600">Transferir aluno para outra turma (mantém na turma atual)</p>
             </div>
           </div>
           <button
@@ -120,9 +118,15 @@ export default function ReorderStudentModal({
             <p className="text-lg font-medium text-slate-900 mb-2">
               Para qual turma você deseja transferir este aluno?
             </p>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 mb-3">
               Selecione uma das turmas disponíveis abaixo:
             </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                <strong>Importante:</strong> O aluno será mantido nesta turma e também será adicionado à nova turma selecionada. 
+                Em ambas as turmas será exibida a informação de remanejamento.
+              </p>
+            </div>
           </div>
 
           {/* Turma Selection */}
@@ -132,7 +136,7 @@ export default function ReorderStudentModal({
             </label>
             <select
               value={selectedTurmaId}
-              onChange={(e) => setSelectedTurmaId(Number(e.target.value))}
+              onChange={(e) => setSelectedTurmaId(e.target.value)}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="">Selecione uma turma...</option>

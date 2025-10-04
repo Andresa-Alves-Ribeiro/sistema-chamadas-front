@@ -9,25 +9,27 @@ import EditStudentModal from "../../components/EditStudentModal";
 import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
 import OccurrenceModal from "../../components/OccurrenceModal";
+import TransferInfoPopup from "../../components/TransferInfoPopup";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
-import { useAlunos } from "../../hooks/useAlunos";
-import { turmasService } from "../../services/turmasService";
+import { useAlunos, useAlunosByGradeId } from "../../hooks/useAlunos";
+import { toast } from "react-hot-toast";
 
 export default function TurmaDetailPage() {
     const params = useParams();
     const router = useRouter();
     const turmaId = Number(params.id);
-    
-    const { turmaData, loading: turmaLoading } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
-    
+
+    const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
+    const { createAluno, updateAluno, includeAluno, transferAluno } = useAlunos();
+    const { alunos, loading: alunosLoading, fetchAlunosByGradeId } = useAlunosByGradeId(turmaId.toString());
+
     const turma = turmaData?.grade || null;
-    const alunos = turmaData?.students || [];
-    const loading = turmaLoading;
+    const [initialLoading, setInitialLoading] = useState(true);
+    const loading = initialLoading && (turmaLoading || alunosLoading);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -35,8 +37,10 @@ export default function TurmaDetailPage() {
     const [isIncludeModalOpen, setIsIncludeModalOpen] = useState(false);
     const [isOccurrenceModalOpen, setIsOccurrenceModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
+    const [isTransferInfoPopupOpen, setIsTransferInfoPopupOpen] = useState(false);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
+    const [statusMap, setStatusMap] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
 
     const toggleDayOff = useCallback((dateKey: string) => {
         setDaysOff(prev => {
@@ -75,6 +79,66 @@ export default function TurmaDetailPage() {
         setIsOccurrenceModalOpen(true);
     }, []);
 
+    const handleStatusChange = useCallback((studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
+        setStatusMap(prev => {
+            const newMap = new Map(prev);
+            if (!newMap.has(dateKey)) {
+                newMap.set(dateKey, new Map());
+            }
+            const dateStatusMap = newMap.get(dateKey)!;
+            dateStatusMap.set(studentId, status);
+            return newMap;
+        });
+    }, []);
+
+    const handleBulkStatusChange = useCallback((dateKey: string) => {
+        if (daysOff.has(dateKey)) {
+            toggleDayOff(dateKey);
+            return;
+        }
+
+        setStatusMap(prev => {
+            const newMap = new Map(prev);
+            const currentDateStatus = newMap.get(dateKey);
+
+            const statusCounts = new Map<"presente" | "falta" | "falta_justificada" | "invalido", number>();
+            alunos.forEach(aluno => {
+                const currentStatus = currentDateStatus?.get(aluno.id) || "invalido";
+                statusCounts.set(currentStatus, (statusCounts.get(currentStatus) || 0) + 1);
+            });
+
+            let mostCommonStatus: "presente" | "falta" | "falta_justificada" | "invalido" = "invalido";
+            let maxCount = 0;
+            statusCounts.forEach((count, status) => {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCommonStatus = status as "presente" | "falta" | "falta_justificada" | "invalido";
+                }
+            });
+
+            let nextStatus: "presente" | "falta" | "falta_justificada" | "invalido";
+            if (mostCommonStatus === "invalido") {
+                nextStatus = "presente";
+            } else if (mostCommonStatus === "presente") {
+                nextStatus = "falta";
+            } else if (mostCommonStatus === "falta") {
+                nextStatus = "falta_justificada";
+            } else if (mostCommonStatus === "falta_justificada") {
+                nextStatus = "invalido";
+            } else {
+                nextStatus = "presente";
+            }
+
+            const newDateStatusMap = new Map<number, "presente" | "falta" | "falta_justificada" | "invalido">();
+            alunos.forEach(aluno => {
+                newDateStatusMap.set(aluno.id, nextStatus);
+            });
+
+            newMap.set(dateKey, newDateStatusMap);
+            return newMap;
+        });
+    }, [alunos, daysOff, toggleDayOff]);
+
     useEffect(() => {
         if (turma) {
             document.title = `Turma ${turma.grade} - ${turma.time} - Sistema de Chamada`;
@@ -82,16 +146,38 @@ export default function TurmaDetailPage() {
     }, [turma]);
 
     useEffect(() => {
+        if (!turmaLoading && !alunosLoading) {
+            setInitialLoading(false);
+        }
+    }, [turmaLoading, alunosLoading]);
+
+    const handleStudentNameClick = useCallback((student: Aluno) => {
+        if (student.transferred) {
+            setSelectedStudent(student);
+            setIsTransferInfoPopupOpen(true);
+        }
+    }, []);
+
+    useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
+            const columns = getAlunosColumns(
+                turma.grade,
+                daysOff,
+                toggleDayOff,
+                handleReorderStudent,
+                handleOccurrencesStudent,
+                handleEditStudent,
+                handleDeleteStudent,
+                handleIncludeStudent,
+                turma.id,
+                statusMap,
+                handleStatusChange,
+                handleBulkStatusChange,
+                handleStudentNameClick
+            );
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
-
-    const handleRowClick = (row: Record<string, unknown>) => {
-        const aluno = row as Aluno;
-        console.log("Aluno clicado:", aluno);
-    };
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick]);
 
     const handleBackClick = () => {
         router.push('/');
@@ -110,13 +196,14 @@ export default function TurmaDetailPage() {
             try {
                 await createAluno({
                     name: studentName,
-                    grade: turma.grade,
-                    time: turma.time
+                    gradeId: turma.id.toString()
                 });
+                await fetchTurmaWithStudents();
+                await fetchAlunosByGradeId();
                 handleCloseModal();
             } catch (error) {
                 console.error("Erro ao criar aluno:", error);
-                // Aqui você pode adicionar uma notificação de erro
+                toast.error("Erro ao criar aluno");
             }
         }
     };
@@ -146,40 +233,39 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
-    const handleConfirmReorder = async (studentId: number, newTurmaId: number) => {
+    const handleCloseTransferInfoPopup = () => {
+        setIsTransferInfoPopupOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleConfirmReorder = async () => {
         try {
-            const newTurmaData = await turmasService.getGradeWithStudentsById(newTurmaId);
-            const newTurma = newTurmaData.grade;
-            const today = new Date().toISOString().split('T')[0];
-            
-            await transferAluno(studentId, {
-                newGrade: newTurma.grade,
-                newTime: newTurma.time,
-                transferDate: today
-            });
-            
-            console.log(`Aluno ${studentId} remanejado para turma ${newTurma.grade} - ${newTurma.time} em ${today}`);
-        } catch (error) {
-            console.error("Erro ao remanejar aluno:", error);
+            await fetchTurmaWithStudents();
+            await fetchAlunosByGradeId();
+            toast.success("Aluno remanejado com sucesso");
+        } catch {
+            toast.error("Erro ao remanejar aluno");
         }
     };
 
     const handleSaveStudentEdit = async (studentId: number, newName: string) => {
         try {
             await updateAluno(studentId, { name: newName });
-            console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
-        } catch (error) {
-            console.error("Erro ao atualizar aluno:", error);
+            await fetchTurmaWithStudents();
+            await fetchAlunosByGradeId();
+            toast.success("Aluno atualizado com sucesso");
+        } catch {
+            toast.error("Erro ao atualizar aluno");
         }
     };
 
-    const handleConfirmDelete = async (studentId: number) => {
+    const handleConfirmDelete = async () => {
         try {
-            const today = new Date().toISOString().split('T')[0];
-            await excludeAluno(studentId, today);
-            console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
-        } catch (error) {
-            console.error("Erro ao excluir aluno:", error);
+            await fetchTurmaWithStudents();
+            await fetchAlunosByGradeId();
+            toast.success("Aluno deletado com sucesso");
+        } catch {
+            toast.error("Erro ao deletar aluno");
         }
     };
 
@@ -187,9 +273,10 @@ export default function TurmaDetailPage() {
         try {
             const today = new Date().toISOString().split('T')[0];
             await includeAluno(student.id, today);
-            console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
-        } catch (error) {
-            console.error("Erro ao incluir aluno:", error);
+            await fetchAlunosByGradeId();
+            toast.success("Aluno incluído com sucesso");
+        } catch {
+            toast.error("Erro ao incluir aluno");
         }
     };
 
@@ -230,19 +317,19 @@ export default function TurmaDetailPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             <div className="w-full px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-                    <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-3 sm:px-6 py-3 sm:py-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h1 className="text-lg sm:text-2xl font-bold text-white">
-                                        Turma {turma.grade} - {turma.time}
-                                    </h1>
-                                </div>
-                                <div className="text-right flex items-center gap-2">
-                                    <div className="text-xl sm:text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-sm sm:text-lg">alunos</span></div>
-                                </div>
+                <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-3 sm:px-6 py-3 sm:py-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-lg sm:text-2xl font-bold text-white">
+                                    Turma {turma.grade} - {turma.time}
+                                </h1>
+                            </div>
+                            <div className="text-right flex items-center gap-2">
+                                <div className="text-xl sm:text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-sm sm:text-lg">alunos</span></div>
                             </div>
                         </div>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-b-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -273,7 +360,6 @@ export default function TurmaDetailPage() {
                         <Table
                             data={alunos}
                             columns={alunosColumns}
-                            onRowClick={handleRowClick}
                             emptyMessage="Nenhum aluno encontrado nesta turma"
                             className="shadow-none border-0"
                         />
@@ -322,6 +408,12 @@ export default function TurmaDetailPage() {
                     student={selectedStudent}
                 />
             )}
+
+            <TransferInfoPopup
+                isOpen={isTransferInfoPopupOpen}
+                onClose={handleCloseTransferInfoPopup}
+                student={selectedStudent}
+            />
         </div>
     );
 }
