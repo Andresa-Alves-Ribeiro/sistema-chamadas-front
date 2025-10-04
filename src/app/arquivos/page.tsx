@@ -30,7 +30,7 @@ export default function ArquivosPage() {
 
     const getAlunosPorTurma = (turma: Turmas) => {
         return alunos.filter(aluno => 
-            aluno.gradeId === turma.id
+            aluno.gradeId === turma.id.toString()
         );
     };
 
