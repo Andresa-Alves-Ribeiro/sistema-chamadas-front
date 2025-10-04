@@ -10,6 +10,8 @@ interface PresencaStatusProps {
     student?: Aluno;
     dateKey?: string;
     currentTurmaId?: number;
+    externalStatus?: PresencaStatusType;
+    onStatusChange?: (studentId: number, dateKey: string, status: PresencaStatusType) => void;
 }
 
 // Função para verificar se a data é posterior à data de exclusão
@@ -68,8 +70,11 @@ function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
     return cellDate < transfer;
 }
 
-export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId }: PresencaStatusProps) {
-    const [status, setStatus] = useState<PresencaStatusType>("invalido");
+export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId, externalStatus, onStatusChange }: PresencaStatusProps) {
+    const [internalStatus, setInternalStatus] = useState<PresencaStatusType>("invalido");
+    
+    // Usar status externo se fornecido, senão usar o interno
+    const status = externalStatus !== undefined ? externalStatus : internalStatus;
 
     // Verificar se o aluno está excluído e se a data é posterior à data de exclusão
     const isStudentExcluded = student?.excluded && student?.exclusionDate && dateKey;
@@ -83,11 +88,13 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey, cur
     const isStudentTransferred = student?.transferred && student?.transferDate && dateKey && currentTurmaId;
     
     // Se está na turma original: datas posteriores ao remanejamento são inválidas
-    const isInOriginalTurma = isStudentTransferred && student.originalTurmaId === currentTurmaId;
+    const isInOriginalTurma = isStudentTransferred && student.originalGradeId && 
+        String(student.originalGradeId).trim() === String(currentTurmaId).trim();
     const shouldShowInvalidTransferredOriginal = isInOriginalTurma && dateKey && student.transferDate && isDateAfterTransfer(dateKey, student.transferDate);
     
     // Se está na turma nova: datas anteriores ao remanejamento são inválidas
-    const isInNewTurma = isStudentTransferred && student.originalTurmaId !== currentTurmaId;
+    const isInNewTurma = isStudentTransferred && student.originalGradeId && 
+        String(student.originalGradeId).trim() !== String(currentTurmaId).trim();
     const shouldShowInvalidTransferredNew = isInNewTurma && dateKey && student.transferDate && isDateBeforeTransfer(dateKey, student.transferDate);
     
     const shouldShowInvalid = shouldShowInvalidExcluded || shouldShowInvalidNew || shouldShowInvalidTransferredOriginal || shouldShowInvalidTransferredNew;
@@ -95,19 +102,28 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey, cur
     const handleClick = () => {
         if (isDayOff || shouldShowInvalid) return;
 
+        let newStatus: PresencaStatusType;
         switch (status) {
             case "invalido":
-                setStatus("presente");
+                newStatus = "presente";
                 break;
             case "presente":
-                setStatus("falta");
+                newStatus = "falta";
                 break;
             case "falta":
-                setStatus("falta_justificada");
+                newStatus = "falta_justificada";
                 break;
             case "falta_justificada":
-                setStatus("invalido");
+                newStatus = "invalido";
                 break;
+            default:
+                newStatus = "invalido";
+        }
+
+        if (onStatusChange && student && dateKey) {
+            onStatusChange(student.id, dateKey, newStatus);
+        } else {
+            setInternalStatus(newStatus);
         }
     };
 

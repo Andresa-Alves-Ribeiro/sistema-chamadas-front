@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { alunosService } from '../services/alunosService';
-import { Aluno } from '../types';
+import { Aluno, TransferStudentResponse } from '../types';
 
 export const useAlunos = () => {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
@@ -85,11 +85,16 @@ export const useAlunos = () => {
     }
   };
 
-  const transferAluno = async (id: number, transferData: { newGradeId: string }) => {
+  const transferAluno = async (id: number, transferData: { newGradeId: string }): Promise<TransferStudentResponse> => {
     try {
-      const alunoTransferido = await alunosService.transferAluno(id, transferData);
-      setAlunos(prev => prev.map(a => a.id === id ? alunoTransferido : a));
-      return alunoTransferido;
+      const transferResponse = await alunosService.transferAluno(id, transferData);
+      
+      // Atualizar o aluno original na lista atual
+      setAlunos(prev => prev.map(a => 
+        a.id === id ? transferResponse.data.originalStudent : a
+      ));
+      
+      return transferResponse;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao transferir aluno');
       throw err;
@@ -168,6 +173,52 @@ export const useAlunosByTurma = (gradeId: number) => {
     loading,
     error,
     fetchAlunosByTurma,
+    reorderAlunos,
+  };
+};
+
+export const useAlunosByGradeId = (gradeId: string) => {
+  const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAlunosByGradeId = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await alunosService.getAlunosByGradeId(gradeId);
+      setAlunos(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar alunos da turma');
+      console.error('Erro ao buscar alunos da turma:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
+    try {
+      await alunosService.reorderAlunos(turmaId, alunoIds);
+      // Atualizar a ordem local
+      const alunosReordenados = alunoIds.map(id => alunos.find(a => a.id === id)).filter(Boolean) as Aluno[];
+      setAlunos(alunosReordenados);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao reordenar alunos');
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    if (gradeId) {
+      fetchAlunosByGradeId();
+    }
+  }, [gradeId]);
+
+  return {
+    alunos,
+    loading,
+    error,
+    fetchAlunosByGradeId,
     reorderAlunos,
   };
 };

@@ -12,6 +12,42 @@ import { useState, useEffect } from "react";
 import { useTurmas } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
 
+// Mapeamento de dias da semana para ordenação
+const dayOrder: Record<string, number> = {
+    "Segunda-feira": 1,
+    "Terça-feira": 2,
+    "Quarta-feira": 3,
+    "Quinta-feira": 4,
+    "Sexta-feira": 5,
+    "Sábado": 6,
+    "Domingo": 7
+};
+
+// Função para converter horário em minutos para comparação
+const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+};
+
+// Função para ordenar turmas por dia e horário
+const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
+    return [...turmas].sort((a, b) => {
+        // Primeiro ordena por dia da semana
+        const dayA = dayOrder[a.grade] || 999;
+        const dayB = dayOrder[b.grade] || 999;
+        
+        if (dayA !== dayB) {
+            return dayA - dayB;
+        }
+        
+        // Se for o mesmo dia, ordena por horário
+        const timeA = timeToMinutes(a.time);
+        const timeB = timeToMinutes(b.time);
+        
+        return timeA - timeB;
+    });
+};
+
 export default function HomePage() {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,7 +63,8 @@ export default function HomePage() {
     const [loadingStats, setLoadingStats] = useState(true);
 
     const turmasArray = Array.isArray(turmas) ? turmas : [];
-    const filteredTurmas = turmasArray;
+    const sortedTurmas = sortTurmasByDayAndTime(turmasArray);
+    const filteredTurmas = sortedTurmas;
     const totalTurmas = turmasArray.length;
 
     useEffect(() => {

@@ -24,7 +24,7 @@ export const turmasService = {
 
   async getAllTurmas(): Promise<Grade[]> {
     try {
-      const response = await api.get('/api/grades');
+      const response = await api.get('/grades');
       console.log('Resposta da API /api/grades:', response.data);
       
       const apiData = response.data;
@@ -41,7 +41,7 @@ export const turmasService = {
   
   async getGradeWithStudentsById(id: string | number): Promise<GradeWithStudents> {
     try {
-      const response = await api.get(`/api/grades/${id}`);
+      const response = await api.get(`/grades/${id}`);
       const apiData = response.data;
       
       if (apiData.success) {
@@ -62,7 +62,7 @@ export const turmasService = {
         time: this.formatTime(data.time)
       };
       
-      const response = await api.post('/api/grades', formattedData);
+      const response = await api.post('/grades', formattedData);
       const apiData = response.data;
       
       if (apiData.success && apiData.data) {
@@ -83,7 +83,7 @@ export const turmasService = {
         formattedData.time = this.formatTime(formattedData.time);
       }
       
-      const response = await api.put(`/api/grades/${id}`, formattedData);
+      const response = await api.put(`/grades/${id}`, formattedData);
       const apiData = response.data;
       
       if (apiData.success && apiData.data) {
@@ -99,7 +99,7 @@ export const turmasService = {
 
   async deleteTurma(id: string | number): Promise<void> {
     try {
-      await api.delete(`/api/grades/${id}`);
+      await api.delete(`/grades/${id}`);
     } catch (error) {
       console.error(`Erro ao deletar turma ${id}:`, error);
       throw error;

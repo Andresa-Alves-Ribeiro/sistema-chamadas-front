@@ -23,12 +23,7 @@ export default function ReorderStudentModal({
   const [availableTurmas, setAvailableTurmas] = useState<Turmas[]>([]);
 
   useEffect(() => {
-    if (isOpen && student) {
-      // Filtrar turmas disponíveis (excluir a turma atual do aluno)
-      const currentTurma = dadosExemploTurmas.find(t => 
-        t.grade === student.grade && t.time === student.time
-      );
-      
+    if (isOpen && student) {  
       const filteredTurmas = dadosExemploTurmas.filter(t => 
         !(t.grade === student.grade && t.time === student.time)
       );
@@ -52,7 +47,7 @@ export default function ReorderStudentModal({
 
   if (!isOpen || !student) return null;
 
-  const selectedTurma = dadosExemploTurmas.find(t => t.id === selectedTurmaId);
+  const selectedTurma = dadosExemploTurmas.find(t => t.id === Number(selectedTurmaId));
 
   const modalContent = (
     <div 
@@ -87,7 +82,7 @@ export default function ReorderStudentModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Remanejar Aluno</h2>
-              <p className="text-sm text-slate-600">Transferir aluno para outra turma</p>
+              <p className="text-sm text-slate-600">Transferir aluno para outra turma (mantém na turma atual)</p>
             </div>
           </div>
           <button
@@ -123,9 +118,15 @@ export default function ReorderStudentModal({
             <p className="text-lg font-medium text-slate-900 mb-2">
               Para qual turma você deseja transferir este aluno?
             </p>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 mb-3">
               Selecione uma das turmas disponíveis abaixo:
             </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                <strong>Importante:</strong> O aluno será mantido nesta turma e também será adicionado à nova turma selecionada. 
+                Em ambas as turmas será exibida a informação de remanejamento.
+              </p>
+            </div>
           </div>
 
           {/* Turma Selection */}

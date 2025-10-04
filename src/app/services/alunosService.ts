@@ -1,5 +1,5 @@
 import api from './api';
-import { Student } from '../types';
+import { Student, TransferStudentResponse } from '../types';
 
 export interface CreateAlunoData {
     name: string;
@@ -19,7 +19,7 @@ export interface TransferAlunoData {
 export const alunosService = {
     async getAllAlunos(): Promise<Student[]> {
         try {
-            const response = await api.get('/api/students');
+            const response = await api.get('/students');
             const apiData = response.data;
 
             if (apiData.success && Array.isArray(apiData.data)) {
@@ -35,7 +35,7 @@ export const alunosService = {
 
     async getAlunoById(id: number): Promise<Student> {
         try {
-            const response = await api.get(`/api/students/${id}`);
+            const response = await api.get(`/students/${id}`);
             const apiData = response.data;
 
             if (apiData.success && apiData.data) {
@@ -51,7 +51,7 @@ export const alunosService = {
 
     async getAlunosByTurma(gradeId: number): Promise<Student[]> {
         try {
-            const response = await api.get(`/api/students/turma`, {
+            const response = await api.get(`/students/turma`, {
                 params: { gradeId }
             });
             const apiData = response.data;
@@ -67,9 +67,26 @@ export const alunosService = {
         }
     },
 
+    async getAlunosByGradeId(gradeId: string): Promise<Student[]> {
+        try {
+            const response = await api.get(`/students/by-grade/${gradeId}`);
+            const apiData = response.data;
+
+            if (apiData.success && Array.isArray(apiData.data)) {
+                console.log('Alunos encontrados:', apiData.data);
+                return apiData.data;
+            }
+
+            return Array.isArray(response.data) ? response.data : [];
+        } catch (error) {
+            console.error(`Erro ao buscar alunos da turma ${gradeId}:`, error);
+            return [];
+        }
+    },
+
     async createAluno(data: CreateAlunoData): Promise<Student> {
         try {
-            const response = await api.post('/api/students', data);
+            const response = await api.post('/students', data);
             const apiData = response.data;
 
             if (apiData.success && apiData.data) {
@@ -85,7 +102,7 @@ export const alunosService = {
 
     async editAluno(id: number, data: UpdateAlunoData): Promise<Student> {
         try {
-            const response = await api.put(`/api/students/${id}`, data);
+            const response = await api.put(`/students/${id}`, data);
             const apiData = response.data;
 
             if (apiData.success && apiData.data) {
@@ -101,7 +118,7 @@ export const alunosService = {
 
     async deleteAluno(id: number): Promise<void> {
         try {
-            await api.delete(`/api/students/${id}`);
+            await api.delete(`/students/${id}`);
         } catch (error) {
             console.error(`Erro ao deletar aluno ${id}:`, error);
             throw error;
@@ -110,7 +127,7 @@ export const alunosService = {
 
     async includeAluno(id: number, inclusionDate: string): Promise<Student> {
         try {
-            const response = await api.patch(`/api/students/${id}/include`, { inclusionDate });
+            const response = await api.patch(`/students/${id}/include`, { inclusionDate });
             const apiData = response.data;
 
             if (apiData.success && apiData.data) {
@@ -124,13 +141,18 @@ export const alunosService = {
         }
     },
 
-    async transferAluno(id: number, data: TransferAlunoData): Promise<Student> {
+    async transferAluno(id: number, data: TransferAlunoData): Promise<TransferStudentResponse> {
         try {
-            const response = await api.put(`/api/students/${id}/transfer`, data);
+            const url = `/students/${id}/transfer`;
+            console.log(`🔄 Transferindo aluno ${id} para turma ${data.newGradeId}`);
+            console.log(`📡 URL da requisição: ${url}`);
+            console.log(`📦 Dados enviados:`, data);
+            
+            const response = await api.put(url, data);
             const apiData = response.data;
 
             if (apiData.success && apiData.data) {
-                return apiData.data;
+                return apiData;
             }
 
             return response.data;
@@ -142,7 +164,7 @@ export const alunosService = {
 
     async reorderAlunos(turmaId: number, studentIds: number[]): Promise<void> {
         try {
-            await api.patch(`/api/turmas/${turmaId}/reorder`, { studentIds });
+            await api.patch(`/turmas/${turmaId}/reorder`, { studentIds });
         } catch (error) {
             console.error(`Erro ao reordenar alunos da turma ${turmaId}:`, error);
             throw error;
@@ -151,7 +173,7 @@ export const alunosService = {
 
     async getAlunosStats(): Promise<{ totalAlunos: number }> {
         try {
-            const response = await api.get('/api/students/count');
+            const response = await api.get('/students/count');
             const apiData = response.data;
             
             if (apiData.success && apiData.totalStudents) {

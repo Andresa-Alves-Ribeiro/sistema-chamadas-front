@@ -23,13 +23,13 @@ export const occurrenceService = {
           formData.append('files', file);
         });
 
-        response = await api.post('/api/occurrences', formData, {
+        response = await api.post('/occurrences', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
       } else {
-        response = await api.post('/api/occurrences', {
+        response = await api.post('/occurrences', {
           studentId: data.studentId,
           observation: data.observation
         });
@@ -44,7 +44,7 @@ export const occurrenceService = {
 
   async createObservation(data: Omit<OccurrenceObservation, 'id' | 'createdAt' | 'updatedAt'>): Promise<OccurrenceObservation> {
     try {
-      const response = await api.post('/api/occurrences/observations', data);
+      const response = await api.post('/occurrences/observations', data);
       const apiData = response.data;
 
       if (apiData.success && apiData.data) {
@@ -60,7 +60,7 @@ export const occurrenceService = {
 
   async getObservationsByStudent(studentId: number): Promise<OccurrenceObservation[]> {
     try {
-      const response = await api.get(`/api/occurrences/observations/student/${studentId}`);
+      const response = await api.get(`/occurrences/observations/student/${studentId}`);
       const apiData = response.data;
 
       if (apiData.success && Array.isArray(apiData.data)) {
@@ -76,7 +76,7 @@ export const occurrenceService = {
 
   async updateObservation(id: number, data: Partial<OccurrenceObservation>): Promise<OccurrenceObservation> {
     try {
-      const response = await api.put(`/api/occurrences/observations/${id}`, data);
+      const response = await api.put(`/occurrences/observations/${id}`, data);
       const apiData = response.data;
 
       if (apiData.success && apiData.data) {
@@ -92,7 +92,7 @@ export const occurrenceService = {
 
   async deleteObservation(id: number): Promise<void> {
     try {
-      await api.delete(`/api/occurrences/observations/${id}`);
+      await api.delete(`/occurrences/observations/${id}`);
     } catch (error) {
       console.error(`Erro ao deletar observação ${id}:`, error);
       throw error;

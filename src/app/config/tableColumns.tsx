@@ -69,7 +69,11 @@ export function getAlunosColumns(
     onEditStudent?: (student: Aluno) => void,
     onDeleteStudent?: (student: Aluno) => void,
     onIncludeStudent?: (student: Aluno) => void,
-    currentTurmaId?: number
+    currentTurmaId?: number,
+    statusMap?: Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>,
+    onStatusChange?: (studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => void,
+    onBulkStatusChange?: (dateKey: string) => void,
+    onStudentNameClick?: (student: Aluno) => void
 ): Column<Aluno>[] {
     const startDate = new Date(2025, 7, 1); // Agosto = mês 7 (0-indexado)
     const endDate = new Date(2025, 11, 15); // Dezembro = mês 11 (0-indexado)
@@ -93,9 +97,25 @@ export function getAlunosColumns(
             width: "90px",
             align: "center" as const,
             isHeaderClickable: true,
-            onHeaderClick: () => onToggleDayOff(dateKey),
+            onHeaderClick: () => {
+                if (onBulkStatusChange) {
+                    onBulkStatusChange(dateKey);
+                } else {
+                    onToggleDayOff(dateKey);
+                }
+            },
             render: (value: unknown, row: Aluno) => {
-                return <PresencaStatus isDayOff={isDayOff} student={row} dateKey={dateKey} currentTurmaId={currentTurmaId} />;
+                const studentStatus = statusMap?.get(dateKey)?.get(row.id);
+                return (
+                    <PresencaStatus 
+                        isDayOff={isDayOff} 
+                        student={row} 
+                        dateKey={dateKey} 
+                        currentTurmaId={currentTurmaId}
+                        externalStatus={studentStatus}
+                        onStatusChange={onStatusChange}
+                    />
+                );
             }
         };
     });
@@ -108,26 +128,41 @@ export function getAlunosColumns(
             sortable: true,
             render: (value: unknown, row: Aluno) => {
                 const name = value as string;
+                const isClickable = row.transferred && onStudentNameClick;
+                
+                const isInOriginalTurma = row.transferred && row.originalGradeId && currentTurmaId && 
+                    String(row.originalGradeId).trim() === String(currentTurmaId).trim();
+                
+                
                 return (
-                    <div className="flex items-center space-x-2">
-                        <span className={row.excluded ? "text-slate-400 line-through" : ""}>
-                            {name}
-                        </span>
-                        {row.excluded && (
-                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
-                                desistência
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-2">
+                            <span 
+                                className={`
+                                    ${row.excluded ? "text-slate-400 line-through" : ""}
+                                    ${isInOriginalTurma ? "text-slate-400 line-through" : ""}
+                                    ${isClickable ? "cursor-pointer hover:text-blue-600 hover:underline transition-colors" : ""}
+                                `}
+                                onClick={isClickable ? () => onStudentNameClick!(row) : undefined}
+                            >
+                                {name}
                             </span>
-                        )}
-                        {row.inclusionDate && !row.excluded && !row.transferred && (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                                novo
-                            </span>
-                        )}
-                        {row.transferred && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                                remanejado
-                            </span>
-                        )}
+                            {row.excluded && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
+                                    Desistência
+                                </span>
+                            )}
+                            {row.inclusionDate && !row.excluded && !row.transferred && (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                                    Novo
+                                </span>
+                            )}
+                            {row.transferred && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                                    Remanejado
+                                </span>
+                            )}
+                        </div>
                     </div>
                 );
             }

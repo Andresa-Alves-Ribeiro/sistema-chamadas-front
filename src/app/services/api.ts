@@ -19,7 +19,13 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // Log detalhado da URL completa
+    const fullUrl = `${config.baseURL}${config.url}`;
     console.log(`🚀 Requisição: ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`📍 Base URL: ${config.baseURL}`);
+    console.log(`🔗 URL Completa: ${fullUrl}`);
+    console.log(`🌐 URL Final (com host): ${window.location.origin}${fullUrl}`);
+    
     return config;
   },
   (error) => {

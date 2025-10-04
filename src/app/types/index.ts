@@ -27,6 +27,32 @@ export interface Student {
     transferred?: boolean;
     transferDate?: string;
     originalGradeId?: string;
+    old_grade?: string;
+    newGradeId?: string;
+    new_grade_info?: {
+        id: string;
+        grade: string;
+        time: string;
+    };
+    old_grade_info?: {
+        id: string;
+        grade: string;
+        time: string;
+    };
+    transfer_info?: {
+        is_transferred: boolean;
+        transfer_date: string;
+        original_grade: {
+            id: string;
+            grade: string;
+            time: string;
+        };
+        current_grade: {
+            id: string;
+            grade: string;
+            time: string;
+        };
+    };
     [key: string]: unknown;
 }
 
@@ -91,6 +117,15 @@ export interface CreateOccurrenceResponse {
   success: boolean;
   message: string;
   data: Occurrence;
+}
+
+export interface TransferStudentResponse {
+  success: boolean;
+  message: string;
+  data: {
+    originalStudent: Student;
+    newStudent: Student;
+  };
 }
 
 // Alias para compatibilidade
