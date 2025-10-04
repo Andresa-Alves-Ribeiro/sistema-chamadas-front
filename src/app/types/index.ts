@@ -1,27 +1,57 @@
-export interface Turmas {
+export interface Grade {
     id: number;
     grade: string;
     time: string;
     studentsQuantity: number;
+    created_at?: string;
+    updated_at?: string;
     [key: string]: unknown;
 }
 
-export interface Aluno {
+export interface GradeWithStudents {
+    success: boolean;
+    grade: Grade;
+    students: Student[];
+    count: number;
+}
+
+export interface Student {
     id: number;
     name: string;
     grade: string;
     time: string;
     excluded?: boolean;
-    exclusionDate?: string; // Data da exclusão no formato YYYY-MM-DD
-    inclusionDate?: string; // Data da inclusão no formato YYYY-MM-DD
-    transferred?: boolean; // Se o aluno foi remanejado
-    transferDate?: string; // Data do remanejamento no formato YYYY-MM-DD
-    originalTurmaId?: number; // ID da turma original (para alunos remanejados)
+    exclusionDate?: string;
+    inclusionDate?: string;
+    transferred?: boolean;
+    transferDate?: string;
+    originalGradeId?: number;
     [key: string]: unknown;
 }
 
-export interface TurmaInfo {
+export interface GradeInfo {
     name: string;
     time: string;
     studentsQuantity: number;
 }
+
+export interface File {
+    id: number;
+    name: string;
+    format: string;    
+    size: string;
+    uploadDate: string;
+    studentId: number;
+}
+
+export interface FileByStudent {
+    studentId: number;
+    studentName: string;
+    quantityFiles: number;
+    files: File[];
+}
+
+// Alias para compatibilidade
+export type Turmas = Grade;
+export type Aluno = Student;
+export type Arquivo = File;

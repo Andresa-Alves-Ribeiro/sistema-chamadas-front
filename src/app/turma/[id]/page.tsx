@@ -8,23 +8,32 @@ import ReorderStudentModal from "../../components/ReorderStudentModal";
 import EditStudentModal from "../../components/EditStudentModal";
 import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
+import OccurrenceModal from "../../components/OccurrenceModal";
 import { getAlunosColumns } from "../../config/tableColumns";
-import { dadosExemploAlunos, dadosExemploTurmas } from "../../data/mockData";
-import { Aluno, Turmas } from "../../types";
+import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
+import { useTurmaWithStudents } from "../../hooks/useTurmas";
+import { useAlunos } from "../../hooks/useAlunos";
+import { turmasService } from "../../services/turmasService";
 
 export default function TurmaDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const [turma, setTurma] = useState<Turmas | null>(null);
-    const [alunos, setAlunos] = useState<Aluno[]>([]);
-    const [loading, setLoading] = useState(true);
+    const turmaId = Number(params.id);
+    
+    const { turmaData, loading: turmaLoading } = useTurmaWithStudents(turmaId);
+    const { createAluno, updateAluno, excludeAluno, includeAluno, transferAluno } = useAlunos();
+    
+    const turma = turmaData?.grade || null;
+    const alunos = turmaData?.students || [];
+    const loading = turmaLoading;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isIncludeModalOpen, setIsIncludeModalOpen] = useState(false);
+    const [isOccurrenceModalOpen, setIsOccurrenceModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
@@ -61,37 +70,23 @@ export default function TurmaDetailPage() {
         setIsIncludeModalOpen(true);
     }, []);
 
-    useEffect(() => {
-        const turmaId = params.id;
-
-        if (turmaId) {
-            const turmaEncontrada = dadosExemploTurmas.find(t => t.id === Number(turmaId));
-
-            if (turmaEncontrada) {
-                setTurma(turmaEncontrada);
-
-                const alunosFiltrados = dadosExemploAlunos.filter(aluno =>
-                    aluno.grade === turmaEncontrada.grade &&
-                    aluno.time === turmaEncontrada.time
-                );
-
-                setAlunos(alunosFiltrados);
-                
-                document.title = `Turma ${turmaEncontrada.grade} - ${turmaEncontrada.time} - Sistema de Chamada`;
-            } else {
-                router.push('/');
-            }
-        }
-
-        setLoading(false);
-    }, [params.id, router]);
+    const handleOccurrencesStudent = useCallback((student: Aluno) => {
+        setSelectedStudent(student);
+        setIsOccurrenceModalOpen(true);
+    }, []);
 
     useEffect(() => {
         if (turma) {
-            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
+            document.title = `Turma ${turma.grade} - ${turma.time} - Sistema de Chamada`;
+        }
+    }, [turma]);
+
+    useEffect(() => {
+        if (turma) {
+            const columns = getAlunosColumns(turma.grade, daysOff, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, turma.id);
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent]);
 
     const handleRowClick = (row: Record<string, unknown>) => {
         const aluno = row as Aluno;
@@ -110,18 +105,19 @@ export default function TurmaDetailPage() {
         setIsModalOpen(false);
     };
 
-    const handleSaveStudent = (studentName: string) => {
+    const handleSaveStudent = async (studentName: string) => {
         if (turma) {
-            const maxId = Math.max(...alunos.map(aluno => aluno.id), 0);
-            const newStudent: Aluno = {
-                id: maxId + 1,
-                name: studentName,
-                grade: turma.grade,
-                time: turma.time
-            };
-
-            setAlunos(prevAlunos => [...prevAlunos, newStudent]);
-            handleCloseModal();
+            try {
+                await createAluno({
+                    name: studentName,
+                    grade: turma.grade,
+                    time: turma.time
+                });
+                handleCloseModal();
+            } catch (error) {
+                console.error("Erro ao criar aluno:", error);
+                // Aqui você pode adicionar uma notificação de erro
+            }
         }
     };
 
@@ -145,89 +141,56 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
-    const handleConfirmReorder = (studentId: number, newTurmaId: number) => {
-        const newTurma = dadosExemploTurmas.find(t => t.id === newTurmaId);
-        if (newTurma) {
-            // Obter a data atual no formato YYYY-MM-DD
+    const handleCloseOccurrenceModal = () => {
+        setIsOccurrenceModalOpen(false);
+        setSelectedStudent(null);
+    };
+
+    const handleConfirmReorder = async (studentId: number, newTurmaId: number) => {
+        try {
+            const newTurmaData = await turmasService.getGradeWithStudentsById(newTurmaId);
+            const newTurma = newTurmaData.grade;
             const today = new Date().toISOString().split('T')[0];
-            const currentTurmaId = turma?.id;
             
-            // Atualizar o aluno na lista local com informações de remanejamento
-            setAlunos(prevAlunos => 
-                prevAlunos.map(aluno => 
-                    aluno.id === studentId 
-                        ? { 
-                            ...aluno, 
-                            grade: newTurma.grade, 
-                            time: newTurma.time,
-                            transferred: true,
-                            transferDate: today,
-                            originalTurmaId: currentTurmaId
-                          }
-                        : aluno
-                )
-            );
+            await transferAluno(studentId, {
+                newGrade: newTurma.grade,
+                newTime: newTurma.time,
+                transferDate: today
+            });
             
-            // Aqui você pode adicionar lógica adicional como:
-            // - Atualizar no banco de dados
-            // - Mostrar notificação de sucesso
-            // - Atualizar contadores de turmas
             console.log(`Aluno ${studentId} remanejado para turma ${newTurma.grade} - ${newTurma.time} em ${today}`);
+        } catch (error) {
+            console.error("Erro ao remanejar aluno:", error);
         }
     };
 
-    const handleSaveStudentEdit = (studentId: number, newName: string) => {
-        // Atualizar o nome do aluno na lista local
-        setAlunos(prevAlunos => 
-            prevAlunos.map(aluno => 
-                aluno.id === studentId 
-                    ? { ...aluno, name: newName }
-                    : aluno
-            )
-        );
-        
-        // Aqui você pode adicionar lógica adicional como:
-        // - Atualizar no banco de dados
-        // - Mostrar notificação de sucesso
-        console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
+    const handleSaveStudentEdit = async (studentId: number, newName: string) => {
+        try {
+            await updateAluno(studentId, { name: newName });
+            console.log(`Nome do aluno ${studentId} alterado para: ${newName}`);
+        } catch (error) {
+            console.error("Erro ao atualizar aluno:", error);
+        }
     };
 
-    const handleConfirmDelete = (studentId: number) => {
-        // Obter a data atual no formato YYYY-MM-DD
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Marcar o aluno como excluído com a data da exclusão
-        setAlunos(prevAlunos => 
-            prevAlunos.map(aluno => 
-                aluno.id === studentId 
-                    ? { ...aluno, excluded: true, exclusionDate: today }
-                    : aluno
-            )
-        );
-        
-        // Aqui você pode adicionar lógica adicional como:
-        // - Atualizar no banco de dados
-        // - Mostrar notificação de sucesso
-        console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
+    const handleConfirmDelete = async (studentId: number) => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            await excludeAluno(studentId, today);
+            console.log(`Aluno ${studentId} excluído com sucesso em ${today}`);
+        } catch (error) {
+            console.error("Erro ao excluir aluno:", error);
+        }
     };
 
-    const handleConfirmInclude = (student: Aluno) => {
-        // Obter a data atual no formato YYYY-MM-DD
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Marcar o aluno como incluído com a data da inclusão
-        setAlunos(prevAlunos => 
-            prevAlunos.map(aluno => 
-                aluno.id === student.id 
-                    ? { ...aluno, excluded: false, exclusionDate: undefined, inclusionDate: today }
-                    : aluno
-            )
-        );
-        
-        // Aqui você pode adicionar lógica adicional como:
-        // - Atualizar no banco de dados
-        // - Mostrar notificação de sucesso
-        console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
+    const handleConfirmInclude = async (student: Aluno) => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            await includeAluno(student.id, today);
+            console.log(`Aluno ${student.id} incluído com sucesso em ${today}`);
+        } catch (error) {
+            console.error("Erro ao incluir aluno:", error);
+        }
     };
 
     if (loading) {
@@ -351,6 +314,14 @@ export default function TurmaDetailPage() {
                 onConfirm={handleConfirmInclude}
                 student={selectedStudent}
             />
+
+            {selectedStudent && (
+                <OccurrenceModal
+                    isOpen={isOccurrenceModalOpen}
+                    onClose={handleCloseOccurrenceModal}
+                    student={selectedStudent}
+                />
+            )}
         </div>
     );
 }

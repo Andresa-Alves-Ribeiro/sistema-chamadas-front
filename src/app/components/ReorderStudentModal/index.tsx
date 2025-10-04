@@ -25,9 +25,6 @@ export default function ReorderStudentModal({
   useEffect(() => {
     if (isOpen && student) {
       // Filtrar turmas disponíveis (excluir a turma atual do aluno)
-      const currentTurma = dadosExemploTurmas.find(t => 
-        t.grade === student.grade && t.time === student.time
-      );
       
       const filteredTurmas = dadosExemploTurmas.filter(t => 
         !(t.grade === student.grade && t.time === student.time)
