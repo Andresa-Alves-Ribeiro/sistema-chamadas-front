@@ -8,6 +8,21 @@ import { useTurmas } from '../hooks/useTurmas';
 import { useAlunos } from '../hooks/useAlunos';
 import { useArquivos } from '../hooks/useArquivos';
 
+const dayOrder: Record<string, number> = {
+    "Segunda-feira": 1,
+    "Terça-feira": 2,
+    "Quarta-feira": 3,
+    "Quinta-feira": 4,
+    "Sexta-feira": 5,
+    "Sábado": 6,
+    "Domingo": 7
+};
+
+const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+};
+
 export default function ArquivosPage() {
     const router = useRouter();
     
@@ -22,6 +37,14 @@ export default function ArquivosPage() {
         acc[turma.grade].push(turma);
         return acc;
     }, {} as Record<string, Turmas[]>);
+
+    Object.keys(turmasPorDia).forEach(dia => {
+        turmasPorDia[dia].sort((a, b) => {
+            const timeA = timeToMinutes(a.time);
+            const timeB = timeToMinutes(b.time);
+            return timeA - timeB;
+        });
+    });
     
 
     const handleAlunoClick = (alunoId: number) => {
@@ -47,7 +70,7 @@ export default function ArquivosPage() {
                 <div className="flex justify-between items-center mb-8">
                     <div className="animate-fade-in-up">
                         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-lg animate-pulse-slow">
+                            <div className="p-2 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-xl shadow-lg">
                                 <FileText className="text-white" size={28} />
                             </div>
                             Arquivos dos Alunos
@@ -59,14 +82,20 @@ export default function ArquivosPage() {
                 </div>
 
                 <div className="space-y-8">
-                    {Object.entries(turmasPorDia).map(([dia, turmas], index) => (
+                    {Object.entries(turmasPorDia)
+                        .sort(([diaA], [diaB]) => {
+                            const orderA = dayOrder[diaA] || 999;
+                            const orderB = dayOrder[diaB] || 999;
+                            return orderA - orderB;
+                        })
+                        .map(([dia, turmas], index) => (
                         <div key={dia} className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
                             <div className="gradient-bg p-6 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
                                 <div className="relative">
                                     <h2 className="text-xl font-semibold text-white flex items-center gap-3">
-                                        <div className="p-2 bg-blue-500/30 rounded-lg backdrop-blur-sm">
-                                            <Calendar className="text-blue-200" size={20} />
+                                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm border border-white/30">
+                                            <Calendar className="text-blue-100" size={20} />
                                         </div>
                                         {dia}
                                     </h2>
@@ -79,7 +108,7 @@ export default function ArquivosPage() {
                                         const totalArquivos = arquivosDaTurma.length;
                                         
                                         return (
-                                            <div key={turma.id} className="bg-gradient-to-br from-slate-50 to-blue-50/50 rounded-xl p-5 border border-slate-200 hover-lift card-glow stagger-animation" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}>
+                                            <div key={turma.id} className="bg-gradient-to-br from-white to-blue-50/50 rounded-xl p-5 border border-blue-200/50 hover-lift card-glow stagger-animation" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}>
                                                 <div className="flex items-center justify-between mb-5">
                                                     <div>
                                                         <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-1">
@@ -94,7 +123,7 @@ export default function ArquivosPage() {
                                                     </div>
                                                     <div className="text-right flex items-center gap-2">
                                                         <p className="text-sm text-slate-600">Total de arquivos</p>
-                                                        <p className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                        <p className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                                                             {totalArquivos}
                                                         </p>
                                                     </div>
@@ -122,7 +151,7 @@ export default function ArquivosPage() {
                                                                 </div>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 px-3 py-1 rounded-full shadow-md">
+                                                                <p className="text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 px-3 py-1 rounded-full shadow-md">
                                                                     1
                                                                 </p>
                                                             </div>
