@@ -8,6 +8,21 @@ import { useTurmas } from '../hooks/useTurmas';
 import { useAlunos } from '../hooks/useAlunos';
 import { useArquivos } from '../hooks/useArquivos';
 
+const dayOrder: Record<string, number> = {
+    "Segunda-feira": 1,
+    "Terça-feira": 2,
+    "Quarta-feira": 3,
+    "Quinta-feira": 4,
+    "Sexta-feira": 5,
+    "Sábado": 6,
+    "Domingo": 7
+};
+
+const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+};
+
 export default function ArquivosPage() {
     const router = useRouter();
     
@@ -22,6 +37,14 @@ export default function ArquivosPage() {
         acc[turma.grade].push(turma);
         return acc;
     }, {} as Record<string, Turmas[]>);
+
+    Object.keys(turmasPorDia).forEach(dia => {
+        turmasPorDia[dia].sort((a, b) => {
+            const timeA = timeToMinutes(a.time);
+            const timeB = timeToMinutes(b.time);
+            return timeA - timeB;
+        });
+    });
     
 
     const handleAlunoClick = (alunoId: number) => {
@@ -59,7 +82,13 @@ export default function ArquivosPage() {
                 </div>
 
                 <div className="space-y-8">
-                    {Object.entries(turmasPorDia).map(([dia, turmas], index) => (
+                    {Object.entries(turmasPorDia)
+                        .sort(([diaA], [diaB]) => {
+                            const orderA = dayOrder[diaA] || 999;
+                            const orderB = dayOrder[diaB] || 999;
+                            return orderA - orderB;
+                        })
+                        .map(([dia, turmas], index) => (
                         <div key={dia} className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
                             <div className="gradient-bg p-6 relative overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
