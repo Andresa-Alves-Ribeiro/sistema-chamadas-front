@@ -89,7 +89,7 @@ export const attendanceService = {
     }
   },
 
-  // 7. Atualizar chamada
+  // 7. Atualizar chamada por ID
   async updateAttendance(id: number, data: { status?: string; observation?: string }): Promise<AttendanceData> {
     try {
       const response = await api.put<AttendanceResponse>(`/attendance/${id}`, data);
@@ -100,7 +100,26 @@ export const attendanceService = {
     }
   },
 
-  // 8. Deletar chamada
+  // 8. Atualizar status de chamada por aluno e data (mais eficiente)
+  async updateAttendanceStatus(
+    studentId: number, 
+    attendanceDate: string, 
+    data: { status?: string; observation?: string }
+  ): Promise<AttendanceData> {
+    try {
+      const response = await api.put<AttendanceResponse>('/attendance/status', {
+        student_id: studentId,
+        attendance_date: attendanceDate,
+        ...data
+      });
+      return response.data.data as AttendanceData;
+    } catch (error) {
+      console.error(`Erro ao atualizar status da chamada do aluno ${studentId} na data ${attendanceDate}:`, error);
+      throw error;
+    }
+  },
+
+  // 9. Deletar chamada
   async deleteAttendance(id: number): Promise<void> {
     try {
       await api.delete(`/attendance/${id}`);
@@ -110,7 +129,7 @@ export const attendanceService = {
     }
   },
 
-  // 9. Buscar chamadas por aluno
+  // 10. Buscar chamadas por aluno
   async getAttendanceByStudent(
     studentId: number, 
     params?: { start_date?: string; end_date?: string; page?: number; limit?: number }
@@ -128,7 +147,7 @@ export const attendanceService = {
     }
   },
 
-  // 10. Buscar chamadas por data
+  // 11. Buscar chamadas por data
   async getAttendanceByDate(date: string, gradeId?: string): Promise<AttendanceData[]> {
     try {
       const url = gradeId ? `/attendance/date/${date}/grade/${gradeId}` : `/attendance/date/${date}`;
@@ -140,7 +159,7 @@ export const attendanceService = {
     }
   },
 
-  // 11. Buscar chamadas de uma turma por período (MÉTODO PRINCIPAL PARA O FRONTEND)
+  // 12. Buscar chamadas de uma turma por período (MÉTODO PRINCIPAL PARA O FRONTEND)
   async getAttendanceByGradePeriod(
     gradeId: string,
     startDate: string,
@@ -174,7 +193,7 @@ export const attendanceService = {
     }
   },
 
-  // 12. Método auxiliar para converter status da API para o formato do frontend
+  // 13. Método auxiliar para converter status da API para o formato do frontend
   convertApiStatusToFrontend(apiStatus: string): "presente" | "falta" | "falta_justificada" | "invalido" {
     switch (apiStatus) {
       case 'presente':
@@ -190,7 +209,7 @@ export const attendanceService = {
     }
   },
 
-  // 13. Método auxiliar para converter status do frontend para o formato da API
+  // 14. Método auxiliar para converter status do frontend para o formato da API
   convertFrontendStatusToApi(frontendStatus: "presente" | "falta" | "falta_justificada" | "invalido"): string {
     return frontendStatus;
   }

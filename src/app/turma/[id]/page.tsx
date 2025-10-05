@@ -138,6 +138,7 @@ export default function TurmaDetailPage() {
                     throw new Error('Erro ao converter data para formato da API');
                 }
                 
+                // Usar o endpoint de criação que faz upsert automaticamente
                 await attendanceService.createAttendance({
                     student_id: studentId,
                     grade_id: turma.id.toString(),
