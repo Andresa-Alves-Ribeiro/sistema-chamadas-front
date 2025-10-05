@@ -70,7 +70,6 @@ export default function IncludeStudentModal({
         maxHeight: '90vh',
         overflowY: 'auto'
       }}>
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -90,9 +89,7 @@ export default function IncludeStudentModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Student Info */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h3 className="font-semibold text-green-900 mb-3">Aluno que será incluído:</h3>
             <div className="flex items-center space-x-3">
@@ -113,7 +110,6 @@ export default function IncludeStudentModal({
             </div>
           </div>
 
-          {/* Confirmation Message */}
           <div className="text-center">
             <p className="text-slate-700 font-medium text-lg">
               Deseja incluir este aluno de volta na turma?
@@ -124,7 +120,6 @@ export default function IncludeStudentModal({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-200 bg-slate-50">
           <button
             onClick={handleClose}

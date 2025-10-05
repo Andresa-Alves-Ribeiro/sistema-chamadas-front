@@ -73,7 +73,6 @@ export default function EditStudentModal({
         maxHeight: '90vh',
         overflowY: 'auto'
       }}>
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -92,9 +91,7 @@ export default function EditStudentModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Student Info */}
           <div className="bg-slate-50 rounded-lg p-4">
             <h3 className="font-semibold text-slate-900 mb-2">Aluno selecionado:</h3>
             <div className="flex items-center space-x-3">
@@ -112,7 +109,6 @@ export default function EditStudentModal({
             </div>
           </div>
 
-          {/* Form */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -160,7 +156,6 @@ export default function EditStudentModal({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-200 bg-slate-50">
           <button
             onClick={handleClose}
