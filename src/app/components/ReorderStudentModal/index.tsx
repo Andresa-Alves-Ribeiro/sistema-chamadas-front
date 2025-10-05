@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ArrowDownUp } from 'lucide-react';
 import { Aluno, Turmas } from '../../types';
-import { dadosExemploTurmas } from '../../data/mockData';
+import { useTurmas } from '../../hooks/useTurmas';
 
 interface ReorderStudentModalProps {
   isOpen: boolean;
@@ -21,17 +21,18 @@ export default function ReorderStudentModal({
 }: ReorderStudentModalProps) {
   const [selectedTurmaId, setSelectedTurmaId] = useState<string>('');
   const [availableTurmas, setAvailableTurmas] = useState<Turmas[]>([]);
+  const { turmas } = useTurmas();
 
   useEffect(() => {
     if (isOpen && student) {  
-      const filteredTurmas = dadosExemploTurmas.filter(t => 
+      const filteredTurmas = turmas.filter(t => 
         !(t.grade === student.grade && t.time === student.time)
       );
       
       setAvailableTurmas(filteredTurmas);
       setSelectedTurmaId('');
     }
-  }, [isOpen, student]);
+  }, [isOpen, student, turmas]);
 
   const handleConfirm = () => {
     if (selectedTurmaId && student) {
@@ -47,7 +48,7 @@ export default function ReorderStudentModal({
 
   if (!isOpen || !student) return null;
 
-  const selectedTurma = dadosExemploTurmas.find(t => t.id === Number(selectedTurmaId));
+  const selectedTurma = turmas.find(t => t.id === Number(selectedTurmaId));
 
   const modalContent = (
     <div 
@@ -74,7 +75,6 @@ export default function ReorderStudentModal({
         maxHeight: '90vh',
         overflowY: 'auto'
       }}>
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -93,9 +93,7 @@ export default function ReorderStudentModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Student Info */}
           <div className="bg-slate-50 rounded-lg p-4">
             <h3 className="font-semibold text-slate-900 mb-2">Aluno selecionado:</h3>
             <div className="flex items-center space-x-3">
@@ -113,7 +111,6 @@ export default function ReorderStudentModal({
             </div>
           </div>
 
-          {/* Question */}
           <div className="text-center">
             <p className="text-lg font-medium text-slate-900 mb-2">
               Para qual turma você deseja transferir este aluno?
@@ -129,7 +126,6 @@ export default function ReorderStudentModal({
             </div>
           </div>
 
-          {/* Turma Selection */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-3">
               Nova turma:
@@ -148,7 +144,6 @@ export default function ReorderStudentModal({
             </select>
           </div>
 
-          {/* Selected Turma Preview */}
           {selectedTurma && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-semibold text-blue-900 mb-2">Nova turma:</h4>
@@ -171,7 +166,6 @@ export default function ReorderStudentModal({
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-200 bg-slate-50">
           <button
             onClick={handleClose}
