@@ -8,7 +8,7 @@ export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <header className="w-full bg-slate-700 shadow-lg border-b border-slate-600">
+        <header className="w-full bg-gradient-to-r from-yellow-700/90 to-amber-600/90 shadow-lg border-b border-slate-600">
             <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center space-x-6 lg:space-x-8">
