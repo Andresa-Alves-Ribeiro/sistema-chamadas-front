@@ -1,7 +1,12 @@
 // Configurações de ambiente
 export const config = {
-  // URL da API do backend - usando proxy do Next.js
-  API_URL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  // URL da API do backend
+  // Desenvolvimento: usa proxy do Next.js (/api)
+  // Produção: URL completa do backend
+  API_URL: process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? '' : '/api'),
+  
+  // URL do backend para referência
+  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000'),
   
   // Modo de desenvolvimento - usar dados mockados se backend não estiver disponível
   USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || false,
