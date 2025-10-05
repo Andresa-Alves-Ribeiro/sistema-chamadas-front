@@ -70,7 +70,7 @@ export default function ArquivosPage() {
                 <div className="flex justify-between items-center mb-8">
                     <div className="animate-fade-in-up">
                         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl shadow-lg">
+                            <div className="p-2 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-xl shadow-lg">
                                 <FileText className="text-white" size={28} />
                             </div>
                             Arquivos dos Alunos
@@ -91,11 +91,11 @@ export default function ArquivosPage() {
                         .map(([dia, turmas], index) => (
                         <div key={dia} className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
                             <div className="gradient-bg p-6 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/90 to-orange-500/90"></div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
                                 <div className="relative">
                                     <h2 className="text-xl font-semibold text-white flex items-center gap-3">
-                                        <div className="p-2 bg-yellow-600/40 rounded-lg backdrop-blur-sm">
-                                            <Calendar className="text-yellow-100" size={20} />
+                                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm border border-white/30">
+                                            <Calendar className="text-blue-100" size={20} />
                                         </div>
                                         {dia}
                                     </h2>
@@ -108,12 +108,12 @@ export default function ArquivosPage() {
                                         const totalArquivos = arquivosDaTurma.length;
                                         
                                         return (
-                                            <div key={turma.id} className="bg-gradient-to-br from-yellow-50/50 to-orange-50/50 rounded-xl p-5 border border-yellow-200/50 hover-lift card-glow stagger-animation" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}>
+                                            <div key={turma.id} className="bg-gradient-to-br from-white to-blue-50/50 rounded-xl p-5 border border-blue-200/50 hover-lift card-glow stagger-animation" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}>
                                                 <div className="flex items-center justify-between mb-5">
                                                     <div>
                                                         <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-1">
-                                                            <div className="p-1.5 bg-yellow-100 rounded-lg">
-                                                                <Clock className="text-yellow-600" size={16} />
+                                                            <div className="p-1.5 bg-blue-100 rounded-lg">
+                                                                <Clock className="text-blue-600" size={16} />
                                                             </div>
                                                             {turma.time}
                                                         </h3>
@@ -123,7 +123,7 @@ export default function ArquivosPage() {
                                                     </div>
                                                     <div className="text-right flex items-center gap-2">
                                                         <p className="text-sm text-slate-600">Total de arquivos</p>
-                                                        <p className="text-lg font-semibold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                                                        <p className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                                                             {totalArquivos}
                                                         </p>
                                                     </div>
@@ -151,7 +151,7 @@ export default function ArquivosPage() {
                                                                 </div>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-sm font-medium text-white bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1 rounded-full shadow-md">
+                                                                <p className="text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 px-3 py-1 rounded-full shadow-md">
                                                                     1
                                                                 </p>
                                                             </div>

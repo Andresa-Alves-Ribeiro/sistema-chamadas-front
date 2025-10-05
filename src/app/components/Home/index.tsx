@@ -158,50 +158,50 @@ export default function HomePage() {
     });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
+        <div className="min-h-screen p-8">
             <div className="w-full">
                 <div className="flex justify-between items-center mb-8">
                     <div className="animate-fade-in-up">
-                        <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl shadow-lg">
-                                <Notebook className="text-white" size={28} />
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-2xl shadow-xl ring-4 ring-blue-100/50 float-animation glow-effect">
+                                <Notebook className="text-white" size={32} />
                             </div>
                             Sistema de Chamada
                         </h1>
-                        <p className="text-slate-600 mt-2">
+                        <p className="text-slate-600 mt-3 text-lg">
                             Gerencie suas turmas e controle a frequência dos alunos
                         </p>
                     </div>
                     <button 
                         onClick={handleOpenModal}
-                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-medium rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect"
                     >
-                        <PlusIcon className="w-4 h-4 mr-2" />
+                        <PlusIcon className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform duration-300" />
                         Nova Turma
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div className="group bg-blue-50/50 rounded-2xl shadow-xl border border-blue-200/50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
                         <div className="flex items-center">
-                            <div className="p-3 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl">
-                                <Notebook className="w-6 h-6 text-yellow-600" />
+                            <div className="p-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 float-animation">
+                                <Notebook className="w-8 h-8 text-white" />
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-slate-600">Total de Turmas</p>
-                                <p className="text-2xl font-bold text-slate-900">{isNaN(totalTurmas) ? 0 : totalTurmas}</p>
+                            <div className="ml-6">
+                                <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Turmas</p>
+                                <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{isNaN(totalTurmas) ? 0 : totalTurmas}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow">
+                    <div className="group bg-blue-50/30 rounded-2xl shadow-xl border border-blue-200/50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
                         <div className="flex items-center">
-                            <div className="p-3 bg-gradient-to-r from-amber-100 to-yellow-100 rounded-xl">
-                                <UsersRound className="w-6 h-6 text-amber-600" />
+                            <div className="p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 float-animation" style={{animationDelay: '0.5s'}}>
+                                <UsersRound className="w-8 h-8 text-white" />
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-slate-600">Total de Alunos</p>
-                                <p className="text-2xl font-bold text-slate-900">
+                            <div className="ml-6">
+                                <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Alunos</p>
+                                <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                                     {loadingStats ? '...' : (isNaN(totalAlunos) ? 0 : totalAlunos)}
                                 </p>
                             </div>
@@ -210,8 +210,8 @@ export default function HomePage() {
                 </div>
 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                        <p className="text-red-600 text-sm">Erro ao carregar turmas</p>
+                    <div className="mb-8 p-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/50 rounded-2xl shadow-lg">
+                        <p className="text-red-600 text-sm font-medium">Erro ao carregar turmas</p>
                     </div>
                 )}
 
@@ -223,33 +223,36 @@ export default function HomePage() {
                             return orderA - orderB;
                         })
                         .map(([dia, turmas], index) => (
-                        <div key={dia} className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
-                            <div className="gradient-bg p-6 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/90 to-amber-500/90"></div>
+                        <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
+                            <div className="relative p-8 overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
                                 <div className="relative">
-                                    <h2 className="text-xl font-semibold text-white flex items-center gap-3">
-                                        <div className="p-2 bg-yellow-600/40 rounded-lg backdrop-blur-sm">
-                                            <Notebook className="text-yellow-100" size={20} />
+                                    <h2 className="text-2xl font-bold text-white flex items-center gap-4">
+                                        <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                                            <Notebook className="text-blue-100" size={24} />
                                         </div>
                                         {dia}
                                     </h2>
                                 </div>
                             </div>
-                            <div className="p-6">
+                            <div className="p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {turmas.map((turma, turmaIndex) => (
-                                        <div key={turma.id} className="bg-neutral-50 rounded-xl p-5 border border-yellow-200/50 hover-lift card-glow stagger-animation cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }} onClick={() => handleTurmaClick(turma)}>
+                                        <div key={turma.id} className="group bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 border border-blue-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 stagger-animation cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }} onClick={() => handleTurmaClick(turma)}>
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-1">
-                                                        <div className="p-1.5 bg-yellow-100 rounded-lg">
-                                                            <Clock className="text-yellow-600" size={16} />
+                                                <div className="flex flex-col gap-3">
+                                                    <h3 className="font-bold text-slate-900 flex items-center gap-3">
+                                                        <div className="p-2 bg-gradient-to-r from-blue-700 to-cyan-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                                            <Clock className="text-white" size={18} />
                                                         </div>
-                                                        {turma.time}
+                                                        <span className="text-xl">{turma.time}</span>
                                                     </h3>
-                                                    <p className="text-sm bg-yellow-100 text-yellow-600 rounded-lg p-1 px-2">
-                                                        {turma.studentsQuantity} alunos
-                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm bg-blue-700 text-white rounded-xl px-4 py-2 font-semibold shadow-lg">
+                                                            {turma.studentsQuantity} alunos
+                                                        </p>
+                                                    </div>
                                                 </div>
                                                 <TurmaOptionsDropdown
                                                     turma={turma}
