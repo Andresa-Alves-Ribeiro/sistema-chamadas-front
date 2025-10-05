@@ -10,10 +10,10 @@ export default function AlunoArquivosPage() {
     const router = useRouter();
     const params = useParams();
     const alunoId = parseInt(params.id as string);
-    
+
     const { alunos } = useAlunos();
     const { arquivos } = useArquivosByAluno(alunoId);
-    
+
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
     const handleVoltar = () => {
@@ -26,7 +26,7 @@ export default function AlunoArquivosPage() {
 
     const getFileIcon = (formato: string) => {
         const formatLower = formato.toLowerCase();
-        
+
         if (formatLower === 'pdf') return <FileText className="text-red-500" size={20} />;
         if (formatLower === 'docx' || formatLower === 'doc') return <FileText className="text-blue-500" size={20} />;
         if (formatLower === 'xlsx' || formatLower === 'xls') return <FileSpreadsheet className="text-green-500" size={20} />;
@@ -41,7 +41,7 @@ export default function AlunoArquivosPage() {
             return <FileAudio className="text-yellow-500" size={20} />;
         }
         if (formatLower === 'zip' || formatLower === 'rar') return <File className="text-gray-500" size={20} />;
-        
+
         return <File className="text-gray-400" size={20} />;
     };
 
@@ -68,7 +68,6 @@ export default function AlunoArquivosPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
                 <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-8 hover-lift animate-fade-in-up">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -100,7 +99,6 @@ export default function AlunoArquivosPage() {
                     </div>
                 </div>
 
-                {/* Estatísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.1s' }}>
                         <div className="flex items-center gap-4">
@@ -113,7 +111,7 @@ export default function AlunoArquivosPage() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.2s' }}>
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-gradient-to-r from-green-100 to-green-200 rounded-lg">
@@ -127,7 +125,7 @@ export default function AlunoArquivosPage() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg">
@@ -143,7 +141,6 @@ export default function AlunoArquivosPage() {
                     </div>
                 </div>
 
-                {/* Lista de Arquivos */}
                 <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow">
                     <div className="gradient-bg p-6 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
@@ -156,7 +153,7 @@ export default function AlunoArquivosPage() {
                             </h2>
                         </div>
                     </div>
-                    
+
                     {arquivos.length > 0 ? (
                         <div className="divide-y divide-slate-200">
                             {arquivos.map((arquivo, index) => (

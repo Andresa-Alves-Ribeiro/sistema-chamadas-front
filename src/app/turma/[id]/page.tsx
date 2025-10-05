@@ -16,6 +16,7 @@ import { Column } from "../../components/Table";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTurmaWithStudents } from "../../hooks/useTurmas";
 import { useAlunos, useAlunosByGradeId } from "../../hooks/useAlunos";
+import { attendanceService } from "../../services/attendanceService";
 import { toast } from "react-hot-toast";
 
 export default function TurmaDetailPage() {
@@ -79,7 +80,38 @@ export default function TurmaDetailPage() {
         setIsOccurrenceModalOpen(true);
     }, []);
 
-    const handleStatusChange = useCallback((studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
+    const convertDateKeyToApiFormat = useCallback((dateKey: string): string => {
+        
+        if (!dateKey.startsWith('date_')) {
+            console.error('Formato de dateKey inválido:', dateKey);
+            return '';
+        }
+        
+        const datePart = dateKey.replace('date_', '');
+        
+        let day: string, month: string;
+        
+        if (datePart.includes('/')) {
+            [day, month] = datePart.split('/');
+        } else if (datePart.includes('_')) {
+            [day, month] = datePart.split('_');
+        } else {
+            console.error('Erro ao extrair dia/mês do dateKey:', dateKey);
+            return '';
+        }
+        
+        if (!day || !month) {
+            console.error('Erro ao extrair dia/mês do dateKey:', dateKey);
+            return '';
+        }
+        
+        const year = 2025;
+        const apiDate = `${year}-${month}-${day}`;
+        
+        return apiDate;
+    }, []);
+
+    const handleStatusChange = useCallback(async (studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
         setStatusMap(prev => {
             const newMap = new Map(prev);
             if (!newMap.has(dateKey)) {
@@ -89,55 +121,118 @@ export default function TurmaDetailPage() {
             dateStatusMap.set(studentId, status);
             return newMap;
         });
-    }, []);
 
-    const handleBulkStatusChange = useCallback((dateKey: string) => {
+        if (turma) {
+            try {
+                const apiStatus = attendanceService.convertFrontendStatusToApi(status);
+                const apiDate = convertDateKeyToApiFormat(dateKey);
+                
+                if (!apiDate) {
+                    throw new Error('Erro ao converter data para formato da API');
+                }
+                
+                await attendanceService.createAttendance({
+                    student_id: studentId,
+                    grade_id: turma.id.toString(),
+                    attendance_date: apiDate,
+                    status: apiStatus as "presente" | "falta" | "falta_justificada" | "invalido"
+                });
+                
+            } catch (error) {
+                console.error('Erro ao salvar presença:', error);
+                toast.error(`Erro ao salvar presença como "${status}"`);
+                
+                setStatusMap(prev => {
+                    const newMap = new Map(prev);
+                    const dateStatusMap = newMap.get(dateKey);
+                    if (dateStatusMap) {
+                        dateStatusMap.delete(studentId);
+                    }
+                    return newMap;
+                });
+            }
+        }
+    }, [turma, convertDateKeyToApiFormat]);
+
+    const handleBulkStatusChange = useCallback(async (dateKey: string) => {
         if (daysOff.has(dateKey)) {
             toggleDayOff(dateKey);
             return;
         }
 
+        const currentDateStatus = statusMap.get(dateKey);
+        const statusCounts = new Map<"presente" | "falta" | "falta_justificada" | "invalido", number>();
+        
+        alunos.forEach(aluno => {
+            const currentStatus = currentDateStatus?.get(aluno.id) || "invalido";
+            statusCounts.set(currentStatus, (statusCounts.get(currentStatus) || 0) + 1);
+        });
+
+        let mostCommonStatus: "presente" | "falta" | "falta_justificada" | "invalido" = "invalido";
+        let maxCount = 0;
+        statusCounts.forEach((count, status) => {
+            if (count > maxCount) {
+                maxCount = count;
+                mostCommonStatus = status as "presente" | "falta" | "falta_justificada" | "invalido";
+            }
+        });
+
+        let nextStatus: "presente" | "falta" | "falta_justificada" | "invalido";
+        if (mostCommonStatus === "invalido") {
+            nextStatus = "presente";
+        } else if (mostCommonStatus === "presente") {
+            nextStatus = "falta";
+        } else if (mostCommonStatus === "falta") {
+            nextStatus = "falta_justificada";
+        } else if (mostCommonStatus === "falta_justificada") {
+            nextStatus = "invalido";
+        } else {
+            nextStatus = "presente";
+        }
+
         setStatusMap(prev => {
             const newMap = new Map(prev);
-            const currentDateStatus = newMap.get(dateKey);
-
-            const statusCounts = new Map<"presente" | "falta" | "falta_justificada" | "invalido", number>();
-            alunos.forEach(aluno => {
-                const currentStatus = currentDateStatus?.get(aluno.id) || "invalido";
-                statusCounts.set(currentStatus, (statusCounts.get(currentStatus) || 0) + 1);
-            });
-
-            let mostCommonStatus: "presente" | "falta" | "falta_justificada" | "invalido" = "invalido";
-            let maxCount = 0;
-            statusCounts.forEach((count, status) => {
-                if (count > maxCount) {
-                    maxCount = count;
-                    mostCommonStatus = status as "presente" | "falta" | "falta_justificada" | "invalido";
-                }
-            });
-
-            let nextStatus: "presente" | "falta" | "falta_justificada" | "invalido";
-            if (mostCommonStatus === "invalido") {
-                nextStatus = "presente";
-            } else if (mostCommonStatus === "presente") {
-                nextStatus = "falta";
-            } else if (mostCommonStatus === "falta") {
-                nextStatus = "falta_justificada";
-            } else if (mostCommonStatus === "falta_justificada") {
-                nextStatus = "invalido";
-            } else {
-                nextStatus = "presente";
-            }
-
             const newDateStatusMap = new Map<number, "presente" | "falta" | "falta_justificada" | "invalido">();
             alunos.forEach(aluno => {
                 newDateStatusMap.set(aluno.id, nextStatus);
             });
-
             newMap.set(dateKey, newDateStatusMap);
             return newMap;
         });
-    }, [alunos, daysOff, toggleDayOff]);
+
+        if (turma) {
+            try {
+                const apiDate = convertDateKeyToApiFormat(dateKey);
+                
+                if (!apiDate) {
+                    throw new Error('Erro ao converter data para formato da API');
+                }
+
+                const attendances = alunos.map(aluno => ({
+                    student_id: aluno.id,
+                    status: attendanceService.convertFrontendStatusToApi(nextStatus) as "presente" | "falta" | "falta_justificada" | "invalido"
+                }));
+
+                await attendanceService.createMultipleAttendance({
+                    grade_id: turma.id.toString(),
+                    attendance_date: apiDate,
+                    attendances: attendances
+                });
+
+                toast.success(`${alunos.length} presenças marcadas como "${nextStatus}" com sucesso!`);
+                
+            } catch (error) {
+                console.error('Erro ao salvar presenças em lote:', error);
+                toast.error(`Erro ao salvar presenças como "${nextStatus}"`);
+                
+                setStatusMap(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(dateKey);
+                    return newMap;
+                });
+            }
+        }
+    }, [alunos, daysOff, toggleDayOff, turma, convertDateKeyToApiFormat, statusMap]);
 
     useEffect(() => {
         if (turma) {
@@ -150,6 +245,52 @@ export default function TurmaDetailPage() {
             setInitialLoading(false);
         }
     }, [turmaLoading, alunosLoading]);
+
+    useEffect(() => {
+        const loadExistingAttendance = async () => {
+            if (!turma || alunos.length === 0) return;
+            
+            try {
+                const hoje = new Date();
+                const dataInicio = new Date(hoje.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                const dataFim = hoje.toISOString().split('T')[0];
+                
+                
+                const attendanceData = await attendanceService.getAttendanceByGradePeriod(
+                    turma.id.toString(),
+                    dataInicio,
+                    dataFim
+                );
+                
+                const newStatusMap = new Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>();
+                
+                Object.entries(attendanceData).forEach(([apiDate, attendances]) => {
+                    const dateParts = apiDate.split('-');
+                    if (dateParts.length === 3) {
+                        const [, month, day] = dateParts;
+                        const dateKey = `date_${day}_${month}`;
+                        
+                        const dateStatusMap = new Map<number, "presente" | "falta" | "falta_justificada" | "invalido">();
+                        
+                        attendances.forEach(attendance => {
+                            const frontendStatus = attendanceService.convertApiStatusToFrontend(attendance.status);
+                            dateStatusMap.set(attendance.student_id, frontendStatus);
+                        });
+                        
+                        newStatusMap.set(dateKey, dateStatusMap);
+                    }
+                });
+                
+                setStatusMap(newStatusMap);
+                
+            } catch (error) {
+                console.error('Erro ao carregar presenças existentes:', error);
+                toast.error('Erro ao carregar presenças existentes');
+            }
+        };
+        
+        loadExistingAttendance();
+    }, [turma, alunos]);
 
     const handleStudentNameClick = useCallback((student: Aluno) => {
         if (student.transferred) {

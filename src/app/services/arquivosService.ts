@@ -14,18 +14,18 @@ export interface CreateArquivoData {
 }
 
 export const arquivosService = {
-  // Buscar todos os arquivos
+
   async getAllArquivos(): Promise<Arquivo[]> {
     try {
       const response = await api.get('/arquivos');
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Array, count: number}
+
       if (apiData.success && Array.isArray(apiData.data)) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, tentar acessar diretamente
+
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Erro ao buscar arquivos:', error);
@@ -33,18 +33,18 @@ export const arquivosService = {
     }
   },
 
-  // Buscar arquivo por ID
+
   async getArquivoById(id: number): Promise<Arquivo> {
     try {
       const response = await api.get(`/arquivos/${id}`);
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Object}
+
       if (apiData.success && apiData.data) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, retornar diretamente
+
       return response.data;
     } catch (error) {
       console.error(`Erro ao buscar arquivo ${id}:`, error);
@@ -52,18 +52,18 @@ export const arquivosService = {
     }
   },
 
-  // Buscar arquivos por aluno
+
   async getArquivosByAluno(alunoId: number): Promise<Arquivo[]> {
     try {
       const response = await api.get(`/arquivos/aluno/${alunoId}`);
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Array, count: number}
+
       if (apiData.success && Array.isArray(apiData.data)) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, tentar acessar diretamente
+
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error(`Erro ao buscar arquivos do aluno ${alunoId}:`, error);
@@ -71,7 +71,7 @@ export const arquivosService = {
     }
   },
 
-  // Upload de arquivo
+
   async uploadArquivo(data: UploadFileData): Promise<Arquivo> {
     try {
       const formData = new FormData();
@@ -85,12 +85,11 @@ export const arquivosService = {
       });
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Object}
+
       if (apiData.success && apiData.data) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, retornar diretamente
       return response.data;
     } catch (error) {
       console.error('Erro ao fazer upload do arquivo:', error);
@@ -98,18 +97,18 @@ export const arquivosService = {
     }
   },
 
-  // Criar registro de arquivo
+
   async createArquivo(data: CreateArquivoData): Promise<Arquivo> {
     try {
       const response = await api.post('/arquivos', data);
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Object}
+
       if (apiData.success && apiData.data) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, retornar diretamente
+
       return response.data;
     } catch (error) {
       console.error('Erro ao criar arquivo:', error);
@@ -117,18 +116,18 @@ export const arquivosService = {
     }
   },
 
-  // Atualizar arquivo
+
   async updateArquivo(id: number, data: Partial<CreateArquivoData>): Promise<Arquivo> {
     try {
       const response = await api.put(`/arquivos/${id}`, data);
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Object}
+
       if (apiData.success && apiData.data) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, retornar diretamente
+
       return response.data;
     } catch (error) {
       console.error(`Erro ao atualizar arquivo ${id}:`, error);
@@ -136,7 +135,7 @@ export const arquivosService = {
     }
   },
 
-  // Deletar arquivo
+
   async deleteArquivo(id: number): Promise<void> {
     try {
       await api.delete(`/arquivos/${id}`);
@@ -146,7 +145,7 @@ export const arquivosService = {
     }
   },
 
-  // Download de arquivo
+
   async downloadArquivo(id: number): Promise<Blob> {
     try {
       const response = await api.get(`/arquivos/${id}/download`, {
@@ -159,18 +158,18 @@ export const arquivosService = {
     }
   },
 
-  // Buscar estatísticas de arquivos
+
   async getArquivosStats(): Promise<{ totalArquivos: number; totalTamanho: string }> {
     try {
       const response = await api.get('/arquivos/stats');
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Object}
+
       if (apiData.success && apiData.data) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, retornar diretamente
+
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar estatísticas dos arquivos:', error);

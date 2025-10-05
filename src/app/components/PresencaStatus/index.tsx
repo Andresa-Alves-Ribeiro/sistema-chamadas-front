@@ -14,13 +14,11 @@ interface PresencaStatusProps {
     onStatusChange?: (studentId: number, dateKey: string, status: PresencaStatusType) => void;
 }
 
-// Função para verificar se a data é posterior à data de exclusão
 function isDateAfterExclusion(dateKey: string, exclusionDate: string): boolean {
-    // Converter dateKey (formato: "date_01_08") para data
     const dateParts = dateKey.replace('date_', '').split('_');
     const day = parseInt(dateParts[0]);
-    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
-    const year = 2025; // Ano fixo baseado no sistema
+    const month = parseInt(dateParts[1]) - 1;
+    const year = 2025;
     
     const cellDate = new Date(year, month, day);
     const exclusion = new Date(exclusionDate);
@@ -28,13 +26,11 @@ function isDateAfterExclusion(dateKey: string, exclusionDate: string): boolean {
     return cellDate >= exclusion;
 }
 
-// Função para verificar se a data é anterior à data de inclusão
 function isDateBeforeInclusion(dateKey: string, inclusionDate: string): boolean {
-    // Converter dateKey (formato: "date_01_08") para data
     const dateParts = dateKey.replace('date_', '').split('_');
     const day = parseInt(dateParts[0]);
-    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
-    const year = 2025; // Ano fixo baseado no sistema
+    const month = parseInt(dateParts[1]) - 1;
+    const year = 2025;
     
     const cellDate = new Date(year, month, day);
     const inclusion = new Date(inclusionDate);
@@ -42,13 +38,11 @@ function isDateBeforeInclusion(dateKey: string, inclusionDate: string): boolean 
     return cellDate < inclusion;
 }
 
-// Função para verificar se a data é posterior à data de remanejamento
 function isDateAfterTransfer(dateKey: string, transferDate: string): boolean {
-    // Converter dateKey (formato: "date_01_08") para data
     const dateParts = dateKey.replace('date_', '').split('_');
     const day = parseInt(dateParts[0]);
-    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
-    const year = 2025; // Ano fixo baseado no sistema
+    const month = parseInt(dateParts[1]) - 1;
+    const year = 2025;
     
     const cellDate = new Date(year, month, day);
     const transfer = new Date(transferDate);
@@ -56,13 +50,11 @@ function isDateAfterTransfer(dateKey: string, transferDate: string): boolean {
     return cellDate >= transfer;
 }
 
-// Função para verificar se a data é anterior à data de remanejamento
 function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
-    // Converter dateKey (formato: "date_01_08") para data
     const dateParts = dateKey.replace('date_', '').split('_');
     const day = parseInt(dateParts[0]);
-    const month = parseInt(dateParts[1]) - 1; // Mês é 0-indexado
-    const year = 2025; // Ano fixo baseado no sistema
+    const month = parseInt(dateParts[1]) - 1;
+    const year = 2025;
     
     const cellDate = new Date(year, month, day);
     const transfer = new Date(transferDate);
@@ -73,26 +65,20 @@ function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
 export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId, externalStatus, onStatusChange }: PresencaStatusProps) {
     const [internalStatus, setInternalStatus] = useState<PresencaStatusType>("invalido");
     
-    // Usar status externo se fornecido, senão usar o interno
     const status = externalStatus !== undefined ? externalStatus : internalStatus;
 
-    // Verificar se o aluno está excluído e se a data é posterior à data de exclusão
     const isStudentExcluded = student?.excluded && student?.exclusionDate && dateKey;
     const shouldShowInvalidExcluded = isStudentExcluded && dateKey && student.exclusionDate && isDateAfterExclusion(dateKey, student.exclusionDate);
     
-    // Verificar se o aluno é novo e se a data é anterior à data de inclusão
     const isStudentNew = student?.inclusionDate && !student?.excluded && !student?.transferred && dateKey;
     const shouldShowInvalidNew = isStudentNew && dateKey && student.inclusionDate && isDateBeforeInclusion(dateKey, student.inclusionDate);
     
-    // Verificar se o aluno foi remanejado
     const isStudentTransferred = student?.transferred && student?.transferDate && dateKey && currentTurmaId;
     
-    // Se está na turma original: datas posteriores ao remanejamento são inválidas
     const isInOriginalTurma = isStudentTransferred && student.originalGradeId && 
         String(student.originalGradeId).trim() === String(currentTurmaId).trim();
     const shouldShowInvalidTransferredOriginal = isInOriginalTurma && dateKey && student.transferDate && isDateAfterTransfer(dateKey, student.transferDate);
     
-    // Se está na turma nova: datas anteriores ao remanejamento são inválidas
     const isInNewTurma = isStudentTransferred && student.originalGradeId && 
         String(student.originalGradeId).trim() !== String(currentTurmaId).trim();
     const shouldShowInvalidTransferredNew = isInNewTurma && dateKey && student.transferDate && isDateBeforeTransfer(dateKey, student.transferDate);

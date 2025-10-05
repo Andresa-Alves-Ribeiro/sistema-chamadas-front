@@ -14,7 +14,6 @@ export interface PresencaPorTurma {
 }
 
 export const presencaService = {
-  // Registrar presença de um aluno
   async registrarPresenca(data: PresencaData): Promise<void> {
     try {
       await api.post('/presencas', data);
@@ -24,7 +23,6 @@ export const presencaService = {
     }
   },
 
-  // Registrar presenças de uma turma inteira
   async registrarPresencasTurma(data: PresencaPorTurma): Promise<void> {
     try {
       await api.post('/presencas/turma', data);
@@ -34,7 +32,6 @@ export const presencaService = {
     }
   },
 
-  // Buscar presenças por aluno
   async getPresencasByAluno(alunoId: number, dataInicio?: string, dataFim?: string): Promise<PresencaData[]> {
     try {
       const params: Record<string, string> = {};
@@ -44,12 +41,10 @@ export const presencaService = {
       const response = await api.get(`/presencas/aluno/${alunoId}`, { params });
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Array, count: number}
       if (apiData.success && Array.isArray(apiData.data)) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, tentar acessar diretamente
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error(`Erro ao buscar presenças do aluno ${alunoId}:`, error);
@@ -57,7 +52,6 @@ export const presencaService = {
     }
   },
 
-  // Buscar presenças por turma
   async getPresencasByTurma(turmaId: number, data: string): Promise<PresencaData[]> {
     try {
       const response = await api.get(`/presencas/turma/${turmaId}`, {
@@ -65,12 +59,10 @@ export const presencaService = {
       });
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Array, count: number}
       if (apiData.success && Array.isArray(apiData.data)) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, tentar acessar diretamente
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error(`Erro ao buscar presenças da turma ${turmaId}:`, error);
@@ -78,7 +70,6 @@ export const presencaService = {
     }
   },
 
-  // Atualizar presença
   async updatePresenca(alunoId: number, data: string, presente: boolean, observacoes?: string): Promise<void> {
     try {
       await api.put(`/presencas/${alunoId}/${data}`, {
@@ -91,7 +82,6 @@ export const presencaService = {
     }
   },
 
-  // Deletar presença
   async deletePresenca(alunoId: number, data: string): Promise<void> {
     try {
       await api.delete(`/presencas/${alunoId}/${data}`);
@@ -101,7 +91,6 @@ export const presencaService = {
     }
   },
 
-  // Buscar relatório de presenças
   async getRelatorioPresencas(turmaId: number, dataInicio: string, dataFim: string): Promise<Record<string, unknown>> {
     try {
       const response = await api.get(`/presencas/relatorio/${turmaId}`, {
@@ -109,12 +98,10 @@ export const presencaService = {
       });
       const apiData = response.data;
       
-      // A API retorna {success: true, data: Object}
       if (apiData.success && apiData.data) {
         return apiData.data;
       }
       
-      // Fallback: se a estrutura for diferente, retornar diretamente
       return response.data;
     } catch (error) {
       console.error(`Erro ao buscar relatório de presenças da turma ${turmaId}:`, error);

@@ -30,7 +30,6 @@ export default function DeleteStudentModal({
     if (student) {
       setIsDeleting(true);
       
-      // Simular um delay para mostrar o estado de loading
       await new Promise(resolve => setTimeout(resolve, 500));
       
       onConfirm(student.id);
@@ -78,7 +77,6 @@ export default function DeleteStudentModal({
         maxHeight: '90vh',
         overflowY: 'auto'
       }}>
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-red-100 rounded-lg">
@@ -98,9 +96,7 @@ export default function DeleteStudentModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Warning */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
@@ -113,7 +109,6 @@ export default function DeleteStudentModal({
             </div>
           </div>
 
-          {/* Student Info */}
           <div className="bg-slate-50 rounded-lg p-4">
             <h3 className="font-semibold text-slate-900 mb-3">Aluno que será excluído:</h3>
             <div className="flex items-center space-x-3">
@@ -134,7 +129,6 @@ export default function DeleteStudentModal({
             </div>
           </div>
 
-          {/* Confirmation Message */}
           <div className="text-center">
             <p className="text-slate-700 font-medium text-lg">
               Tem certeza que deseja excluir este aluno?

@@ -50,6 +50,10 @@ api.interceptors.response.use(
         if (method === 'POST') toast.success('Presença registrada com sucesso!');
         else if (method === 'PUT') toast.success('Presença atualizada com sucesso!');
         else if (method === 'DELETE') toast.success('Presença removida com sucesso!');
+      } else if (url.includes('/attendance')) {
+        if (method === 'POST') toast.success('Chamada registrada com sucesso!');
+        else if (method === 'PUT') toast.success('Chamada atualizada com sucesso!');
+        else if (method === 'DELETE') toast.success('Chamada removida com sucesso!');
       } else if (url.includes('/occurrences')) {
         if (method === 'POST') toast.success('Ocorrência registrada com sucesso!');
         else if (method === 'PUT') toast.success('Ocorrência atualizada com sucesso!');
@@ -81,7 +85,6 @@ api.interceptors.response.use(
     } else if (status === 500) {
       toast.error('Erro interno do servidor. Tente novamente');
     } else if (status && status >= 400) {
-      // Mensagens específicas baseadas na operação
       if (url.includes('/students')) {
         if (method === 'POST') toast.error('Erro ao criar aluno');
         else if (method === 'PUT') toast.error('Erro ao atualizar aluno');
@@ -98,6 +101,10 @@ api.interceptors.response.use(
         if (method === 'POST') toast.error('Erro ao registrar presença');
         else if (method === 'PUT') toast.error('Erro ao atualizar presença');
         else if (method === 'DELETE') toast.error('Erro ao remover presença');
+      } else if (url.includes('/attendance')) {
+        if (method === 'POST') toast.error('Erro ao registrar chamada');
+        else if (method === 'PUT') toast.error('Erro ao atualizar chamada');
+        else if (method === 'DELETE') toast.error('Erro ao remover chamada');
       } else if (url.includes('/occurrences')) {
         if (method === 'POST') toast.error('Erro ao registrar ocorrência');
         else if (method === 'PUT') toast.error('Erro ao atualizar ocorrência');

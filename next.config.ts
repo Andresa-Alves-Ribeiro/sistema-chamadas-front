@@ -2,12 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    // Em produção, não usar proxy - fazer requisições diretas para o backend
     if (process.env.NODE_ENV === 'production') {
       return [];
     }
     
-    // Em desenvolvimento, usar proxy para o backend local
     return [
       {
         source: '/api/:path*',
@@ -15,7 +13,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Configuração adicional para desenvolvimento
   async headers() {
     return [
       {

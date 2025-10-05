@@ -25,7 +25,7 @@ function getDatesForDayOfWeek(dayOfWeek: number, startDate: Date, endDate: Date)
         const day = String(currentDate.getDate()).padStart(2, '0');
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
         dates.push(`${day}/${month}`);
-        currentDate.setDate(currentDate.getDate() + 7); // Próxima semana
+        currentDate.setDate(currentDate.getDate() + 7);
     }
     
     return dates;
@@ -75,8 +75,8 @@ export function getAlunosColumns(
     onBulkStatusChange?: (dateKey: string) => void,
     onStudentNameClick?: (student: Aluno) => void
 ): Column<Aluno>[] {
-    const startDate = new Date(2025, 7, 1); // Agosto = mês 7 (0-indexado)
-    const endDate = new Date(2025, 11, 15); // Dezembro = mês 11 (0-indexado)
+    const startDate = new Date(2025, 7, 1);
+    const endDate = new Date(2025, 11, 15);
     
     const dayOfWeek = dayMapping[grade];
     

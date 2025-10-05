@@ -11,8 +11,9 @@ import { Notebook, PlusIcon, UsersRound } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTurmas } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
+import { toast } from "react-hot-toast";
 
-// Mapeamento de dias da semana para ordenação
+
 const dayOrder: Record<string, number> = {
     "Segunda-feira": 1,
     "Terça-feira": 2,
@@ -23,16 +24,14 @@ const dayOrder: Record<string, number> = {
     "Domingo": 7
 };
 
-// Função para converter horário em minutos para comparação
+
 const timeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
 };
 
-// Função para ordenar turmas por dia e horário
 const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
     return [...turmas].sort((a, b) => {
-        // Primeiro ordena por dia da semana
         const dayA = dayOrder[a.grade] || 999;
         const dayB = dayOrder[b.grade] || 999;
         
@@ -40,7 +39,6 @@ const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
             return dayA - dayB;
         }
         
-        // Se for o mesmo dia, ordena por horário
         const timeA = timeToMinutes(a.time);
         const timeB = timeToMinutes(b.time);
         
@@ -73,8 +71,7 @@ export default function HomePage() {
                 setLoadingStats(true);
                 const stats = await getAlunosStats();
                 setTotalAlunos(stats.totalAlunos || 0);
-            } catch (error) {
-                console.error('Erro ao buscar estatísticas dos alunos:', error);
+            } catch {
                 setTotalAlunos(0);
             } finally {
                 setLoadingStats(false);
@@ -100,8 +97,8 @@ export default function HomePage() {
         try {
             await createTurma({ grade: turmaData.name, time: turmaData.time });
             setIsModalOpen(false);
-        } catch (error) {
-            console.error("Erro ao criar turma:", error);
+        } catch {
+            toast.error("Erro ao criar turma");
         }
     };
 
@@ -115,8 +112,8 @@ export default function HomePage() {
             await updateTurma(id, turmaData);
             setIsEditModalOpen(false);
             setSelectedTurma(null);
-        } catch (error) {
-            console.error("Erro ao atualizar turma:", error);
+        } catch {
+            toast.error("Erro ao atualizar turma");
         }
     };
 
@@ -130,8 +127,8 @@ export default function HomePage() {
             await deleteTurma(turmaId);
             setIsDeleteModalOpen(false);
             setTurmaToDelete(null);
-        } catch (error) {
-            console.error("Erro ao excluir turma:", error);
+        } catch {
+            toast.error("Erro ao excluir turma");
         }
     };
 
@@ -198,7 +195,7 @@ export default function HomePage() {
                     <div className="p-6">
                         {error && (
                             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <p className="text-red-600 text-sm">Erro ao carregar turmas: {error}</p>
+                                <p className="text-red-600 text-sm">Erro ao carregar turmas</p>
                             </div>
                         )}
                         <Table
