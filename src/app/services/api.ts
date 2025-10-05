@@ -85,7 +85,6 @@ api.interceptors.response.use(
     } else if (status === 500) {
       toast.error('Erro interno do servidor. Tente novamente');
     } else if (status && status >= 400) {
-      // Mensagens específicas baseadas na operação
       if (url.includes('/students')) {
         if (method === 'POST') toast.error('Erro ao criar aluno');
         else if (method === 'PUT') toast.error('Erro ao atualizar aluno');

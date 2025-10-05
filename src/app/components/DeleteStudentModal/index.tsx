@@ -30,7 +30,6 @@ export default function DeleteStudentModal({
     if (student) {
       setIsDeleting(true);
       
-      // Simular um delay para mostrar o estado de loading
       await new Promise(resolve => setTimeout(resolve, 500));
       
       onConfirm(student.id);

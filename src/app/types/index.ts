@@ -128,7 +128,6 @@ export interface TransferStudentResponse {
   };
 }
 
-// Interfaces para o sistema de chamada (attendance)
 export interface AttendanceData {
   id: number;
   student_id: number;
@@ -224,7 +223,6 @@ export interface AttendanceByStudentResponse {
   };
 }
 
-// Alias para compatibilidade
 export type Turmas = Grade;
 export type Aluno = Student;
 export type Arquivo = File;

@@ -30,7 +30,6 @@ export default function IncludeStudentModal({
     if (student) {
       setIsIncluding(true);
       
-      // Simular um delay para mostrar o estado de loading
       await new Promise(resolve => setTimeout(resolve, 300));
       
       onConfirm(student);

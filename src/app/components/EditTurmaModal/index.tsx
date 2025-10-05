@@ -22,7 +22,7 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
     }, [turma]);
 
     const formatTime = (time: string): string => {
-        // Remove segundos se existirem e garante formato HH:MM
+
         if (time.includes(':')) {
             const parts = time.split(':');
             if (parts.length >= 2) {

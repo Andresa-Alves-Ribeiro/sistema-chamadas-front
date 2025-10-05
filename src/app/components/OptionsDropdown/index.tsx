@@ -36,7 +36,7 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
         const rect = buttonRef.current.getBoundingClientRect();
         setPosition({
           top: rect.bottom + 8,
-          left: rect.right - 208 // 208px = width of dropdown
+          left: rect.right - 208 
         });
       }
     };
@@ -59,7 +59,7 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
       const rect = buttonRef.current.getBoundingClientRect();
       setPosition({
         top: rect.bottom + 8,
-        left: rect.right - 208 // 208px = width of dropdown
+        left: rect.right - 208
       });
     }
     setIsOpen(!isOpen);

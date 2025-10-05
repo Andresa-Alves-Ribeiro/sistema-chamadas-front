@@ -68,7 +68,6 @@ export const useAlunos = () => {
     try {
       const transferResponse = await alunosService.transferAluno(id, transferData);
       
-      // Atualizar o aluno original na lista atual
       setAlunos(prev => prev.map(a => 
         a.id === id ? transferResponse.data.originalStudent : a
       ));
@@ -130,7 +129,6 @@ export const useAlunosByTurma = (gradeId: number) => {
   const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
     try {
       await alunosService.reorderAlunos(turmaId, alunoIds);
-      // Atualizar a ordem local
       const alunosReordenados = alunoIds.map(id => alunos.find(a => a.id === id)).filter(Boolean) as Aluno[];
       setAlunos(alunosReordenados);
     } catch (err) {
@@ -176,7 +174,6 @@ export const useAlunosByGradeId = (gradeId: string) => {
   const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
     try {
       await alunosService.reorderAlunos(turmaId, alunoIds);
-      // Atualizar a ordem local
       const alunosReordenados = alunoIds.map(id => alunos.find(a => a.id === id)).filter(Boolean) as Aluno[];
       setAlunos(alunosReordenados);
     } catch (err) {

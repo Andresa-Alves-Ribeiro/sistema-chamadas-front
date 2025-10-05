@@ -16,7 +16,7 @@ export const useTurmas = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar turmas');
       console.error('Erro ao buscar turmas:', err);
-      setTurmas([]); // Definir array vazio em caso de erro
+      setTurmas([]);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,6 @@ export const useTurma = (id: string | number) => {
       setTurma(data.grade);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar turma');
-      console.error('Erro ao buscar turma:', err);
     } finally {
       setLoading(false);
     }

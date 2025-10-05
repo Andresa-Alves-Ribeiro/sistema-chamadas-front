@@ -11,7 +11,6 @@ import {
 } from '../types';
 
 export const attendanceService = {
-  // 1. Registrar chamada de um aluno
   async createAttendance(data: CreateAttendanceRequest): Promise<AttendanceData> {
     try {
       const response = await api.post<AttendanceResponse>('/attendance', data);
@@ -22,7 +21,6 @@ export const attendanceService = {
     }
   },
 
-  // 2. Registrar chamada de múltiplos alunos
   async createMultipleAttendance(data: CreateMultipleAttendanceRequest): Promise<AttendanceData[]> {
     try {
       const response = await api.post<AttendanceResponse>('/attendance/multiple', data);
@@ -33,7 +31,6 @@ export const attendanceService = {
     }
   },
 
-  // 3. Registrar faltas de um aluno em vários dias
   async createMultipleDaysAttendance(data: CreateMultipleDaysAttendanceRequest): Promise<AttendanceData[]> {
     try {
       const response = await api.post<AttendanceResponse>('/attendance/multiple-days', data);
@@ -44,7 +41,6 @@ export const attendanceService = {
     }
   },
 
-  // 4. Registrar faltas de vários alunos em vários dias
   async createMultipleStudentsMultipleDays(data: CreateMultipleStudentsMultipleDaysRequest): Promise<AttendanceData[]> {
     try {
       const response = await api.post<AttendanceResponse>('/attendance/multiple-students-multiple-days', data);
@@ -55,7 +51,6 @@ export const attendanceService = {
     }
   },
 
-  // 5. Buscar todas as chamadas com filtros
   async getAllAttendance(params?: {
     student_id?: number;
     grade_id?: string;
@@ -65,7 +60,7 @@ export const attendanceService = {
     status?: string;
     page?: number;
     limit?: number;
-  }): Promise<{ data: AttendanceData[]; pagination?: any }> {
+  }): Promise<{ data: AttendanceData[]; pagination?: unknown }> {
     try {
       const response = await api.get<AttendanceResponse>('/attendance', { params });
       return {
@@ -78,7 +73,6 @@ export const attendanceService = {
     }
   },
 
-  // 6. Buscar chamada por ID
   async getAttendanceById(id: number): Promise<AttendanceData> {
     try {
       const response = await api.get<AttendanceResponse>(`/attendance/${id}`);
@@ -89,7 +83,6 @@ export const attendanceService = {
     }
   },
 
-  // 7. Atualizar chamada por ID
   async updateAttendance(id: number, data: { status?: string; observation?: string }): Promise<AttendanceData> {
     try {
       const response = await api.put<AttendanceResponse>(`/attendance/${id}`, data);
@@ -100,7 +93,6 @@ export const attendanceService = {
     }
   },
 
-  // 8. Atualizar status de chamada por aluno e data (mais eficiente)
   async updateAttendanceStatus(
     studentId: number, 
     attendanceDate: string, 
@@ -119,7 +111,6 @@ export const attendanceService = {
     }
   },
 
-  // 9. Deletar chamada
   async deleteAttendance(id: number): Promise<void> {
     try {
       await api.delete(`/attendance/${id}`);
@@ -129,11 +120,10 @@ export const attendanceService = {
     }
   },
 
-  // 10. Buscar chamadas por aluno
   async getAttendanceByStudent(
     studentId: number, 
     params?: { start_date?: string; end_date?: string; page?: number; limit?: number }
-  ): Promise<{ student: any; data: AttendanceData[]; pagination?: any }> {
+  ): Promise<{ student: unknown; data: AttendanceData[]; pagination?: unknown }> {
     try {
       const response = await api.get<AttendanceByStudentResponse>(`/students/${studentId}/attendance`, { params });
       return {
@@ -147,7 +137,6 @@ export const attendanceService = {
     }
   },
 
-  // 11. Buscar chamadas por data
   async getAttendanceByDate(date: string, gradeId?: string): Promise<AttendanceData[]> {
     try {
       const url = gradeId ? `/attendance/date/${date}/grade/${gradeId}` : `/attendance/date/${date}`;
@@ -159,7 +148,6 @@ export const attendanceService = {
     }
   },
 
-  // 12. Buscar chamadas de uma turma por período (MÉTODO PRINCIPAL PARA O FRONTEND)
   async getAttendanceByGradePeriod(
     gradeId: string,
     startDate: string,
@@ -171,13 +159,12 @@ export const attendanceService = {
           grade_id: gradeId,
           start_date: startDate,
           end_date: endDate,
-          limit: 1000 // Buscar todas as chamadas do período
+          limit: 1000
         }
       });
 
       const attendances = response.data.data as AttendanceData[];
       
-      // Agrupar por data
       const attendanceByDate: Record<string, AttendanceData[]> = {};
       attendances.forEach(attendance => {
         if (!attendanceByDate[attendance.attendance_date]) {
@@ -193,7 +180,6 @@ export const attendanceService = {
     }
   },
 
-  // 13. Método auxiliar para converter status da API para o formato do frontend
   convertApiStatusToFrontend(apiStatus: string): "presente" | "falta" | "falta_justificada" | "invalido" {
     switch (apiStatus) {
       case 'presente':
@@ -209,7 +195,6 @@ export const attendanceService = {
     }
   },
 
-  // 14. Método auxiliar para converter status do frontend para o formato da API
   convertFrontendStatusToApi(frontendStatus: "presente" | "falta" | "falta_justificada" | "invalido"): string {
     return frontendStatus;
   }
