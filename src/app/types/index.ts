@@ -128,6 +128,102 @@ export interface TransferStudentResponse {
   };
 }
 
+// Interfaces para o sistema de chamada (attendance)
+export interface AttendanceData {
+  id: number;
+  student_id: number;
+  grade_id: string;
+  attendance_date: string;
+  status: "presente" | "falta" | "falta_justificada" | "invalido";
+  observation?: string;
+  created_at: string;
+  updated_at: string;
+  students?: {
+    id: number;
+    name: string;
+    grade: string;
+    time: string;
+    gradeId: string;
+  };
+}
+
+export interface CreateAttendanceRequest {
+  student_id: number;
+  grade_id: string;
+  attendance_date: string;
+  status: "presente" | "falta" | "falta_justificada" | "invalido";
+  observation?: string;
+}
+
+export interface CreateMultipleAttendanceRequest {
+  grade_id: string;
+  attendance_date: string;
+  attendances: {
+    student_id: number;
+    status: "presente" | "falta" | "falta_justificada" | "invalido";
+    observation?: string;
+  }[];
+}
+
+export interface CreateMultipleDaysAttendanceRequest {
+  student_id: number;
+  grade_id: string;
+  start_date: string;
+  end_date: string;
+  status: "presente" | "falta" | "falta_justificada" | "invalido";
+  observation?: string;
+  skip_weekends?: boolean;
+  skip_holidays?: boolean;
+}
+
+export interface CreateMultipleStudentsMultipleDaysRequest {
+  grade_id: string;
+  start_date: string;
+  end_date: string;
+  attendances: {
+    student_id: number;
+    status: "presente" | "falta" | "falta_justificada" | "invalido";
+    observation?: string;
+  }[];
+  skip_weekends?: boolean;
+  skip_holidays?: boolean;
+}
+
+export interface AttendanceResponse {
+  success: boolean;
+  message: string;
+  data: AttendanceData | AttendanceData[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export interface AttendanceByDateResponse {
+  success: boolean;
+  data: AttendanceData[];
+  date: string;
+  grade_id?: string;
+}
+
+export interface AttendanceByStudentResponse {
+  success: boolean;
+  student: {
+    id: number;
+    name: string;
+    grade: string;
+    time: string;
+    gradeId: string;
+  };
+  data: AttendanceData[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
 // Alias para compatibilidade
 export type Turmas = Grade;
 export type Aluno = Student;
