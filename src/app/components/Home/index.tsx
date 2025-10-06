@@ -91,8 +91,18 @@ export default function HomePage() {
         try {
             await createTurma({ grade: turmaData.name, time: turmaData.time });
             setIsModalOpen(false);
-        } catch {
-            toast.error("Erro ao criar turma");
+        } catch (error: any) {
+            console.error('Erro ao criar turma:', error);
+            
+            // Verificar se é erro 409 (duplicação)
+            if (error?.response?.status === 409) {
+                const message = error?.response?.data?.message || "Já existe uma turma com este dia e horário";
+                toast.error(message);
+            } else if (error?.message?.includes('Já existe uma turma')) {
+                toast.error(error.message);
+            } else {
+                toast.error("Erro ao criar turma");
+            }
         }
     };
 
@@ -288,6 +298,7 @@ export default function HomePage() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={handleSaveTurma}
+                existingTurmas={turmasArray.map(turma => ({ grade: turma.grade, time: turma.time }))}
             />
 
             <EditTurmaModal
@@ -295,6 +306,7 @@ export default function HomePage() {
                 onClose={handleCloseEditModal}
                 onSave={handleSaveEditTurma}
                 turma={selectedTurma || undefined}
+                existingTurmas={turmasArray.map(turma => ({ grade: turma.grade, time: turma.time, id: turma.id }))}
             />
 
             <DeleteTurmaModal
