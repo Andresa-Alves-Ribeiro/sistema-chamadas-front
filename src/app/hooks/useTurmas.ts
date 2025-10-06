@@ -25,8 +25,15 @@ export const useTurmas = () => {
   const createTurma = async (turmaData: { grade: string; time: string }) => {
     try {
       const novaTurma = await turmasService.createTurma(turmaData);
-      setTurmas(prev => [...prev, novaTurma]);
-      return novaTurma;
+      
+      // Garantir que a nova turma tenha todas as propriedades necessárias
+      const turmaCompleta: Turmas = {
+        ...novaTurma,
+        studentsQuantity: novaTurma.studentsQuantity || 0
+      };
+      
+      setTurmas(prev => [...prev, turmaCompleta]);
+      return turmaCompleta;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar turma');
       throw err;

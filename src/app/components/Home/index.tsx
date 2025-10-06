@@ -18,6 +18,7 @@ const dayOrder: Record<string, number> = {
     "Segunda-feira": 1,
     "Terça-feira": 2,
     "Quarta-feira": 3,
+    "Quinta-feira": 4,
     "Sexta-feira": 5
 };
 
@@ -144,6 +145,9 @@ export default function HomePage() {
     filteredTurmas.forEach(turma => {
         if (turmasPorDia[turma.grade]) {
             turmasPorDia[turma.grade].push(turma);
+        } else {
+            // Se o dia não estiver no dayOrder, criar um novo grupo
+            turmasPorDia[turma.grade] = [turma];
         }
     });
 
@@ -207,14 +211,24 @@ export default function HomePage() {
                     </div>
                 )}
 
-                <div className="space-y-4 sm:space-y-8">
-                    {Object.entries(turmasPorDia)
-                        .sort(([diaA], [diaB]) => {
-                            const orderA = dayOrder[diaA] || 999;
-                            const orderB = dayOrder[diaB] || 999;
-                            return orderA - orderB;
-                        })
-                        .map(([dia, turmas], index) => (
+                {Object.entries(turmasPorDia).filter(([dia, turmas]) => turmas.length > 0).length === 0 ? (
+                    <div className="text-center py-12">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                            <Notebook className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">Nenhuma turma encontrada</h3>
+                        <p className="text-slate-600 mb-6">Crie sua primeira turma clicando no botão acima</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4 sm:space-y-8">
+                        {Object.entries(turmasPorDia)
+                            .filter(([dia, turmas]) => turmas.length > 0) // Só mostra dias que têm turmas
+                            .sort(([diaA], [diaB]) => {
+                                const orderA = dayOrder[diaA] || 999;
+                                const orderB = dayOrder[diaB] || 999;
+                                return orderA - orderB;
+                            })
+                            .map(([dia, turmas], index) => (
                         <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
                             <div className="relative p-4 sm:p-8">
                                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
@@ -266,7 +280,8 @@ export default function HomePage() {
                             </div>
                         </div>
                     ))}
-                </div>
+                    </div>
+                )}
             </div>
 
             <AddTurmaModal

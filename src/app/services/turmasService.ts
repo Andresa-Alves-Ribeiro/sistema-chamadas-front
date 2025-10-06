@@ -56,11 +56,24 @@ export const turmasService = {
       const response = await api.post('/grades', formattedData);
       const apiData = response.data;
       
+      let turmaData: Grade;
+      
       if (apiData.success && apiData.data) {
-        return apiData.data;
+        turmaData = apiData.data;
+      } else {
+        turmaData = response.data;
       }
       
-      return response.data;
+      // Garantir que a turma retornada tenha todas as propriedades necessárias
+      return {
+        id: turmaData.id,
+        grade: turmaData.grade,
+        time: turmaData.time,
+        studentsQuantity: turmaData.studentsQuantity || 0,
+        created_at: turmaData.created_at,
+        updated_at: turmaData.updated_at,
+        ...turmaData
+      };
     } catch (error) {
       console.error('Erro ao criar turma:', error);
       throw error;
