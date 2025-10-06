@@ -60,12 +60,27 @@ export const isValidTimeFormat = (time: string): boolean => {
  * @returns Número de minutos desde meia-noite
  */
 export const timeToMinutes = (time: string): number => {
-  if (!isValidTimeFormat(time)) {
+  if (!time || typeof time !== 'string') {
     return 0;
   }
 
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
+  // Remove espaços e normaliza o formato
+  const cleanTime = time.trim();
+  
+  // Se não está no formato correto, tenta formatar
+  const formattedTime = formatTime(cleanTime);
+  
+  if (!formattedTime) {
+    console.warn(`Formato de tempo inválido: ${time}`);
+    return 0;
+  }
+
+  const [hours, minutes] = formattedTime.split(':').map(Number);
+  const totalMinutes = hours * 60 + minutes;
+  
+  console.log(`Convertendo ${time} -> ${formattedTime} -> ${totalMinutes} minutos`);
+  
+  return totalMinutes;
 };
 
 /**

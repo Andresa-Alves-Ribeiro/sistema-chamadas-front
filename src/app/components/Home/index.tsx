@@ -38,6 +38,9 @@ const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
         const timeA = timeToMinutes(a.time);
         const timeB = timeToMinutes(b.time);
         
+        // Debug: verificar conversão de tempo
+        console.log(`Comparando ${a.time} (${timeA} min) com ${b.time} (${timeB} min)`);
+        
         return timeA - timeB;
     });
 };
@@ -59,6 +62,9 @@ export default function HomePage() {
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const sortedTurmas = sortTurmasByDayAndTime(turmasArray);
     const filteredTurmas = sortedTurmas;
+    
+    // Debug: verificar se a ordenação está funcionando
+    console.log('Turmas ordenadas:', sortedTurmas.map(t => ({ dia: t.grade, horario: t.time })));
     const totalTurmas = turmasArray.length;
 
     useEffect(() => {
@@ -138,21 +144,26 @@ export default function HomePage() {
         setSelectedTurma(null);
     };
 
-    const turmasPorDia = filteredTurmas.reduce((acc, turma) => {
-        if (!acc[turma.grade]) {
-            acc[turma.grade] = [];
-        }
-        acc[turma.grade].push(turma);
-        return acc;
-    }, {} as Record<string, Turmas[]>);
-
-    Object.keys(turmasPorDia).forEach(dia => {
-        turmasPorDia[dia].sort((a, b) => {
-            const timeA = timeToMinutes(a.time);
-            const timeB = timeToMinutes(b.time);
-            return timeA - timeB;
-        });
+    // Agrupar turmas por dia mantendo a ordem já estabelecida
+    const turmasPorDia: Record<string, Turmas[]> = {};
+    
+    // Primeiro, criar as chaves para cada dia na ordem correta
+    Object.keys(dayOrder).forEach(dia => {
+        turmasPorDia[dia] = [];
     });
+    
+    // Depois, adicionar as turmas na ordem já ordenada
+    filteredTurmas.forEach(turma => {
+        if (turmasPorDia[turma.grade]) {
+            turmasPorDia[turma.grade].push(turma);
+        }
+    });
+    
+    // Debug: verificar o agrupamento por dia
+    console.log('Turmas por dia:', Object.keys(turmasPorDia).map(dia => ({
+        dia,
+        turmas: turmasPorDia[dia].map(t => t.time)
+    })));
 
     return (
         <div className="min-h-screen p-4 sm:p-8">
@@ -237,7 +248,13 @@ export default function HomePage() {
                             </div>
                             <div className="p-4 sm:p-8">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                    {turmas.map((turma, turmaIndex) => (
+                                    {turmas
+                                        .sort((a, b) => {
+                                            const timeA = timeToMinutes(a.time);
+                                            const timeB = timeToMinutes(b.time);
+                                            return timeA - timeB;
+                                        })
+                                        .map((turma, turmaIndex) => (
                                         <div key={turma.id} className="group bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-4 sm:p-6 border border-blue-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s`, overflow: 'visible' }} onClick={() => handleTurmaClick(turma)}>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
