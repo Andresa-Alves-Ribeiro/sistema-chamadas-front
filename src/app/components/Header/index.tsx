@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { User, BookOpen, Menu, X, FileText, Home } from 'lucide-react';
+import Image from 'next/image';
+import { User, Menu, X, FileText, Home } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Header() {
@@ -14,8 +15,15 @@ export default function Header() {
                     <div className="flex items-center space-x-6 lg:space-x-8">
                         <div className="flex items-center space-x-2 sm:space-x-3">
                             <Link href="/" className="cursor-pointer">
-                                <div className="bg-white p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                                    <BookOpen className="h-4 w-4 sm:h-6 sm:w-6 text-slate-700" />
+                                <div className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <Image
+                                        src="/assets/villa-header.png"
+                                        alt="Villa Logo"
+                                        width={44}
+                                        height={44}
+                                        className="h-4 w-4 sm:h-8 sm:w-20"
+                                        priority
+                                    />
                                 </div>
                             </Link>
                         </div>
@@ -23,15 +31,15 @@ export default function Header() {
 
                     <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
                         <div className="flex items-center space-x-2 lg:space-x-3">
-                            <Link 
-                                href="/" 
+                            <Link
+                                href="/"
                                 className="px-3 py-2 text-white hover:text-gray-300 transition-colors flex items-center gap-2"
                             >
                                 <Home size={16} />
                                 Início
                             </Link>
-                            <Link 
-                                href="/arquivos" 
+                            <Link
+                                href="/arquivos"
                                 className="px-3 py-2 text-white hover:text-gray-300 transition-colors flex items-center gap-2"
                             >
                                 <FileText size={16} />
@@ -65,15 +73,15 @@ export default function Header() {
                     <div className="md:hidden border-t border-slate-500 py-4">
                         <nav className="flex flex-col space-y-4">
                             <div className="px-2">
-                                <Link 
-                                    href="/" 
+                                <Link
+                                    href="/"
                                     className="block px-3 py-2 text-white hover:text-gray-300 transition-colors"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Início
                                 </Link>
-                                <Link 
-                                    href="/arquivos" 
+                                <Link
+                                    href="/arquivos"
                                     className="flex items-center gap-2 px-3 py-2 text-white hover:text-gray-300 transition-colors"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >

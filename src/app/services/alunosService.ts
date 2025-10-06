@@ -185,11 +185,6 @@ export const alunosService = {
 
     async deleteStudentsPermanently(studentIds: number[]): Promise<PermanentDeleteStudentsResponse> {
         try {
-            // Log para debug
-            console.log('Enviando IDs para exclusão permanente:', studentIds);
-            console.log('Tipo dos IDs:', studentIds.map(id => typeof id));
-            
-            // Tentar enviar como strings se a API esperar strings
             const studentIdsAsStrings = studentIds.map(id => id.toString());
             console.log('IDs como strings:', studentIdsAsStrings);
             
