@@ -27,7 +27,7 @@ export default function TurmaDetailPage() {
     const turmaId = Number(params.id);
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, includeAluno } = useAlunos();
+    const { createAluno, updateAluno, includeAluno, transferAluno } = useAlunos();
     const { alunos, loading: alunosLoading, fetchAlunosByGradeId, deleteAluno, deleteStudentsPermanently } = useAlunosByGradeId(turmaId.toString());
 
     const turma = turmaData?.grade || null;
@@ -402,8 +402,9 @@ export default function TurmaDetailPage() {
         setIsPermanentDeleteModalOpen(false);
     };
 
-    const handleConfirmReorder = async () => {
+    const handleConfirmReorder = async (studentId: number, newTurmaId: string) => {
         try {
+            await transferAluno(studentId, { newGradeId: newTurmaId });
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
             toast.success("Aluno remanejado com sucesso");
@@ -426,7 +427,7 @@ export default function TurmaDetailPage() {
     const handleConfirmDelete = async (studentId: number) => {
         try {
             await deleteAluno(studentId);
-            toast.success("Aluno deletado com sucesso");
+            // Toast de sucesso é mostrado automaticamente pelo interceptor da API
         } catch {
             toast.error("Erro ao deletar aluno");
         }
@@ -450,19 +451,11 @@ export default function TurmaDetailPage() {
             
             const result = await deleteStudentsPermanently(studentIds);
             
-            // Mostrar mensagem de sucesso com detalhes
-            const { summary, deletedStudents } = result;
+            // Mostrar mensagem de sucesso
             toast.success(result.message);
             
             // Log detalhado para debug
-            console.log('Exclusão permanente realizada:', {
-                totalRequested: summary.totalRequested,
-                totalFound: summary.totalFound,
-                totalDeleted: summary.totalDeleted,
-                activeStudentsDeleted: summary.activeStudentsDeleted,
-                excludedStudentsDeleted: summary.excludedStudentsDeleted,
-                deletedStudents: deletedStudents
-            });
+            console.log('Exclusão permanente realizada:', result);
             
             // Atualizar dados da turma
             await fetchTurmaWithStudents();

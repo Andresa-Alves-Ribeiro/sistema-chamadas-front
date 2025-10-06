@@ -24,13 +24,40 @@ export default function ReorderStudentModal({
   const [availableTurmas, setAvailableTurmas] = useState<Turmas[]>([]);
   const { turmas } = useTurmas();
 
+  // Função para ordenar turmas por dia da semana e horário
+  const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
+    const dayOrder: Record<string, number> = {
+      "Segunda-feira": 1,
+      "Terça-feira": 2,
+      "Quarta-feira": 3,
+      "Quinta-feira": 4,
+      "Sexta-feira": 5,
+      "Sábado": 6,
+      "Domingo": 7
+    };
+
+    return turmas.sort((a, b) => {
+      // Primeiro ordena por dia da semana
+      const dayA = dayOrder[a.grade] || 999;
+      const dayB = dayOrder[b.grade] || 999;
+      
+      if (dayA !== dayB) {
+        return dayA - dayB;
+      }
+      
+      // Se for o mesmo dia, ordena por horário
+      return a.time.localeCompare(b.time);
+    });
+  };
+
   useEffect(() => {
     if (isOpen && student) {  
       const filteredTurmas = turmas.filter(t => 
         !(t.grade === student.grade && t.time === student.time)
       );
       
-      setAvailableTurmas(filteredTurmas);
+      const sortedTurmas = sortTurmasByDayAndTime(filteredTurmas);
+      setAvailableTurmas(sortedTurmas);
       setSelectedTurmaId('');
     }
   }, [isOpen, student, turmas]);

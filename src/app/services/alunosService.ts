@@ -185,15 +185,21 @@ export const alunosService = {
 
     async deleteStudentsPermanently(studentIds: number[]): Promise<PermanentDeleteStudentsResponse> {
         try {
-            const studentIdsAsStrings = studentIds.map(id => id.toString());
-            console.log('IDs como strings:', studentIdsAsStrings);
+            const requestData = { ids: studentIds };
+            console.log('🚀 Enviando requisição para exclusão permanente:');
+            console.log('📤 URL:', '/students/permanent');
+            console.log('📤 Método:', 'DELETE');
+            console.log('📤 Dados enviados:', requestData);
+            console.log('📤 IDs dos alunos:', studentIds);
             
             const response = await api.delete('/students/permanent', {
-                data: { studentIds: studentIdsAsStrings }
+                data: requestData
             });
+            
+            console.log('✅ Resposta recebida:', response.data);
             return response.data;
         } catch (error) {
-            console.error('Erro ao excluir alunos permanentemente:', error);
+            console.error('❌ Erro ao excluir alunos permanentemente:', error);
             throw error;
         }
     }

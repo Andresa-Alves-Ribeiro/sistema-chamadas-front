@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Aluno } from "../../types";
-import { X, Trash2, AlertTriangle, CheckCircle } from "lucide-react";
+import { X, Trash2, AlertTriangle } from "lucide-react";
 
 interface PermanentDeleteStudentsModalProps {
     isOpen: boolean;
@@ -26,8 +26,7 @@ export default function PermanentDeleteStudentsModal({
         student.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Separar alunos ativos e excluídos
-    const activeStudents = filteredStudents.filter(student => !student.excluded);
+    // Filtrar apenas alunos excluídos (apenas estes podem ser excluídos permanentemente)
     const excludedStudents = filteredStudents.filter(student => student.excluded);
 
     const handleSelectStudent = (studentId: number) => {
@@ -60,6 +59,18 @@ export default function PermanentDeleteStudentsModal({
 
     const handleConfirm = async () => {
         if (selectedStudents.size === 0) return;
+
+        // Validar se todos os alunos selecionados estão marcados como excluídos
+        const selectedStudentIds = Array.from(selectedStudents);
+        const invalidStudents = selectedStudentIds.filter(id => {
+            const student = students.find(s => s.id === id);
+            return !student || !student.excluded;
+        });
+
+        if (invalidStudents.length > 0) {
+            console.error('Tentativa de excluir permanentemente alunos que não estão marcados como excluídos:', invalidStudents);
+            return;
+        }
 
         setIsDeleting(true);
         try {
@@ -103,10 +114,6 @@ export default function PermanentDeleteStudentsModal({
     if (!isOpen) return null;
 
     const selectedCount = selectedStudents.size;
-    const selectedActiveCount = Array.from(selectedStudents).filter(id => 
-        students.find(s => s.id === id && !s.excluded)
-    ).length;
-    const selectedExcludedCount = selectedCount - selectedActiveCount;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -146,7 +153,7 @@ export default function PermanentDeleteStudentsModal({
                                     ⚠️ Ação Irreversível
                                 </h3>
                                 <p className="text-red-700 text-sm">
-                                    Os alunos selecionados serão excluídos permanentemente do sistema. 
+                                    Apenas alunos marcados como excluídos podem ser excluídos permanentemente do sistema. 
                                     Todos os dados relacionados (presenças, ocorrências, arquivos) também serão removidos.
                                 </p>
                             </div>
@@ -163,48 +170,6 @@ export default function PermanentDeleteStudentsModal({
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         />
                     </div>
-
-                    {/* Alunos Ativos */}
-                    {activeStudents.length > 0 && (
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                    Alunos Ativos ({activeStudents.length})
-                                </h3>
-                                <button
-                                    onClick={() => handleSelectAll(activeStudents.map(s => s.id))}
-                                    className="text-sm text-red-600 hover:text-red-700 font-medium"
-                                >
-                                    {activeStudents.every(s => selectedStudents.has(s.id)) ? 'Desmarcar Todos' : 'Marcar Todos'}
-                                </button>
-                            </div>
-                            <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {activeStudents.map(student => (
-                                    <label
-                                        key={student.id}
-                                        className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedStudents.has(student.id)}
-                                            onChange={() => handleSelectStudent(student.id)}
-                                            className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                                        />
-                                        <div className="flex-1">
-                                            <p className="font-medium text-gray-900">{student.name}</p>
-                                            <p className="text-sm text-gray-500">
-                                                {student.grade} - {student.time}
-                                            </p>
-                                        </div>
-                                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                                            Ativo
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Alunos Excluídos */}
                     {excludedStudents.length > 0 && (
@@ -253,9 +218,10 @@ export default function PermanentDeleteStudentsModal({
                         </div>
                     )}
 
-                    {filteredStudents.length === 0 && (
+                    {excludedStudents.length === 0 && (
                         <div className="text-center py-8 text-gray-500">
-                            <p>Nenhum aluno encontrado</p>
+                            <p>Nenhum aluno excluído encontrado</p>
+                            <p className="text-sm mt-2">Apenas alunos marcados como excluídos podem ser excluídos permanentemente</p>
                         </div>
                     )}
                 </div>
@@ -267,18 +233,8 @@ export default function PermanentDeleteStudentsModal({
                             {selectedCount > 0 && (
                                 <div>
                                     <p className="font-medium">
-                                        {selectedCount} aluno(s) selecionado(s)
+                                        {selectedCount} aluno(s) excluído(s) selecionado(s)
                                     </p>
-                                    {selectedActiveCount > 0 && (
-                                        <p className="text-green-600">
-                                            • {selectedActiveCount} ativo(s)
-                                        </p>
-                                    )}
-                                    {selectedExcludedCount > 0 && (
-                                        <p className="text-gray-600">
-                                            • {selectedExcludedCount} excluído(s)
-                                        </p>
-                                    )}
                                 </div>
                             )}
                         </div>
