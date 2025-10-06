@@ -66,13 +66,8 @@ export const turmasService = {
       
       // Garantir que a turma retornada tenha todas as propriedades necessárias
       return {
-        id: turmaData.id,
-        grade: turmaData.grade,
-        time: turmaData.time,
-        studentsQuantity: turmaData.studentsQuantity || 0,
-        created_at: turmaData.created_at,
-        updated_at: turmaData.updated_at,
-        ...turmaData
+        ...turmaData,
+        studentsQuantity: turmaData.studentsQuantity || 0
       };
     } catch (error) {
       console.error('Erro ao criar turma:', error);

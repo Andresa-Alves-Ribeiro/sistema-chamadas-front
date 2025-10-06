@@ -34,12 +34,15 @@ export const useTurmas = () => {
       
       setTurmas(prev => [...prev, turmaCompleta]);
       return turmaCompleta;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro no hook createTurma:', err);
       
       // Se for erro 409, usar a mensagem do backend
-      if (err?.response?.status === 409 && err?.response?.data?.message) {
-        const errorMessage = err.response.data.message;
+      if (err && typeof err === 'object' && 'response' in err && 
+          err.response && typeof err.response === 'object' && 'status' in err.response &&
+          err.response.status === 409) {
+        const response = err.response as { data?: { message?: string } };
+        const errorMessage = response?.data?.message || 'Erro ao criar turma';
         setError(errorMessage);
         throw new Error(errorMessage);
       }
