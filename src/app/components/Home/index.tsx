@@ -48,7 +48,7 @@ export default function HomePage() {
     const [selectedTurma, setSelectedTurma] = useState<Turmas | null>(null);
     const [turmaToDelete, setTurmaToDelete] = useState<Turmas | null>(null);
     
-    const { turmas, error, createTurma, updateTurma, deleteTurma } = useTurmas();
+    const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
     const { getAlunosStats } = useAlunos();
     
     const [totalAlunos, setTotalAlunos] = useState<number>(0);
@@ -225,7 +225,18 @@ export default function HomePage() {
                     </div>
                 )}
 
-                {Object.entries(turmasPorDia).filter(([dia, turmas]) => turmas.length > 0).length === 0 ? (
+                {loading ? (
+                    <div className="text-center py-12">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 animate-pulse">
+                            <Notebook className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">Carregando turmas...</h3>
+                        <p className="text-slate-600">Aguarde enquanto buscamos suas turmas</p>
+                        <div className="flex justify-center mt-4">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        </div>
+                    </div>
+                ) : Object.entries(turmasPorDia).filter(([dia, turmas]) => turmas.length > 0).length === 0 ? (
                     <div className="text-center py-12">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                             <Notebook className="w-8 h-8 text-blue-600" />
