@@ -46,7 +46,12 @@ export const useAlunos = () => {
   const deleteAluno = async (id: number) => {
     try {
       await alunosService.deleteAluno(id);
-      setAlunos(prev => prev.filter(a => a.id !== id));
+      // Atualiza o aluno para marcá-lo como excluído ao invés de removê-lo da lista
+      setAlunos(prev => prev.map(a => 
+        a.id === id 
+          ? { ...a, excluded: true, exclusionDate: new Date().toISOString() }
+          : a
+      ));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar aluno');
       throw err;
@@ -171,6 +176,21 @@ export const useAlunosByGradeId = (gradeId: string) => {
     }
   }, [gradeId]);
 
+  const deleteAluno = async (id: number) => {
+    try {
+      await alunosService.deleteAluno(id);
+      // Atualiza o aluno para marcá-lo como excluído ao invés de removê-lo da lista
+      setAlunos(prev => prev.map(a => 
+        a.id === id 
+          ? { ...a, excluded: true, exclusionDate: new Date().toISOString() }
+          : a
+      ));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao deletar aluno');
+      throw err;
+    }
+  };
+
   const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
     try {
       await alunosService.reorderAlunos(turmaId, alunoIds);
@@ -193,6 +213,7 @@ export const useAlunosByGradeId = (gradeId: string) => {
     loading,
     error,
     fetchAlunosByGradeId,
+    deleteAluno,
     reorderAlunos,
   };
 };

@@ -27,7 +27,7 @@ export default function TurmaDetailPage() {
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
     const { createAluno, updateAluno, includeAluno } = useAlunos();
-    const { alunos, loading: alunosLoading, fetchAlunosByGradeId } = useAlunosByGradeId(turmaId.toString());
+    const { alunos, loading: alunosLoading, fetchAlunosByGradeId, deleteAluno } = useAlunosByGradeId(turmaId.toString());
 
     const turma = turmaData?.grade || null;
     const [initialLoading, setInitialLoading] = useState(true);
@@ -413,10 +413,9 @@ export default function TurmaDetailPage() {
         }
     };
 
-    const handleConfirmDelete = async () => {
+    const handleConfirmDelete = async (studentId: number) => {
         try {
-            await fetchTurmaWithStudents();
-            await fetchAlunosByGradeId();
+            await deleteAluno(studentId);
             toast.success("Aluno deletado com sucesso");
         } catch {
             toast.error("Erro ao deletar aluno");
