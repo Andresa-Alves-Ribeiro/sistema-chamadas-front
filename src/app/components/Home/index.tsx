@@ -37,10 +37,7 @@ const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
         
         const timeA = timeToMinutes(a.time);
         const timeB = timeToMinutes(b.time);
-        
-        // Debug: verificar conversão de tempo
-        console.log(`Comparando ${a.time} (${timeA} min) com ${b.time} (${timeB} min)`);
-        
+
         return timeA - timeB;
     });
 };
@@ -62,9 +59,6 @@ export default function HomePage() {
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const sortedTurmas = sortTurmasByDayAndTime(turmasArray);
     const filteredTurmas = sortedTurmas;
-    
-    // Debug: verificar se a ordenação está funcionando
-    console.log('Turmas ordenadas:', sortedTurmas.map(t => ({ dia: t.grade, horario: t.time })));
     const totalTurmas = turmasArray.length;
 
     useEffect(() => {
@@ -144,26 +138,17 @@ export default function HomePage() {
         setSelectedTurma(null);
     };
 
-    // Agrupar turmas por dia mantendo a ordem já estabelecida
     const turmasPorDia: Record<string, Turmas[]> = {};
     
-    // Primeiro, criar as chaves para cada dia na ordem correta
     Object.keys(dayOrder).forEach(dia => {
         turmasPorDia[dia] = [];
     });
     
-    // Depois, adicionar as turmas na ordem já ordenada
     filteredTurmas.forEach(turma => {
         if (turmasPorDia[turma.grade]) {
             turmasPorDia[turma.grade].push(turma);
         }
     });
-    
-    // Debug: verificar o agrupamento por dia
-    console.log('Turmas por dia:', Object.keys(turmasPorDia).map(dia => ({
-        dia,
-        turmas: turmasPorDia[dia].map(t => t.time)
-    })));
 
     return (
         <div className="min-h-screen p-4 sm:p-8">

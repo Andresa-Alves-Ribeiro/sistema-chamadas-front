@@ -264,9 +264,8 @@ export default function TurmaDetailPage() {
             if (!turma || alunos.length === 0) return;
             
             try {
-                const hoje = new Date();
-                const dataInicio = new Date(hoje.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
-                const dataFim = hoje.toISOString().split('T')[0];
+                const dataInicio = new Date('2025-08-01').toISOString().split('T')[0];
+                const dataFim = new Date('2025-12-31').toISOString().split('T')[0];
                 
                 
                 const attendanceData = await attendanceService.getAttendanceByGradePeriod(
