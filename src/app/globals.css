@@ -89,6 +89,15 @@ body {
 }
 
 
+/* Garantir que dropdowns funcionem em todas as telas */
+.table-scroll-container .relative {
+  overflow: visible !important;
+}
+
+.table-scroll-container [style*="z-index"] {
+  position: relative !important;
+}
+
 /* Garantir que tabelas sejam scrolláveis em mobile */
 @media (max-width: 640px) {
   .table-scroll-container {

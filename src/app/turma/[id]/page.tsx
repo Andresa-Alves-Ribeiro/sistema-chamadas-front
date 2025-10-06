@@ -43,6 +43,8 @@ export default function TurmaDetailPage() {
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
     const [statusMap, setStatusMap] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
+    const [pendingChanges, setPendingChanges] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
+    const [isSaving, setIsSaving] = useState(false);
 
     const toggleDayOff = useCallback((dateKey: string) => {
         setDaysOff(prev => {
@@ -112,7 +114,7 @@ export default function TurmaDetailPage() {
         return apiDate;
     }, []);
 
-    const handleStatusChange = useCallback(async (studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
+    const handleStatusChange = useCallback((studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
         setStatusMap(prev => {
             const newMap = new Map(prev);
             if (!newMap.has(dateKey)) {
@@ -123,39 +125,18 @@ export default function TurmaDetailPage() {
             return newMap;
         });
 
-        if (turma) {
-            try {
-                const apiStatus = attendanceService.convertFrontendStatusToApi(status);
-                const apiDate = convertDateKeyToApiFormat(dateKey);
-                
-                if (!apiDate) {
-                    throw new Error('Erro ao converter data para formato da API');
-                }
-                
-                await attendanceService.createAttendance({
-                    student_id: studentId,
-                    grade_id: turma.id.toString(),
-                    attendance_date: apiDate,
-                    status: apiStatus as "presente" | "falta" | "falta_justificada" | "invalido"
-                });
-                
-            } catch (error) {
-                console.error('Erro ao salvar presença:', error);
-                toast.error(`Erro ao salvar presença como "${status}"`);
-                
-                setStatusMap(prev => {
-                    const newMap = new Map(prev);
-                    const dateStatusMap = newMap.get(dateKey);
-                    if (dateStatusMap) {
-                        dateStatusMap.delete(studentId);
-                    }
-                    return newMap;
-                });
+        setPendingChanges(prev => {
+            const newMap = new Map(prev);
+            if (!newMap.has(dateKey)) {
+                newMap.set(dateKey, new Map());
             }
-        }
-    }, [turma, convertDateKeyToApiFormat]);
+            const dateStatusMap = newMap.get(dateKey)!;
+            dateStatusMap.set(studentId, status);
+            return newMap;
+        });
+    }, []);
 
-    const handleBulkStatusChange = useCallback(async (dateKey: string) => {
+    const handleBulkStatusChange = useCallback((dateKey: string) => {
         if (daysOff.has(dateKey)) {
             toggleDayOff(dateKey);
             return;
@@ -201,39 +182,70 @@ export default function TurmaDetailPage() {
             return newMap;
         });
 
-        if (turma) {
-            try {
+        setPendingChanges(prev => {
+            const newMap = new Map(prev);
+            const newDateStatusMap = new Map<number, "presente" | "falta" | "falta_justificada" | "invalido">();
+            alunos.forEach(aluno => {
+                newDateStatusMap.set(aluno.id, nextStatus);
+            });
+            newMap.set(dateKey, newDateStatusMap);
+            return newMap;
+        });
+    }, [alunos, daysOff, toggleDayOff, statusMap]);
+
+    const handleSaveChanges = useCallback(async () => {
+        if (!turma || pendingChanges.size === 0) return;
+
+        setIsSaving(true);
+        let successCount = 0;
+        let errorCount = 0;
+
+        try {
+            for (const [dateKey, studentStatusMap] of pendingChanges) {
                 const apiDate = convertDateKeyToApiFormat(dateKey);
                 
                 if (!apiDate) {
-                    throw new Error('Erro ao converter data para formato da API');
+                    console.error('Erro ao converter data para formato da API:', dateKey);
+                    errorCount++;
+                    continue;
                 }
 
-                const attendances = alunos.map(aluno => ({
-                    student_id: aluno.id,
-                    status: attendanceService.convertFrontendStatusToApi(nextStatus) as "presente" | "falta" | "falta_justificada" | "invalido"
+                const attendances = Array.from(studentStatusMap.entries()).map(([studentId, status]) => ({
+                    student_id: studentId,
+                    status: attendanceService.convertFrontendStatusToApi(status) as "presente" | "falta" | "falta_justificada" | "invalido"
                 }));
 
-                await attendanceService.createMultipleAttendance({
-                    grade_id: turma.id.toString(),
-                    attendance_date: apiDate,
-                    attendances: attendances
-                });
-
-                toast.success(`${alunos.length} presenças marcadas como "${nextStatus}" com sucesso!`);
-                
-            } catch (error) {
-                console.error('Erro ao salvar presenças em lote:', error);
-                toast.error(`Erro ao salvar presenças como "${nextStatus}"`);
-                
-                setStatusMap(prev => {
-                    const newMap = new Map(prev);
-                    newMap.delete(dateKey);
-                    return newMap;
-                });
+                try {
+                    await attendanceService.createMultipleAttendance({
+                        grade_id: turma.id.toString(),
+                        attendance_date: apiDate,
+                        attendances: attendances
+                    });
+                    successCount++;
+                } catch (error) {
+                    console.error(`Erro ao salvar presenças para ${dateKey}:`, error);
+                    errorCount++;
+                }
             }
+
+            if (successCount > 0) {
+                toast.success(`${successCount} dia(s) de presença salvos com sucesso!`);
+                setPendingChanges(new Map());
+            }
+
+            if (errorCount > 0) {
+                toast.error(`${errorCount} dia(s) falharam ao salvar. Tente novamente.`);
+            }
+
+        } catch (error) {
+            console.error('Erro geral ao salvar alterações:', error);
+            toast.error('Erro ao salvar alterações. Tente novamente.');
+        } finally {
+            setIsSaving(false);
         }
-    }, [alunos, daysOff, toggleDayOff, turma, convertDateKeyToApiFormat, statusMap]);
+    }, [turma, pendingChanges, convertDateKeyToApiFormat]);
+
+    const hasPendingChanges = pendingChanges.size > 0;
 
     useEffect(() => {
         if (turma) {
@@ -315,11 +327,12 @@ export default function TurmaDetailPage() {
                 statusMap,
                 handleStatusChange,
                 handleBulkStatusChange,
-                handleStudentNameClick
+                handleStudentNameClick,
+                pendingChanges
             );
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
 
     const handleBackClick = () => {
         router.push('/');
@@ -473,15 +486,38 @@ export default function TurmaDetailPage() {
                             Gerencie a presença dos alunos e controle a frequência
                         </p>
                     </div>
-                    <button 
-                        onClick={handleAddStudent}
-                        className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect w-full sm:w-auto"
-                    >
-                        <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        <span className="text-sm sm:text-base">Adicionar Aluno</span>
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                        {hasPendingChanges && (
+                            <button 
+                                onClick={handleSaveChanges}
+                                disabled={isSaving}
+                                className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white text-sm font-semibold rounded-2xl hover:from-green-500 hover:to-emerald-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-green-100/50 ripple-effect glow-effect disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2 sm:mr-3"></div>
+                                        <span className="text-sm sm:text-base">Salvando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-sm sm:text-base">Salvar Alterações</span>
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        <button 
+                            onClick={handleAddStudent}
+                            className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect w-full sm:w-auto"
+                        >
+                            <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span className="text-sm sm:text-base">Adicionar Aluno</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-10">

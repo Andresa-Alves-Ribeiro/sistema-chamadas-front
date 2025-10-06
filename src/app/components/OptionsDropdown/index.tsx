@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowDownUp, UserPen, UserRoundX, UserPlus, CircleAlert } from 'lucide-react';
+import { ArrowDownUp, UserPen, UserRoundX, UserPlus, CircleAlert, MoreVertical } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Aluno } from '../../types';
 
 interface OptionsDropdownProps {
@@ -15,7 +16,22 @@ interface OptionsDropdownProps {
 
 export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurrences, onInclude, student }: OptionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,7 +54,47 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
     };
   }, [isOpen]);
 
-  const toggleDropdown = () => {
+  useEffect(() => {
+    const updatePosition = () => {
+      if (buttonRef.current && isOpen) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        const dropdownWidth = 208;
+        const viewportWidth = window.innerWidth;
+        
+        // Calcular posição horizontal
+        let left = rect.right - dropdownWidth;
+        
+        // Se o dropdown sair da tela pela esquerda, alinhar com a borda esquerda do botão
+        if (left < 0) {
+          left = rect.left;
+        }
+        
+        // Se o dropdown sair da tela pela direita, ajustar
+        if (left + dropdownWidth > viewportWidth) {
+          left = viewportWidth - dropdownWidth - 8;
+        }
+        
+        setDropdownPosition({
+          top: rect.bottom + 8,
+          left: Math.max(8, left) // Mínimo de 8px da borda da tela
+        });
+      }
+    };
+
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition);
+      window.addEventListener('resize', updatePosition);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen]);
+
+  const toggleDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsOpen(!isOpen);
   };
 
@@ -49,15 +105,14 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
     setIsOpen(false);
   };
 
-  const dropdownContent = isOpen && (
+  const dropdownContent = isOpen && createPortal(
     <div 
-      className="absolute bg-white rounded-lg shadow-xl border border-slate-200"
+      className="fixed bg-white rounded-lg shadow-xl border border-slate-200"
       style={{ 
-        position: 'absolute',
+        position: 'fixed',
         zIndex: 999999,
-        top: '100%',
-        right: '0',
-        marginTop: '8px',
+        top: dropdownPosition.top,
+        left: dropdownPosition.left,
         width: '208px',
         backgroundColor: 'white'
       }}
@@ -147,7 +202,8 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
           )
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 
   return (
@@ -155,17 +211,11 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className={`p-2 ${isOpen ? 'text-blue-600 bg-blue-50' : 'text-slate-500 hover:text-slate-700'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg hover:bg-slate-100 transition-all duration-200`}
+        className={`p-1.5 ${isOpen ? 'text-blue-600 bg-blue-50' : 'text-slate-500 hover:text-slate-700'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg hover:bg-slate-100 transition-all duration-200`}
         aria-label="Opções"
         type="button"
       >
-        <svg
-          className="w-5 h-5"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-        </svg>
+        <MoreVertical size={16} />
       </button>
 
       {isOpen && dropdownContent}
