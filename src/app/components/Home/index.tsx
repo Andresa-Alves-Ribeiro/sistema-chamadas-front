@@ -19,9 +19,7 @@ const dayOrder: Record<string, number> = {
     "Terça-feira": 2,
     "Quarta-feira": 3,
     "Quinta-feira": 4,
-    "Sexta-feira": 5,
-    "Sábado": 6,
-    "Domingo": 7
+    "Sexta-feira": 5
 };
 
 
@@ -93,8 +91,22 @@ export default function HomePage() {
         try {
             await createTurma({ grade: turmaData.name, time: turmaData.time });
             setIsModalOpen(false);
-        } catch {
-            toast.error("Erro ao criar turma");
+        } catch (error: unknown) {
+            console.error('Erro ao criar turma:', error);
+            
+            // Verificar se é erro 409 (duplicação)
+            if (error && typeof error === 'object' && 'response' in error && 
+                error.response && typeof error.response === 'object' && 'status' in error.response &&
+                error.response.status === 409) {
+                const response = error.response as { data?: { message?: string } };
+                const message = response?.data?.message || "Já existe uma turma com este dia e horário";
+                toast.error(message);
+            } else if (error && typeof error === 'object' && 'message' in error && 
+                       typeof error.message === 'string' && error.message.includes('Já existe uma turma')) {
+                toast.error(error.message);
+            } else {
+                toast.error("Erro ao criar turma");
+            }
         }
     };
 
@@ -147,6 +159,9 @@ export default function HomePage() {
     filteredTurmas.forEach(turma => {
         if (turmasPorDia[turma.grade]) {
             turmasPorDia[turma.grade].push(turma);
+        } else {
+            // Se o dia não estiver no dayOrder, criar um novo grupo
+            turmasPorDia[turma.grade] = [turma];
         }
     });
 
@@ -210,14 +225,24 @@ export default function HomePage() {
                     </div>
                 )}
 
-                <div className="space-y-4 sm:space-y-8">
-                    {Object.entries(turmasPorDia)
-                        .sort(([diaA], [diaB]) => {
-                            const orderA = dayOrder[diaA] || 999;
-                            const orderB = dayOrder[diaB] || 999;
-                            return orderA - orderB;
-                        })
-                        .map(([dia, turmas], index) => (
+                {Object.entries(turmasPorDia).filter(([dia, turmas]) => turmas.length > 0).length === 0 ? (
+                    <div className="text-center py-12">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                            <Notebook className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">Nenhuma turma encontrada</h3>
+                        <p className="text-slate-600 mb-6">Crie sua primeira turma clicando no botão acima</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4 sm:space-y-8">
+                        {Object.entries(turmasPorDia)
+                            .filter(([dia, turmas]) => turmas.length > 0) // Só mostra dias que têm turmas
+                            .sort(([diaA], [diaB]) => {
+                                const orderA = dayOrder[diaA] || 999;
+                                const orderB = dayOrder[diaB] || 999;
+                                return orderA - orderB;
+                            })
+                            .map(([dia, turmas], index) => (
                         <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
                             <div className="relative p-4 sm:p-8">
                                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
@@ -269,13 +294,15 @@ export default function HomePage() {
                             </div>
                         </div>
                     ))}
-                </div>
+                    </div>
+                )}
             </div>
 
             <AddTurmaModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={handleSaveTurma}
+                existingTurmas={turmasArray.map(turma => ({ grade: turma.grade, time: turma.time }))}
             />
 
             <EditTurmaModal
@@ -283,6 +310,7 @@ export default function HomePage() {
                 onClose={handleCloseEditModal}
                 onSave={handleSaveEditTurma}
                 turma={selectedTurma || undefined}
+                existingTurmas={turmasArray.map(turma => ({ grade: turma.grade, time: turma.time, id: turma.id }))}
             />
 
             <DeleteTurmaModal

@@ -25,9 +25,28 @@ export const useTurmas = () => {
   const createTurma = async (turmaData: { grade: string; time: string }) => {
     try {
       const novaTurma = await turmasService.createTurma(turmaData);
-      setTurmas(prev => [...prev, novaTurma]);
-      return novaTurma;
-    } catch (err) {
+      
+      // Garantir que a nova turma tenha todas as propriedades necessárias
+      const turmaCompleta: Turmas = {
+        ...novaTurma,
+        studentsQuantity: novaTurma.studentsQuantity || 0
+      };
+      
+      setTurmas(prev => [...prev, turmaCompleta]);
+      return turmaCompleta;
+    } catch (err: unknown) {
+      console.error('Erro no hook createTurma:', err);
+      
+      // Se for erro 409, usar a mensagem do backend
+      if (err && typeof err === 'object' && 'response' in err && 
+          err.response && typeof err.response === 'object' && 'status' in err.response &&
+          err.response.status === 409) {
+        const response = err.response as { data?: { message?: string } };
+        const errorMessage = response?.data?.message || 'Erro ao criar turma';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+      
       setError(err instanceof Error ? err.message : 'Erro ao criar turma');
       throw err;
     }
