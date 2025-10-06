@@ -10,6 +10,7 @@ import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
 import OccurrenceModal from "../../components/OccurrenceModal";
 import TransferInfoPopup from "../../components/TransferInfoPopup";
+import PermanentDeleteStudentsModal from "../../components/PermanentDeleteStudentsModal";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
@@ -27,7 +28,7 @@ export default function TurmaDetailPage() {
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
     const { createAluno, updateAluno, includeAluno } = useAlunos();
-    const { alunos, loading: alunosLoading, fetchAlunosByGradeId, deleteAluno } = useAlunosByGradeId(turmaId.toString());
+    const { alunos, loading: alunosLoading, fetchAlunosByGradeId, deleteAluno, deleteStudentsPermanently } = useAlunosByGradeId(turmaId.toString());
 
     const turma = turmaData?.grade || null;
     const [initialLoading, setInitialLoading] = useState(true);
@@ -40,6 +41,7 @@ export default function TurmaDetailPage() {
     const [isOccurrenceModalOpen, setIsOccurrenceModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [isTransferInfoPopupOpen, setIsTransferInfoPopupOpen] = useState(false);
+    const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
     const [statusMap, setStatusMap] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
@@ -392,6 +394,14 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
+    const handleOpenPermanentDeleteModal = () => {
+        setIsPermanentDeleteModalOpen(true);
+    };
+
+    const handleClosePermanentDeleteModal = () => {
+        setIsPermanentDeleteModalOpen(false);
+    };
+
     const handleConfirmReorder = async () => {
         try {
             await fetchTurmaWithStudents();
@@ -430,6 +440,38 @@ export default function TurmaDetailPage() {
             toast.success("Aluno incluído com sucesso");
         } catch {
             toast.error("Erro ao incluir aluno");
+        }
+    };
+
+    const handleConfirmPermanentDelete = async (studentIds: number[]) => {
+        try {
+            console.log('IDs recebidos na página:', studentIds);
+            console.log('Dados dos alunos:', alunos.map(a => ({ id: a.id, name: a.name, idType: typeof a.id })));
+            
+            const result = await deleteStudentsPermanently(studentIds);
+            
+            // Mostrar mensagem de sucesso com detalhes
+            const { summary, deletedStudents } = result;
+            toast.success(result.message);
+            
+            // Log detalhado para debug
+            console.log('Exclusão permanente realizada:', {
+                totalRequested: summary.totalRequested,
+                totalFound: summary.totalFound,
+                totalDeleted: summary.totalDeleted,
+                activeStudentsDeleted: summary.activeStudentsDeleted,
+                excludedStudentsDeleted: summary.excludedStudentsDeleted,
+                deletedStudents: deletedStudents
+            });
+            
+            // Atualizar dados da turma
+            await fetchTurmaWithStudents();
+            await fetchAlunosByGradeId();
+            
+            handleClosePermanentDeleteModal();
+        } catch (error) {
+            console.error("Erro ao excluir alunos permanentemente:", error);
+            toast.error("Erro ao excluir alunos permanentemente");
         }
     };
 
@@ -514,6 +556,15 @@ export default function TurmaDetailPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                             <span className="text-sm sm:text-base">Adicionar Aluno</span>
+                        </button>
+                        <button 
+                            onClick={handleOpenPermanentDeleteModal}
+                            className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-700 to-red-800 text-white text-sm font-semibold rounded-2xl hover:from-red-500 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-red-100/50 ripple-effect glow-effect w-full sm:w-auto"
+                        >
+                            <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span className="text-sm sm:text-base">Exclusão Permanente</span>
                         </button>
                     </div>
                 </div>
@@ -607,6 +658,13 @@ export default function TurmaDetailPage() {
                 isOpen={isTransferInfoPopupOpen}
                 onClose={handleCloseTransferInfoPopup}
                 student={selectedStudent}
+            />
+
+            <PermanentDeleteStudentsModal
+                isOpen={isPermanentDeleteModalOpen}
+                onClose={handleClosePermanentDeleteModal}
+                onConfirm={handleConfirmPermanentDelete}
+                students={alunos}
             />
         </div>
     );

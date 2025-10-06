@@ -128,6 +128,33 @@ export interface TransferStudentResponse {
   };
 }
 
+export interface PermanentDeleteStudentsRequest {
+  studentIds: number[];
+}
+
+export interface DeletedStudentInfo {
+  id: number;
+  name: string;
+  grade: string;
+  time: string;
+  wasActive: boolean;
+}
+
+export interface PermanentDeleteSummary {
+  totalRequested: number;
+  totalFound: number;
+  totalDeleted: number;
+  activeStudentsDeleted: number;
+  excludedStudentsDeleted: number;
+}
+
+export interface PermanentDeleteStudentsResponse {
+  success: boolean;
+  message: string;
+  deletedStudents: DeletedStudentInfo[];
+  summary: PermanentDeleteSummary;
+}
+
 export interface AttendanceData {
   id: number;
   student_id: number;

@@ -98,6 +98,20 @@ export const useAlunos = () => {
     }
   }, []);
 
+  const deleteStudentsPermanently = async (studentIds: number[]) => {
+    try {
+      const result = await alunosService.deleteStudentsPermanently(studentIds);
+      
+      // Remove os alunos excluídos permanentemente da lista
+      setAlunos(prev => prev.filter(aluno => !studentIds.includes(aluno.id)));
+      
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir alunos permanentemente');
+      throw err;
+    }
+  };
+
   return {
     alunos,
     loading,
@@ -109,6 +123,7 @@ export const useAlunos = () => {
     includeAluno,
     transferAluno,
     getAlunosStats,
+    deleteStudentsPermanently,
   };
 };
 
@@ -202,6 +217,20 @@ export const useAlunosByGradeId = (gradeId: string) => {
     }
   };
 
+  const deleteStudentsPermanently = async (studentIds: number[]) => {
+    try {
+      const result = await alunosService.deleteStudentsPermanently(studentIds);
+      
+      // Remove os alunos excluídos permanentemente da lista
+      setAlunos(prev => prev.filter(aluno => !studentIds.includes(aluno.id)));
+      
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir alunos permanentemente');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     if (gradeId) {
       fetchAlunosByGradeId();
@@ -215,5 +244,6 @@ export const useAlunosByGradeId = (gradeId: string) => {
     fetchAlunosByGradeId,
     deleteAluno,
     reorderAlunos,
+    deleteStudentsPermanently,
   };
 };

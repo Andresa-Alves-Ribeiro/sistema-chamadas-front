@@ -1,5 +1,5 @@
 import api from './api';
-import { Student, TransferStudentResponse } from '../types';
+import { Student, TransferStudentResponse, PermanentDeleteStudentsResponse } from '../types';
 
 export interface CreateAlunoData {
     name: string;
@@ -179,6 +179,26 @@ export const alunosService = {
             return { totalAlunos: apiData.totalStudents || 0 };
         } catch (error) {
             console.error('Erro ao buscar estatísticas dos alunos:', error);
+            throw error;
+        }
+    },
+
+    async deleteStudentsPermanently(studentIds: number[]): Promise<PermanentDeleteStudentsResponse> {
+        try {
+            // Log para debug
+            console.log('Enviando IDs para exclusão permanente:', studentIds);
+            console.log('Tipo dos IDs:', studentIds.map(id => typeof id));
+            
+            // Tentar enviar como strings se a API esperar strings
+            const studentIdsAsStrings = studentIds.map(id => id.toString());
+            console.log('IDs como strings:', studentIdsAsStrings);
+            
+            const response = await api.delete('/students/permanent', {
+                data: { studentIds: studentIdsAsStrings }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Erro ao excluir alunos permanentemente:', error);
             throw error;
         }
     }
