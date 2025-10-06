@@ -13,7 +13,6 @@ interface TurmaOptionsDropdownProps {
 
 export default function TurmaOptionsDropdown({ onEdit, onDelete, turma }: TurmaOptionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -28,38 +27,17 @@ export default function TurmaOptionsDropdown({ onEdit, onDelete, turma }: TurmaO
       }
     };
 
-    const updatePosition = () => {
-      if (isOpen && buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        setPosition({
-          top: rect.bottom + 8,
-          left: rect.right - 160
-        });
-      }
-    };
-
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('scroll', updatePosition);
-      window.addEventListener('resize', updatePosition);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('scroll', updatePosition);
-      window.removeEventListener('resize', updatePosition);
     };
   }, [isOpen]);
 
   const toggleDropdown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 8,
-        left: rect.right - 160
-      });
-    }
     setIsOpen(!isOpen);
   };
 
@@ -72,12 +50,13 @@ export default function TurmaOptionsDropdown({ onEdit, onDelete, turma }: TurmaO
 
   const dropdownContent = isOpen && (
     <div 
-      className="fixed bg-white rounded-lg shadow-xl border border-slate-200"
+      className="absolute bg-white rounded-lg shadow-xl border border-slate-200"
       style={{ 
-        position: 'fixed',
-        zIndex: 99999,
-        top: position.top,
-        left: position.left,
+        position: 'absolute',
+        zIndex: 999999,
+        top: '100%',
+        right: '0',
+        marginTop: '8px',
         width: '160px',
         backgroundColor: 'white'
       }}
@@ -120,7 +99,7 @@ export default function TurmaOptionsDropdown({ onEdit, onDelete, turma }: TurmaO
   );
 
   return (
-    <>
+    <div className="relative" style={{ zIndex: isOpen ? 999999 : 'auto' }}>
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
@@ -131,7 +110,7 @@ export default function TurmaOptionsDropdown({ onEdit, onDelete, turma }: TurmaO
         <MoreVertical size={16} />
       </button>
 
-      {typeof window !== 'undefined' && isOpen && createPortal(dropdownContent, document.body)}
-    </>
+      {isOpen && dropdownContent}
+    </div>
   );
 }

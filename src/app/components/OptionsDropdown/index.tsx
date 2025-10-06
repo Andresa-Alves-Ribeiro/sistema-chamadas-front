@@ -2,7 +2,6 @@
 
 import { ArrowDownUp, UserPen, UserRoundX, UserPlus, CircleAlert } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Aluno } from '../../types';
 
 interface OptionsDropdownProps {
@@ -16,7 +15,6 @@ interface OptionsDropdownProps {
 
 export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurrences, onInclude, student }: OptionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -31,37 +29,16 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
       }
     };
 
-    const updatePosition = () => {
-      if (isOpen && buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        setPosition({
-          top: rect.bottom + 8,
-          left: rect.right - 208 
-        });
-      }
-    };
-
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('scroll', updatePosition);
-      window.addEventListener('resize', updatePosition);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('scroll', updatePosition);
-      window.removeEventListener('resize', updatePosition);
     };
   }, [isOpen]);
 
   const toggleDropdown = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 8,
-        left: rect.right - 208
-      });
-    }
     setIsOpen(!isOpen);
   };
 
@@ -74,12 +51,13 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
 
   const dropdownContent = isOpen && (
     <div 
-      className="fixed bg-white rounded-lg shadow-xl border border-slate-200"
+      className="absolute bg-white rounded-lg shadow-xl border border-slate-200"
       style={{ 
-        position: 'fixed',
-        zIndex: 99999,
-        top: position.top,
-        left: position.left,
+        position: 'absolute',
+        zIndex: 999999,
+        top: '100%',
+        right: '0',
+        marginTop: '8px',
         width: '208px',
         backgroundColor: 'white'
       }}
@@ -173,7 +151,7 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
   );
 
   return (
-    <>
+    <div className="relative" style={{ zIndex: isOpen ? 999999 : 'auto' }}>
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
@@ -190,7 +168,7 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
         </svg>
       </button>
 
-      {typeof window !== 'undefined' && isOpen && createPortal(dropdownContent, document.body)}
-    </>
+      {isOpen && dropdownContent}
+    </div>
   );
 }
