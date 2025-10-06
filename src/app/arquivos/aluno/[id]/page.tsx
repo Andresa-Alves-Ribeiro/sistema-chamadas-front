@@ -80,11 +80,16 @@ export default function AlunoArquivosPage() {
                             </button>
                             <div>
                                 <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                                    <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-lg animate-pulse-slow">
+                                    <div className="p-2 bg-gradient-to-r from-blue-700/90 to-cyan-800/90 rounded-xl shadow-lg animate-pulse-slow">
                                         <FileText className="text-white" size={20} />
                                     </div>
                                     Arquivos de {aluno.name}
                                 </h1>
+                                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded-lg">
+                                    <p className="text-xs text-yellow-700">
+                                        <strong>⚠️ Modo Desenvolvimento:</strong> Exibindo dados mockados. Backend ainda não implementado.
+                                    </p>
+                                </div>
                                 <p className="text-slate-600">
                                     {aluno.grade} às {formatTime(aluno.time)}
                                 </p>
@@ -92,7 +97,7 @@ export default function AlunoArquivosPage() {
                         </div>
                         <button
                             onClick={handleUpload}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            className="bg-gradient-to-r from-blue-700/90 to-cyan-800/90 hover:from-blue-700 hover:to-cyan-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                         >
                             <Upload size={20} className="animate-bounce-slow" />
                             Novo Upload
@@ -144,7 +149,7 @@ export default function AlunoArquivosPage() {
 
                 <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow">
                     <div className="gradient-bg p-6 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/90 to-cyan-800/90"></div>
                         <div className="relative">
                             <h2 className="text-lg font-semibold text-white flex items-center gap-3">
                                 <div className="p-2 bg-blue-500/30 rounded-lg backdrop-blur-sm">

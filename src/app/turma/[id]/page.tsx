@@ -85,6 +85,10 @@ export default function TurmaDetailPage() {
         setIsOccurrenceModalOpen(true);
     }, []);
 
+    const handleArchiveStudent = useCallback((student: Aluno) => {
+        router.push(`/arquivos/aluno/${student.id}`);
+    }, [router]);
+
     const convertDateKeyToApiFormat = useCallback((dateKey: string): string => {
         
         if (!dateKey.startsWith('date_')) {
@@ -324,6 +328,7 @@ export default function TurmaDetailPage() {
                 handleEditStudent,
                 handleDeleteStudent,
                 handleIncludeStudent,
+                handleArchiveStudent,
                 turma.id,
                 statusMap,
                 handleStatusChange,
@@ -333,7 +338,7 @@ export default function TurmaDetailPage() {
             );
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, handleArchiveStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
 
     const handleBackClick = () => {
         router.push('/');
