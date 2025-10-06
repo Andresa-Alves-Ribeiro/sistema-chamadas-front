@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { arquivosService } from '../services/arquivosService';
 import { Arquivo } from '../types';
 
@@ -72,7 +72,7 @@ export const useArquivosByAluno = (alunoId: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchArquivosByAluno = async () => {
+  const fetchArquivosByAluno = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -119,7 +119,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [alunoId]);
 
   const uploadArquivo = async (file: File) => {
     try {
