@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, UserPen } from 'lucide-react';
 import { Aluno } from '../../types';
+import { formatTime } from '../../utils/timeFormat';
 
 interface EditStudentModalProps {
   isOpen: boolean;
@@ -103,7 +104,7 @@ export default function EditStudentModal({
               <div>
                 <p className="font-medium text-slate-900">{student.name}</p>
                 <p className="text-sm text-slate-600">
-                  Turma: {student.grade} - {student.time}
+                  Turma: {student.grade} - {formatTime(student.time)}
                 </p>
               </div>
             </div>
@@ -147,7 +148,7 @@ export default function EditStudentModal({
                   <div>
                     <p className="font-medium text-green-900">{newName.trim()}</p>
                     <p className="text-sm text-green-700">
-                      Turma: {student.grade} - {student.time}
+                      Turma: {student.grade} - {formatTime(student.time)}
                     </p>
                   </div>
                 </div>

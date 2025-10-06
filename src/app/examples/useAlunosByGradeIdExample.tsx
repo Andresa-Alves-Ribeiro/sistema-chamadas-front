@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAlunosByGradeId } from '../hooks/useAlunos';
+import { formatTime } from '../utils/timeFormat';
 import { Student } from '../types';
 
 interface Props {
@@ -30,7 +31,7 @@ export const AlunosByGradeIdExample: React.FC<Props> = ({ gradeId }) => {
             <h3>{aluno.name}</h3>
             <p>ID: {aluno.id}</p>
             <p>Turma: {aluno.grade}</p>
-            <p>Período: {aluno.time}</p>
+            <p>Período: {formatTime(aluno.time)}</p>
             <p>Grade ID: {aluno.gradeId}</p>
 
             {aluno.transferred && (
@@ -51,14 +52,14 @@ export const AlunosByGradeIdExample: React.FC<Props> = ({ gradeId }) => {
                         <h6>Turma Original:</h6>
                         <p>ID: {aluno.transfer_info.original_grade.id}</p>
                         <p>Série: {aluno.transfer_info.original_grade.grade}</p>
-                        <p>Período: {aluno.transfer_info.original_grade.time}</p>
+                        <p>Período: {formatTime(aluno.transfer_info.original_grade.time)}</p>
                       </div>
 
                       <div>
                         <h6>Turma Atual:</h6>
                         <p>ID: {aluno.transfer_info.current_grade.id}</p>
                         <p>Série: {aluno.transfer_info.current_grade.grade}</p>
-                        <p>Período: {aluno.transfer_info.current_grade.time}</p>
+                        <p>Período: {formatTime(aluno.transfer_info.current_grade.time)}</p>
                       </div>
                     </div>
                   </div>

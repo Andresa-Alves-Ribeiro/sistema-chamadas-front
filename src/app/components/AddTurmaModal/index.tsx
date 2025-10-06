@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatTime, isValidTimeFormat } from "../../utils/timeFormat";
 
 interface AddTurmaModalProps {
     isOpen: boolean;
@@ -11,31 +12,38 @@ interface AddTurmaModalProps {
 export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModalProps) {
     const [turmaName, setTurmaName] = useState("");
     const [turmaTime, setTurmaTime] = useState("");
+    const [timeError, setTimeError] = useState("");
 
-    const formatTime = (time: string): string => {
-        if (time.includes(':')) {
-            const parts = time.split(':');
-            if (parts.length >= 2) {
-                return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
-            }
-        }
-        return time;
-    };
 
     const handleSave = () => {
-        if (turmaName.trim() && turmaTime.trim()) {
-            onSave({
-                name: turmaName.trim(),
-                time: formatTime(turmaTime.trim())
-            });
-            setTurmaName("");
-            setTurmaTime("");
+        if (!turmaName.trim()) {
+            return;
         }
+
+        if (!turmaTime.trim()) {
+            setTimeError("Horário é obrigatório");
+            return;
+        }
+
+        const formattedTime = formatTime(turmaTime.trim());
+        if (!isValidTimeFormat(formattedTime)) {
+            setTimeError("Formato de horário inválido. Use o formato hh:mm");
+            return;
+        }
+
+        setTimeError("");
+        onSave({
+            name: turmaName.trim(),
+            time: formattedTime
+        });
+        setTurmaName("");
+        setTurmaTime("");
     };
 
     const handleClose = () => {
         setTurmaName("");
         setTurmaTime("");
+        setTimeError("");
         onClose();
     };
 
@@ -84,10 +92,18 @@ export default function AddTurmaModal({ isOpen, onClose, onSave }: AddTurmaModal
                             type="time"
                             id="turmaTime"
                             value={turmaTime}
-                            onChange={(e) => setTurmaTime(e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onChange={(e) => {
+                                setTurmaTime(e.target.value);
+                                setTimeError("");
+                            }}
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                timeError ? 'border-red-300' : 'border-slate-300'
+                            }`}
                             onKeyDown={handleKeyDown}
                         />
+                        {timeError && (
+                            <p className="mt-1 text-sm text-red-600">{timeError}</p>
+                        )}
                     </div>
 
                 </div>

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { X, AlertCircle, Save, Upload, Trash2, Paperclip } from "lucide-react";
 import { Aluno } from "../../types";
 import { occurrenceService } from "../../services/occurrenceService";
+import { formatTime } from "../../utils/timeFormat";
 
 interface OccurrenceModalProps {
   isOpen: boolean;
@@ -181,7 +182,7 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
               <div className="flex-1">
                 <p className="font-medium text-slate-900 text-lg">{student.name}</p>
                 <p className="text-sm text-slate-600">
-                  Turma: {student.grade} - {student.time}
+                  Turma: {student.grade} - {formatTime(student.time)}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
                   ID: {student.id}

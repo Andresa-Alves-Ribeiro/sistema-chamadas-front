@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, UserPlus } from 'lucide-react';
 import { Aluno } from '../../types';
+import { formatTime } from '../../utils/timeFormat';
 
 interface IncludeStudentModalProps {
   isOpen: boolean;
@@ -101,7 +102,7 @@ export default function IncludeStudentModal({
               <div className="flex-1">
                 <p className="font-medium text-green-900 text-lg">{student.name}</p>
                 <p className="text-sm text-green-700">
-                  Turma: {student.grade} - {student.time}
+                  Turma: {student.grade} - {formatTime(student.time)}
                 </p>
                 <p className="text-xs text-green-600 mt-1">
                   ID: {student.id}

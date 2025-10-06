@@ -1,5 +1,6 @@
 import api from './api';
 import { Grade, GradeWithStudents } from '../types';
+import { formatTime } from '../utils/timeFormat';
 
 export interface CreateTurmaData {
   grade: string;
@@ -12,15 +13,6 @@ export interface UpdateTurmaData {
 }
 
 export const turmasService = {
-  formatTime(time: string): string {
-    if (time.includes(':')) {
-      const parts = time.split(':');
-      if (parts.length >= 2) {
-        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
-      }
-    }
-    return time;
-  },
 
   async getAllTurmas(): Promise<Grade[]> {
     try {
@@ -58,7 +50,7 @@ export const turmasService = {
     try {
       const formattedData = {
         ...data,
-        time: this.formatTime(data.time)
+        time: formatTime(data.time)
       };
       
       const response = await api.post('/grades', formattedData);
@@ -79,7 +71,7 @@ export const turmasService = {
     try {
       const formattedData = { ...data };
       if (formattedData.time) {
-        formattedData.time = this.formatTime(formattedData.time);
+        formattedData.time = formatTime(formattedData.time);
       }
       
       const response = await api.put(`/grades/${id}`, formattedData);

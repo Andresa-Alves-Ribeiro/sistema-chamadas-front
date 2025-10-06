@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useTurmas } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
 import { toast } from "react-hot-toast";
+import { timeToMinutes, formatTime } from "../../utils/timeFormat";
 
 
 const dayOrder: Record<string, number> = {
@@ -24,10 +25,6 @@ const dayOrder: Record<string, number> = {
 };
 
 
-const timeToMinutes = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-};
 
 const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
     return [...turmas].sort((a, b) => {
@@ -246,7 +243,7 @@ export default function HomePage() {
                                                         <div className="p-2 bg-gradient-to-r from-blue-700 to-cyan-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
                                                             <Clock className="text-white" size={18} />
                                                         </div>
-                                                        <span className="text-xl">{turma.time}</span>
+                                                        <span className="text-xl">{formatTime(turma.time)}</span>
                                                     </h3>
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-sm bg-blue-700 text-white rounded-xl px-4 py-2 font-semibold shadow-lg">

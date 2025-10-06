@@ -18,6 +18,7 @@ import { useTurmaWithStudents } from "../../hooks/useTurmas";
 import { useAlunos, useAlunosByGradeId } from "../../hooks/useAlunos";
 import { attendanceService } from "../../services/attendanceService";
 import { toast } from "react-hot-toast";
+import { formatTime } from "../../utils/timeFormat";
 
 export default function TurmaDetailPage() {
     const params = useParams();
@@ -236,7 +237,7 @@ export default function TurmaDetailPage() {
 
     useEffect(() => {
         if (turma) {
-            document.title = `Turma ${turma.grade} - ${turma.time} - Sistema de Chamada`;
+            document.title = `Turma ${turma.grade} - ${formatTime(turma.time)} - Sistema de Chamada`;
         }
     }, [turma]);
 
@@ -463,7 +464,7 @@ export default function TurmaDetailPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-lg sm:text-2xl font-bold text-white">
-                                    Turma {turma.grade} - {turma.time}
+                                    Turma {turma.grade} - {formatTime(turma.time)}
                                 </h1>
                             </div>
                             <div className="text-right flex items-center gap-2">
