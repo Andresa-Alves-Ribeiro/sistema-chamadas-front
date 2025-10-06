@@ -80,16 +80,20 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
                         <label htmlFor="turmaName" className="block text-sm font-medium text-slate-700 mb-2">
                             Nome da Turma
                         </label>
-                        <input
-                            type="text"
+                        <select
                             id="turmaName"
                             value={turmaName}
                             onChange={(e) => setTurmaName(e.target.value)}
-                            placeholder="Ex: 6º Ano"
                             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             autoFocus
                             onKeyDown={handleKeyDown}
-                        />
+                        >
+                            <option value="Segunda-feira">Segunda-feira</option>
+                            <option value="Terça-feira">Terça-feira</option>
+                            <option value="Quarta-feira">Quarta-feira</option>
+                            <option value="Quinta-feira">Quinta-feira</option>
+                            <option value="Sexta-feira">Sexta-feira</option>
+                        </select>
                     </div>
 
                     <div className="mb-4">
