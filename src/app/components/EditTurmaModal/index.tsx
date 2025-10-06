@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Turmas } from "../../types";
+import { formatTime, isValidTimeFormat } from "../../utils/timeFormat";
 
 interface EditTurmaModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface EditTurmaModalProps {
 export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditTurmaModalProps) {
     const [turmaName, setTurmaName] = useState("");
     const [turmaTime, setTurmaTime] = useState("");
+    const [timeError, setTimeError] = useState("");
 
     useEffect(() => {
         if (turma) {
@@ -21,30 +23,35 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
         }
     }, [turma]);
 
-    const formatTime = (time: string): string => {
-
-        if (time.includes(':')) {
-            const parts = time.split(':');
-            if (parts.length >= 2) {
-                return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
-            }
-        }
-        return time;
-    };
 
     const handleSave = () => {
-        if (turmaName.trim() && turmaTime.trim() && turma) {
-            onSave(turma.id, {
-                grade: turmaName.trim(),
-                time: formatTime(turmaTime.trim())
-            });
-            handleClose();
+        if (!turmaName.trim() || !turma) {
+            return;
         }
+
+        if (!turmaTime.trim()) {
+            setTimeError("Horário é obrigatório");
+            return;
+        }
+
+        const formattedTime = formatTime(turmaTime.trim());
+        if (!isValidTimeFormat(formattedTime)) {
+            setTimeError("Formato de horário inválido. Use o formato hh:mm");
+            return;
+        }
+
+        setTimeError("");
+        onSave(turma.id, {
+            grade: turmaName.trim(),
+            time: formattedTime
+        });
+        handleClose();
     };
 
     const handleClose = () => {
         setTurmaName("");
         setTurmaTime("");
+        setTimeError("");
         onClose();
     };
 
@@ -93,10 +100,18 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
                             type="time"
                             id="turmaTime"
                             value={turmaTime}
-                            onChange={(e) => setTurmaTime(e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onChange={(e) => {
+                                setTurmaTime(e.target.value);
+                                setTimeError("");
+                            }}
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                timeError ? 'border-red-300' : 'border-slate-300'
+                            }`}
                             onKeyDown={handleKeyDown}
                         />
+                        {timeError && (
+                            <p className="mt-1 text-sm text-red-600">{timeError}</p>
+                        )}
                     </div>
 
                 </div>

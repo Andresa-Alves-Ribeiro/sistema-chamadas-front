@@ -18,6 +18,7 @@ import { useTurmaWithStudents } from "../../hooks/useTurmas";
 import { useAlunos, useAlunosByGradeId } from "../../hooks/useAlunos";
 import { attendanceService } from "../../services/attendanceService";
 import { toast } from "react-hot-toast";
+import { formatTime } from "../../utils/timeFormat";
 
 export default function TurmaDetailPage() {
     const params = useParams();
@@ -25,7 +26,7 @@ export default function TurmaDetailPage() {
     const turmaId = Number(params.id);
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, includeAluno, transferAluno } = useAlunos();
+    const { createAluno, updateAluno, includeAluno } = useAlunos();
     const { alunos, loading: alunosLoading, fetchAlunosByGradeId } = useAlunosByGradeId(turmaId.toString());
 
     const turma = turmaData?.grade || null;
@@ -42,6 +43,8 @@ export default function TurmaDetailPage() {
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
     const [statusMap, setStatusMap] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
+    const [pendingChanges, setPendingChanges] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
+    const [isSaving, setIsSaving] = useState(false);
 
     const toggleDayOff = useCallback((dateKey: string) => {
         setDaysOff(prev => {
@@ -111,7 +114,7 @@ export default function TurmaDetailPage() {
         return apiDate;
     }, []);
 
-    const handleStatusChange = useCallback(async (studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
+    const handleStatusChange = useCallback((studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => {
         setStatusMap(prev => {
             const newMap = new Map(prev);
             if (!newMap.has(dateKey)) {
@@ -122,39 +125,18 @@ export default function TurmaDetailPage() {
             return newMap;
         });
 
-        if (turma) {
-            try {
-                const apiStatus = attendanceService.convertFrontendStatusToApi(status);
-                const apiDate = convertDateKeyToApiFormat(dateKey);
-                
-                if (!apiDate) {
-                    throw new Error('Erro ao converter data para formato da API');
-                }
-                
-                await attendanceService.createAttendance({
-                    student_id: studentId,
-                    grade_id: turma.id.toString(),
-                    attendance_date: apiDate,
-                    status: apiStatus as "presente" | "falta" | "falta_justificada" | "invalido"
-                });
-                
-            } catch (error) {
-                console.error('Erro ao salvar presença:', error);
-                toast.error(`Erro ao salvar presença como "${status}"`);
-                
-                setStatusMap(prev => {
-                    const newMap = new Map(prev);
-                    const dateStatusMap = newMap.get(dateKey);
-                    if (dateStatusMap) {
-                        dateStatusMap.delete(studentId);
-                    }
-                    return newMap;
-                });
+        setPendingChanges(prev => {
+            const newMap = new Map(prev);
+            if (!newMap.has(dateKey)) {
+                newMap.set(dateKey, new Map());
             }
-        }
-    }, [turma, convertDateKeyToApiFormat]);
+            const dateStatusMap = newMap.get(dateKey)!;
+            dateStatusMap.set(studentId, status);
+            return newMap;
+        });
+    }, []);
 
-    const handleBulkStatusChange = useCallback(async (dateKey: string) => {
+    const handleBulkStatusChange = useCallback((dateKey: string) => {
         if (daysOff.has(dateKey)) {
             toggleDayOff(dateKey);
             return;
@@ -200,43 +182,74 @@ export default function TurmaDetailPage() {
             return newMap;
         });
 
-        if (turma) {
-            try {
+        setPendingChanges(prev => {
+            const newMap = new Map(prev);
+            const newDateStatusMap = new Map<number, "presente" | "falta" | "falta_justificada" | "invalido">();
+            alunos.forEach(aluno => {
+                newDateStatusMap.set(aluno.id, nextStatus);
+            });
+            newMap.set(dateKey, newDateStatusMap);
+            return newMap;
+        });
+    }, [alunos, daysOff, toggleDayOff, statusMap]);
+
+    const handleSaveChanges = useCallback(async () => {
+        if (!turma || pendingChanges.size === 0) return;
+
+        setIsSaving(true);
+        let successCount = 0;
+        let errorCount = 0;
+
+        try {
+            for (const [dateKey, studentStatusMap] of pendingChanges) {
                 const apiDate = convertDateKeyToApiFormat(dateKey);
                 
                 if (!apiDate) {
-                    throw new Error('Erro ao converter data para formato da API');
+                    console.error('Erro ao converter data para formato da API:', dateKey);
+                    errorCount++;
+                    continue;
                 }
 
-                const attendances = alunos.map(aluno => ({
-                    student_id: aluno.id,
-                    status: attendanceService.convertFrontendStatusToApi(nextStatus) as "presente" | "falta" | "falta_justificada" | "invalido"
+                const attendances = Array.from(studentStatusMap.entries()).map(([studentId, status]) => ({
+                    student_id: studentId,
+                    status: attendanceService.convertFrontendStatusToApi(status) as "presente" | "falta" | "falta_justificada" | "invalido"
                 }));
 
-                await attendanceService.createMultipleAttendance({
-                    grade_id: turma.id.toString(),
-                    attendance_date: apiDate,
-                    attendances: attendances
-                });
-
-                toast.success(`${alunos.length} presenças marcadas como "${nextStatus}" com sucesso!`);
-                
-            } catch (error) {
-                console.error('Erro ao salvar presenças em lote:', error);
-                toast.error(`Erro ao salvar presenças como "${nextStatus}"`);
-                
-                setStatusMap(prev => {
-                    const newMap = new Map(prev);
-                    newMap.delete(dateKey);
-                    return newMap;
-                });
+                try {
+                    await attendanceService.createMultipleAttendance({
+                        grade_id: turma.id.toString(),
+                        attendance_date: apiDate,
+                        attendances: attendances
+                    });
+                    successCount++;
+                } catch (error) {
+                    console.error(`Erro ao salvar presenças para ${dateKey}:`, error);
+                    errorCount++;
+                }
             }
+
+            if (successCount > 0) {
+                toast.success(`${successCount} dia(s) de presença salvos com sucesso!`);
+                setPendingChanges(new Map());
+            }
+
+            if (errorCount > 0) {
+                toast.error(`${errorCount} dia(s) falharam ao salvar. Tente novamente.`);
+            }
+
+        } catch (error) {
+            console.error('Erro geral ao salvar alterações:', error);
+            toast.error('Erro ao salvar alterações. Tente novamente.');
+        } finally {
+            setIsSaving(false);
         }
-    }, [alunos, daysOff, toggleDayOff, turma, convertDateKeyToApiFormat, statusMap]);
+    }, [turma, pendingChanges, convertDateKeyToApiFormat]);
+
+    const hasPendingChanges = pendingChanges.size > 0;
 
     useEffect(() => {
         if (turma) {
-            document.title = `Turma ${turma.grade} - ${turma.time} - Sistema de Chamada`;
+            document.title = `Turma ${turma.grade} - ${formatTime(turma.time)} - Sistema de Chamada`;
         }
     }, [turma]);
 
@@ -314,11 +327,12 @@ export default function TurmaDetailPage() {
                 statusMap,
                 handleStatusChange,
                 handleBulkStatusChange,
-                handleStudentNameClick
+                handleStudentNameClick,
+                pendingChanges
             );
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
 
     const handleBackClick = () => {
         router.push('/');
@@ -423,7 +437,7 @@ export default function TurmaDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+            <div className="min-h-screen p-4 sm:p-8 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
                     <p className="text-slate-600 font-medium">Carregando dados da turma...</p>
@@ -434,20 +448,20 @@ export default function TurmaDetailPage() {
 
     if (!turma) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+            <div className="min-h-screen p-4 sm:p-8 flex items-center justify-center">
                 <div className="text-center max-w-md mx-auto p-8">
-                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-20 h-20 bg-gradient-to-r from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-red-200/50">
                         <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-900 mb-4">Turma não encontrada</h1>
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent mb-4">Turma não encontrada</h1>
                     <p className="text-slate-600 mb-6">A turma que você está procurando não existe ou foi removida.</p>
                     <button
                         onClick={handleBackClick}
-                        className="btn-primary"
+                        className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect"
                     >
-                        <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                        <ArrowLeftIcon className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
                         Voltar ao início
                     </button>
                 </div>
@@ -456,48 +470,89 @@ export default function TurmaDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="w-full px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-                <div className="bg-white rounded-t-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-3 sm:px-6 py-3 sm:py-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-lg sm:text-2xl font-bold text-white">
-                                    Turma {turma.grade} - {turma.time}
-                                </h1>
+        <div className="min-h-screen p-4 sm:p-8">
+            <div className="w-full">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
+                    <div className="animate-fade-in-up">
+                        <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-2xl shadow-xl ring-4 ring-blue-100/50 cursor-pointer hover:scale-110 transition-transform duration-300" onClick={handleBackClick}>
+                                    <ArrowLeftIcon className="text-white" size={24} />
+                                </div>
+                                <span>Turma {turma.grade} - {formatTime(turma.time)}</span>
                             </div>
-                            <div className="text-right flex items-center gap-2">
-                                <div className="text-xl sm:text-3xl font-bold text-white">{alunos.length} <span className="text-blue-100 text-sm sm:text-lg">alunos</span></div>
+                        </h1>
+                        <p className="text-slate-600 mt-2 sm:mt-3 text-sm sm:text-lg">
+                            Gerencie a presença dos alunos e controle a frequência
+                        </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                        {hasPendingChanges && (
+                            <button 
+                                onClick={handleSaveChanges}
+                                disabled={isSaving}
+                                className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white text-sm font-semibold rounded-2xl hover:from-green-500 hover:to-emerald-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-green-100/50 ripple-effect glow-effect disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2 sm:mr-3"></div>
+                                        <span className="text-sm sm:text-base">Salvando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-sm sm:text-base">Salvar Alterações</span>
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        <button 
+                            onClick={handleAddStudent}
+                            className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect w-full sm:w-auto"
+                        >
+                            <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span className="text-sm sm:text-base">Adicionar Aluno</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-10">
+                    <div className="group bg-blue-50/50 rounded-2xl shadow-xl border border-blue-200/50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
+                        <div className="flex items-center">
+                            <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <div className="ml-4 sm:ml-6">
+                                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Alunos</p>
+                                <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{alunos.length}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-b-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-slate-200 bg-slate-50">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-                            <div>
-                                <h2 className="text-base sm:text-lg font-semibold text-slate-900">Lista de Presença</h2>
-                                <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                                    Gerencie a presença dos alunos e visualize o histórico de chamadas
-                                </p>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <button
-                                    onClick={handleAddStudent}
-                                    className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-slate-600 border border-slate-600 rounded-lg hover:bg-slate-700 transition-colors duration-200"
-                                >
-                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <div className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation">
+                    <div className="relative p-4 sm:p-8">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
+                        <div className="relative">
+                            <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-4">
+                                <div className="p-2 sm:p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                                    <svg className="text-blue-100 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                     </svg>
-                                    <span className="hidden sm:inline">Adicionar Aluno</span>
-                                    <span className="sm:hidden">Adicionar</span>
-                                </button>
-                            </div>
+                                </div>
+                                <span className="truncate">Lista de Presença</span>
+                            </h2>
                         </div>
                     </div>
 
-                    <div className="p-2 sm:p-4">
+                    <div className="p-4 sm:p-8">
                         <Table
                             data={alunos}
                             columns={alunosColumns}

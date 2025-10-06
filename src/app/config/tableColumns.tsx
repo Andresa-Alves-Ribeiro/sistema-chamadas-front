@@ -73,7 +73,8 @@ export function getAlunosColumns(
     statusMap?: Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>,
     onStatusChange?: (studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => void,
     onBulkStatusChange?: (dateKey: string) => void,
-    onStudentNameClick?: (student: Aluno) => void
+    onStudentNameClick?: (student: Aluno) => void,
+    pendingChanges?: Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>
 ): Column<Aluno>[] {
     const startDate = new Date(2025, 7, 1);
     const endDate = new Date(2025, 11, 15);
@@ -106,6 +107,7 @@ export function getAlunosColumns(
             },
             render: (value: unknown, row: Aluno) => {
                 const studentStatus = statusMap?.get(dateKey)?.get(row.id);
+                const isPendingChange = pendingChanges?.get(dateKey)?.has(row.id) || false;
                 return (
                     <PresencaStatus 
                         isDayOff={isDayOff} 
@@ -114,6 +116,7 @@ export function getAlunosColumns(
                         currentTurmaId={currentTurmaId}
                         externalStatus={studentStatus}
                         onStatusChange={onStatusChange}
+                        isPendingChange={isPendingChange}
                     />
                 );
             }

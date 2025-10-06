@@ -7,6 +7,7 @@ import './arquivos.css';
 import { useTurmas } from '../hooks/useTurmas';
 import { useAlunos } from '../hooks/useAlunos';
 import { useArquivos } from '../hooks/useArquivos';
+import { timeToMinutes, formatTime } from '../utils/timeFormat';
 
 const dayOrder: Record<string, number> = {
     "Segunda-feira": 1,
@@ -18,10 +19,6 @@ const dayOrder: Record<string, number> = {
     "Domingo": 7
 };
 
-const timeToMinutes = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-};
 
 export default function ArquivosPage() {
     const router = useRouter();
@@ -115,7 +112,7 @@ export default function ArquivosPage() {
                                                             <div className="p-1.5 bg-blue-100 rounded-lg">
                                                                 <Clock className="text-blue-600" size={16} />
                                                             </div>
-                                                            {turma.time}
+                                                            {formatTime(turma.time)}
                                                         </h3>
                                                         <p className="text-sm text-slate-600">
                                                             {turma.studentsQuantity} alunos

@@ -5,6 +5,7 @@ import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSprea
 import '../../arquivos.css';
 import { useAlunos } from '../../../hooks/useAlunos';
 import { useArquivosByAluno } from '../../../hooks/useArquivos';
+import { formatTime } from '../../../utils/timeFormat';
 
 export default function AlunoArquivosPage() {
     const router = useRouter();
@@ -85,7 +86,7 @@ export default function AlunoArquivosPage() {
                                     Arquivos de {aluno.name}
                                 </h1>
                                 <p className="text-slate-600">
-                                    {aluno.grade} às {aluno.time}
+                                    {aluno.grade} às {formatTime(aluno.time)}
                                 </p>
                             </div>
                         </div>

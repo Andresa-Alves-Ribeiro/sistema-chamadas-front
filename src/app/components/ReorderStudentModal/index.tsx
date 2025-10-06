@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, ArrowDownUp } from 'lucide-react';
 import { Aluno, Turmas } from '../../types';
 import { useTurmas } from '../../hooks/useTurmas';
+import { formatTime } from '../../utils/timeFormat';
 
 interface ReorderStudentModalProps {
   isOpen: boolean;
@@ -105,7 +106,7 @@ export default function ReorderStudentModal({
               <div>
                 <p className="font-medium text-slate-900">{student.name}</p>
                 <p className="text-sm text-slate-600">
-                  Turma atual: {student.grade} - {student.time}
+                  Turma atual: {student.grade} - {formatTime(student.time)}
                 </p>
               </div>
             </div>
@@ -138,7 +139,7 @@ export default function ReorderStudentModal({
               <option value="">Selecione uma turma...</option>
               {availableTurmas.map((turma) => (
                 <option key={turma.id} value={turma.id}>
-                  {turma.grade} - {turma.time} ({turma.studentsQuantity} alunos)
+                  {turma.grade} - {formatTime(turma.time)} ({turma.studentsQuantity} alunos)
                 </option>
               ))}
             </select>
@@ -155,7 +156,7 @@ export default function ReorderStudentModal({
                 </div>
                 <div>
                   <p className="font-medium text-blue-900">
-                    {selectedTurma.grade} - {selectedTurma.time}
+                    {selectedTurma.grade} - {formatTime(selectedTurma.time)}
                   </p>
                   <p className="text-sm text-blue-700">
                     {selectedTurma.studentsQuantity} alunos matriculados

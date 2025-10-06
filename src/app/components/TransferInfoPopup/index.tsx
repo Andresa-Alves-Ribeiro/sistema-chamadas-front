@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Aluno } from '../../types';
+import { formatTime } from '../../utils/timeFormat';
 
 interface TransferInfoPopupProps {
   isOpen: boolean;
@@ -102,7 +103,7 @@ export default function TransferInfoPopup({
               </h4>
             </div>
             <p className="text-sm text-slate-700 font-medium">
-              {displayInfo.currentTurma?.grade} - {displayInfo.currentTurma?.time}
+              {displayInfo.currentTurma?.grade} - {formatTime(displayInfo.currentTurma?.time || '')}
             </p>
           </div>
 
@@ -119,7 +120,7 @@ export default function TransferInfoPopup({
                 </h4>
               </div>
               <p className={`text-sm font-medium ${isViewingCurrentTurma ? 'text-amber-800' : 'text-blue-800'}`}>
-                {displayInfo.sourceTurma.grade} - {displayInfo.sourceTurma.time}
+                {displayInfo.sourceTurma.grade} - {formatTime(displayInfo.sourceTurma.time)}
               </p>
               {student.transferDate && (
                 <p className={`text-xs mt-1 ${isViewingCurrentTurma ? 'text-amber-600' : 'text-blue-600'}`}>
@@ -138,7 +139,7 @@ export default function TransferInfoPopup({
                 </h4>
               </div>
               <p className="text-sm text-green-800 font-medium">
-                {displayInfo.targetTurma.grade} - {displayInfo.targetTurma.time}
+                {displayInfo.targetTurma.grade} - {formatTime(displayInfo.targetTurma.time)}
               </p>
             </div>
           )}

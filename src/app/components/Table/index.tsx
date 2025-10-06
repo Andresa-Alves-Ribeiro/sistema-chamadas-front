@@ -134,7 +134,7 @@ export default function Table<T extends Record<string, unknown>>({
           className="table-scroll-container"
         >
         <table
-          className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+          className="bg-white border border-slate-200 rounded-lg shadow-sm"
           style={{
             minWidth: 'max-content',
             width: '100%'

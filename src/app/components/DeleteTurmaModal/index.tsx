@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, GraduationCap, AlertTriangle } from 'lucide-react';
 import { Grade } from '../../types';
+import { formatTime } from '../../utils/timeFormat';
 
 interface DeleteTurmaModalProps {
   isOpen: boolean;
@@ -118,7 +119,7 @@ export default function DeleteTurmaModal({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-slate-900 text-lg">
-                  {turma.grade} - {turma.time}
+                  {turma.grade} - {formatTime(turma.time)}
                 </p>
                 <p className="text-sm text-slate-600">
                   {turma.studentsQuantity} aluno{turma.studentsQuantity !== 1 ? 's' : ''}

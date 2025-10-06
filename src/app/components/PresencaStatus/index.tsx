@@ -12,6 +12,7 @@ interface PresencaStatusProps {
     currentTurmaId?: number;
     externalStatus?: PresencaStatusType;
     onStatusChange?: (studentId: number, dateKey: string, status: PresencaStatusType) => void;
+    isPendingChange?: boolean;
 }
 
 function isDateAfterExclusion(dateKey: string, exclusionDate: string): boolean {
@@ -62,7 +63,7 @@ function isDateBeforeTransfer(dateKey: string, transferDate: string): boolean {
     return cellDate < transfer;
 }
 
-export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId, externalStatus, onStatusChange }: PresencaStatusProps) {
+export default function PresencaStatus({ isDayOff = false, student, dateKey, currentTurmaId, externalStatus, onStatusChange, isPendingChange = false }: PresencaStatusProps) {
     const [internalStatus, setInternalStatus] = useState<PresencaStatusType>("invalido");
     
     const status = externalStatus !== undefined ? externalStatus : internalStatus;
@@ -139,28 +140,30 @@ export default function PresencaStatus({ isDayOff = false, student, dateKey, cur
             };
         }
 
+        const baseClasses = isPendingChange ? "ring-2 ring-blue-400 ring-opacity-50" : "";
+        
         switch (status) {
             case "presente":
                 return {
-                    className: "bg-green-100 text-green-800 border border-green-200 shadow-sm hover:bg-green-200 cursor-pointer",
+                    className: `bg-green-100 text-green-800 border border-green-200 shadow-sm hover:bg-green-200 cursor-pointer ${baseClasses}`,
                     icon: <CheckCircle size={14} color="green" />,
                     text: "Presente"
                 };
             case "falta":
                 return {
-                    className: "bg-red-100 text-red-800 border border-red-200 shadow-sm hover:bg-red-200 cursor-pointer",
+                    className: `bg-red-100 text-red-800 border border-red-200 shadow-sm hover:bg-red-200 cursor-pointer ${baseClasses}`,
                     icon: <XCircle size={14} color="red" />,
                     text: "Falta"
                 };
             case "falta_justificada":
                 return {
-                    className: "bg-yellow-100 text-yellow-800 border border-yellow-200 shadow-sm hover:bg-yellow-200 cursor-pointer",
+                    className: `bg-yellow-100 text-yellow-800 border border-yellow-200 shadow-sm hover:bg-yellow-200 cursor-pointer ${baseClasses}`,
                     icon: <AlertCircle size={14} color="#ca8a04" />,
                     text: "F. Justificada"
                 };
             case "invalido":
                 return {
-                    className: "bg-gray-100 text-gray-500 border border-gray-300 shadow-sm",
+                    className: `bg-gray-100 text-gray-500 border border-gray-300 shadow-sm ${baseClasses}`,
                     icon: <Minus size={14} color="gray" />,
                     text: "Inválido"
                 };
