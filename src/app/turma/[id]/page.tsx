@@ -27,7 +27,7 @@ export default function TurmaDetailPage() {
     const turmaId = Number(params.id);
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, includeAluno } = useAlunos();
+    const { createAluno, updateAluno, includeAluno, transferAluno } = useAlunos();
     const { alunos, loading: alunosLoading, fetchAlunosByGradeId, deleteAluno, deleteStudentsPermanently } = useAlunosByGradeId(turmaId.toString());
 
     const turma = turmaData?.grade || null;
@@ -402,8 +402,9 @@ export default function TurmaDetailPage() {
         setIsPermanentDeleteModalOpen(false);
     };
 
-    const handleConfirmReorder = async () => {
+    const handleConfirmReorder = async (studentId: number, newTurmaId: string) => {
         try {
+            await transferAluno(studentId, { newGradeId: newTurmaId });
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
             toast.success("Aluno remanejado com sucesso");
