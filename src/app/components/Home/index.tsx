@@ -28,11 +28,11 @@ const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
     return [...turmas].sort((a, b) => {
         const dayA = dayOrder[a.grade] || 999;
         const dayB = dayOrder[b.grade] || 999;
-        
+
         if (dayA !== dayB) {
             return dayA - dayB;
         }
-        
+
         const timeA = timeToMinutes(a.time);
         const timeB = timeToMinutes(b.time);
 
@@ -47,10 +47,10 @@ export default function HomePage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedTurma, setSelectedTurma] = useState<Turmas | null>(null);
     const [turmaToDelete, setTurmaToDelete] = useState<Turmas | null>(null);
-    
+
     const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
     const { getAlunosStats } = useAlunos();
-    
+
     const [totalAlunos, setTotalAlunos] = useState<number>(0);
     const [loadingStats, setLoadingStats] = useState(true);
 
@@ -93,16 +93,15 @@ export default function HomePage() {
             setIsModalOpen(false);
         } catch (error: unknown) {
             console.error('Erro ao criar turma:', error);
-            
-            // Verificar se é erro 409 (duplicação)
-            if (error && typeof error === 'object' && 'response' in error && 
+
+            if (error && typeof error === 'object' && 'response' in error &&
                 error.response && typeof error.response === 'object' && 'status' in error.response &&
                 error.response.status === 409) {
                 const response = error.response as { data?: { message?: string } };
                 const message = response?.data?.message || "Já existe uma turma com este dia e horário";
                 toast.error(message);
-            } else if (error && typeof error === 'object' && 'message' in error && 
-                       typeof error.message === 'string' && error.message.includes('Já existe uma turma')) {
+            } else if (error && typeof error === 'object' && 'message' in error &&
+                typeof error.message === 'string' && error.message.includes('Já existe uma turma')) {
                 toast.error(error.message);
             } else {
                 toast.error("Erro ao criar turma");
@@ -151,16 +150,15 @@ export default function HomePage() {
     };
 
     const turmasPorDia: Record<string, Turmas[]> = {};
-    
+
     Object.keys(dayOrder).forEach(dia => {
         turmasPorDia[dia] = [];
     });
-    
+
     filteredTurmas.forEach(turma => {
         if (turmasPorDia[turma.grade]) {
             turmasPorDia[turma.grade].push(turma);
         } else {
-            // Se o dia não estiver no dayOrder, criar um novo grupo
             turmasPorDia[turma.grade] = [turma];
         }
     });
@@ -182,7 +180,7 @@ export default function HomePage() {
                             Gerencie suas turmas e controle a frequência dos alunos
                         </p>
                     </div>
-                    <button 
+                    <button
                         onClick={handleOpenModal}
                         className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect w-full sm:w-auto"
                     >
@@ -206,7 +204,7 @@ export default function HomePage() {
 
                     <div className="group bg-blue-50/30 rounded-2xl shadow-xl border border-blue-200/50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
                         <div className="flex items-center">
-                            <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300" style={{animationDelay: '0.5s'}}>
+                            <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300" style={{ animationDelay: '0.5s' }}>
                                 <UsersRound className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
                             <div className="ml-4 sm:ml-6">
@@ -254,57 +252,57 @@ export default function HomePage() {
                                 return orderA - orderB;
                             })
                             .map(([dia, turmas], index) => (
-                        <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
-                            <div className="relative p-4 sm:p-8">
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
-                                <div className="relative">
-                                    <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-4">
-                                        <div className="p-2 sm:p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
-                                            <Notebook className="text-blue-100" size={20} />
+                                <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
+                                    <div className="relative p-4 sm:p-8">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
+                                        <div className="relative">
+                                            <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-4">
+                                                <div className="p-2 sm:p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                                                    <Notebook className="text-blue-100" size={20} />
+                                                </div>
+                                                <span className="truncate">{dia}</span>
+                                            </h2>
                                         </div>
-                                        <span className="truncate">{dia}</span>
-                                    </h2>
-                                </div>
-                            </div>
-                            <div className="p-4 sm:p-8">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                    {turmas
-                                        .sort((a, b) => {
-                                            const timeA = timeToMinutes(a.time);
-                                            const timeB = timeToMinutes(b.time);
-                                            return timeA - timeB;
-                                        })
-                                        .map((turma, turmaIndex) => (
-                                        <div key={turma.id} className="group bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-4 sm:p-6 border border-blue-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s`, overflow: 'visible' }} onClick={() => handleTurmaClick(turma)}>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
-                                                    <h3 className="font-bold text-slate-900 flex items-center gap-2 sm:gap-3">
-                                                        <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-700 to-cyan-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                                                            <Clock className="text-white" size={16} />
+                                    </div>
+                                    <div className="p-4 sm:p-8">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                                            {turmas
+                                                .sort((a, b) => {
+                                                    const timeA = timeToMinutes(a.time);
+                                                    const timeB = timeToMinutes(b.time);
+                                                    return timeA - timeB;
+                                                })
+                                                .map((turma, turmaIndex) => (
+                                                    <div key={turma.id} className="group bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-4 sm:p-6 border border-blue-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s`, overflow: 'visible' }} onClick={() => handleTurmaClick(turma)}>
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
+                                                                <h3 className="font-bold text-slate-900 flex items-center gap-2 sm:gap-3">
+                                                                    <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-700 to-cyan-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                                                                        <Clock className="text-white" size={16} />
+                                                                    </div>
+                                                                    <span className="text-lg sm:text-xl truncate">{formatTime(turma.time)}</span>
+                                                                </h3>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="text-xs sm:text-sm bg-blue-700 text-white rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 font-semibold shadow-lg">
+                                                                        {turma.studentsQuantity} alunos
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex-shrink-0 ml-2">
+                                                                <TurmaOptionsDropdown
+                                                                    turma={turma}
+                                                                    onEdit={() => handleEditTurma(turma)}
+                                                                    onDelete={() => handleDeleteTurma(turma)}
+                                                                />
+                                                            </div>
                                                         </div>
-                                                        <span className="text-lg sm:text-xl truncate">{formatTime(turma.time)}</span>
-                                                    </h3>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-xs sm:text-sm bg-blue-700 text-white rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 font-semibold shadow-lg">
-                                                            {turma.studentsQuantity} alunos
-                                                        </p>
                                                     </div>
-                                                </div>
-                                                <div className="flex-shrink-0 ml-2">
-                                                    <TurmaOptionsDropdown
-                                                        turma={turma}
-                                                        onEdit={() => handleEditTurma(turma)}
-                                                        onDelete={() => handleDeleteTurma(turma)}
-                                                    />
-                                                </div>
-                                            </div>
+                                                ))}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
+                            ))}
                     </div>
                 )}
             </div>

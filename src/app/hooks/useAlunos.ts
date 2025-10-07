@@ -46,7 +46,6 @@ export const useAlunos = () => {
   const deleteAluno = async (id: number) => {
     try {
       await alunosService.deleteAluno(id);
-      // Atualiza o aluno para marcá-lo como excluído ao invés de removê-lo da lista
       setAlunos(prev => prev.map(a => 
         a.id === id 
           ? { ...a, excluded: true, exclusionDate: new Date().toISOString() }
@@ -102,7 +101,6 @@ export const useAlunos = () => {
     try {
       const result = await alunosService.deleteStudentsPermanently(studentIds);
       
-      // Remove os alunos excluídos permanentemente da lista
       setAlunos(prev => prev.filter(aluno => !studentIds.includes(aluno.id)));
       
       return result;
@@ -194,7 +192,6 @@ export const useAlunosByGradeId = (gradeId: string) => {
   const deleteAluno = async (id: number) => {
     try {
       await alunosService.deleteAluno(id);
-      // Atualiza o aluno para marcá-lo como excluído ao invés de removê-lo da lista
       setAlunos(prev => prev.map(a => 
         a.id === id 
           ? { ...a, excluded: true, exclusionDate: new Date().toISOString() }
@@ -221,7 +218,6 @@ export const useAlunosByGradeId = (gradeId: string) => {
     try {
       const result = await alunosService.deleteStudentsPermanently(studentIds);
       
-      // Remove os alunos excluídos permanentemente da lista
       setAlunos(prev => prev.filter(aluno => !studentIds.includes(aluno.id)));
       
       return result;

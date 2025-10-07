@@ -66,6 +66,7 @@ export function getAlunosColumns(
     onEditStudent?: (student: Aluno) => void,
     onDeleteStudent?: (student: Aluno) => void,
     onIncludeStudent?: (student: Aluno) => void,
+    onArchiveStudent?: (student: Aluno) => void,
     currentTurmaId?: number,
     statusMap?: Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>,
     onStatusChange?: (studentId: number, dateKey: string, status: "presente" | "falta" | "falta_justificada" | "invalido") => void,
@@ -181,6 +182,7 @@ export function getAlunosColumns(
                         onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
                         onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
                         onInclude={onIncludeStudent ? () => onIncludeStudent(row) : undefined}
+                        onArchive={onArchiveStudent ? () => onArchiveStudent(row) : undefined}
                         student={row}
                     />
                 );
