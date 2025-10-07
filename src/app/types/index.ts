@@ -71,6 +71,44 @@ export interface File {
     studentId: number;
 }
 
+// Nova estrutura da API
+export interface StudentFile {
+    id: number;
+    student_id: number;
+    file_name: string;
+    original_name: string;
+    file_path: string;
+    file_url: string;
+    file_size: string;
+    mime_type: string;
+    upload_date: string;
+}
+
+export interface FileStatistics {
+    totalFiles: number;
+    lastUpload: string;
+    totalSize: {
+        bytes: number;
+        size: number;
+        unit: string;
+        formatted: string;
+    };
+}
+
+export interface StudentFilesResponse {
+    success: boolean;
+    data: {
+        student: {
+            id: number;
+            name: string;
+            grade: string;
+            time: string;
+        };
+        files: StudentFile[];
+        statistics: FileStatistics;
+    };
+}
+
 export interface FileByStudent {
     studentId: number;
     studentName: string;

@@ -7,6 +7,7 @@ import { useArquivosByAluno } from '../../../hooks/useArquivos';
 import { formatTime } from '../../../utils/timeFormat';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import Loading from '../../../components/Loading';
 
 export default function AlunoArquivosPage() {
     const router = useRouter();
@@ -14,8 +15,8 @@ export default function AlunoArquivosPage() {
     const alunoId = parseInt(params.id as string);
     const [isUploading, setIsUploading] = useState(false);
 
-    const { alunos } = useAlunos();
-    const { arquivos, loading, uploadArquivo, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
+    const { alunos, loading: alunosLoading } = useAlunos();
+    const { arquivos, statistics, loading, uploadArquivo, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
 
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
@@ -38,7 +39,7 @@ export default function AlunoArquivosPage() {
         try {
             await uploadArquivo(file);
             toast.success('Arquivo enviado com sucesso!');
-        } catch (error) {
+        } catch {
             toast.error('Erro ao enviar arquivo');
         } finally {
             setIsUploading(false);
@@ -51,8 +52,8 @@ export default function AlunoArquivosPage() {
             try {
                 await deleteArquivo(arquivoId);
                 toast.success('Arquivo excluído com sucesso!');
-            } catch (error) {
-                toast.error('Erro ao excluir arquivo');
+        } catch {
+            toast.error('Erro ao excluir arquivo');
             }
         }
     };
@@ -69,28 +70,29 @@ export default function AlunoArquivosPage() {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
             toast.success('Download iniciado!');
-        } catch (error) {
+        } catch {
             toast.error('Erro ao baixar arquivo');
         }
     };
 
-    const getFileIcon = (formato: string) => {
-        const formatLower = formato.toLowerCase();
+    const getFileIcon = (mimeType: string) => {
+        const mimeLower = mimeType.toLowerCase();
 
-        if (formatLower === 'pdf') return <FileText className="text-red-500" size={20} />;
-        if (formatLower === 'docx' || formatLower === 'doc') return <FileText className="text-blue-500" size={20} />;
-        if (formatLower === 'xlsx' || formatLower === 'xls') return <FileSpreadsheet className="text-green-500" size={20} />;
-        if (formatLower === 'pptx' || formatLower === 'ppt') return <FileText className="text-orange-500" size={20} />;
-        if (formatLower.includes('jpg') || formatLower.includes('jpeg') || formatLower.includes('png') || formatLower.includes('gif')) {
-            return <Image className="text-purple-500" size={20} />;
+        if (mimeLower === 'application/pdf') return <FileText className="text-red-500" size={20} />;
+        if (mimeLower.includes('word') || mimeLower.includes('document')) return <FileText className="text-blue-500" size={20} />;
+        if (mimeLower.includes('sheet') || mimeLower.includes('excel')) return <FileSpreadsheet className="text-green-500" size={20} />;
+        if (mimeLower.includes('presentation') || mimeLower.includes('powerpoint')) return <FileText className="text-orange-500" size={20} />;
+        if (mimeLower.includes('image')) {
+            // eslint-disable-next-line jsx-a11y/alt-text
+            return <Image className="text-cyan-500" size={20} />;
         }
-        if (formatLower.includes('mp4') || formatLower.includes('avi') || formatLower.includes('mov')) {
+        if (mimeLower.includes('video')) {
             return <FileVideo className="text-pink-500" size={20} />;
         }
-        if (formatLower.includes('mp3') || formatLower.includes('wav') || formatLower.includes('flac')) {
+        if (mimeLower.includes('audio')) {
             return <FileAudio className="text-yellow-500" size={20} />;
         }
-        if (formatLower === 'zip' || formatLower === 'rar') return <File className="text-gray-500" size={20} />;
+        if (mimeLower.includes('zip') || mimeLower.includes('rar') || mimeLower.includes('compressed')) return <File className="text-gray-500" size={20} />;
 
         return <File className="text-gray-400" size={20} />;
     };
@@ -103,6 +105,28 @@ export default function AlunoArquivosPage() {
         });
     };
 
+    const formatarTamanho = (bytes: number) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+
+    // Mostrar loading enquanto os dados dos alunos estão sendo carregados
+    if (alunosLoading) {
+        return (
+            <Loading 
+                fullScreen 
+                variant="spinner" 
+                size="xl" 
+                text="Buscando informações do aluno..." 
+            />
+        );
+    }
+
+    // Só mostrar erro se os dados já carregaram e o aluno não foi encontrado
     if (!aluno) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex items-center justify-center">
@@ -145,11 +169,6 @@ export default function AlunoArquivosPage() {
                                     </div>
                                     Arquivos de {aluno.name}
                                 </h1>
-                                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded-lg">
-                                    <p className="text-xs text-yellow-700">
-                                        <strong>⚠️ Modo Desenvolvimento:</strong> Exibindo dados mockados. Backend ainda não implementado.
-                                    </p>
-                                </div>
                                 <p className="text-slate-600">
                                     {aluno.grade} às {formatTime(aluno.time)}
                                 </p>
@@ -166,12 +185,12 @@ export default function AlunoArquivosPage() {
                             />
                             <label
                                 htmlFor="file-upload"
-                                className={`bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`bg-gradient-to-r from-blue-700/90 to-cyan-800/90 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 {isUploading ? (
                                     <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                        Enviando...
+                                        <Loading size="sm" color="white" variant="dots" />
+                                        <span>Enviando...</span>
                                     </>
                                 ) : (
                                     <>
@@ -192,8 +211,8 @@ export default function AlunoArquivosPage() {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-600">Total de Arquivos</p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    {loading ? '...' : arquivos.length}
+                                <p className="text-2xl font-bold bg-gradient-to-r from-blue-700/90 to-cyan-800/90 bg-clip-text text-transparent">
+                                    {loading ? '...' : statistics?.totalFiles || 0}
                                 </p>
                             </div>
                         </div>
@@ -207,7 +226,7 @@ export default function AlunoArquivosPage() {
                             <div>
                                 <p className="text-sm text-slate-600">Último Upload</p>
                                 <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                    {loading ? '...' : arquivos.length > 0 ? formatarData(arquivos[arquivos.length - 1].uploadDate) : 'N/A'}
+                                    {loading ? '...' : statistics?.lastUpload ? formatarData(statistics.lastUpload) : 'N/A'}
                                 </p>
                             </div>
                         </div>
@@ -215,13 +234,13 @@ export default function AlunoArquivosPage() {
 
                     <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 transform hover:-translate-y-1 transition-all duration-300 hover:shadow-2xl stagger-animation" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg">
-                                <File className="text-purple-600" size={24} />
+                            <div className="p-3 bg-gradient-to-r from-cyan-100 to-cyan-200 rounded-lg">
+                                <File className="text-cyan-600" size={24} />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-600">Tipos de Arquivo</p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    {loading ? '...' : new Set(arquivos.map(a => a.format)).size}
+                                <p className="text-sm text-slate-600">Total de Armazenamento</p>
+                                <p className="text-2xl font-bold bg-gradient-to-r from-blue-700/90 to-cyan-800/90 bg-clip-text text-transparent">
+                                    {loading ? '...' : statistics?.totalSize?.formatted || '0 MB'}
                                 </p>
                             </div>
                         </div>
@@ -230,21 +249,24 @@ export default function AlunoArquivosPage() {
 
                 <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden transform hover:-translate-y-1 transition-all duration-300 hover:shadow-2xl">
                     <div className="gradient-bg p-6 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 to-cyan-800/20"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/90 to-cyan-800/90"></div>
                         <div className="relative">
                             <h2 className="text-lg font-semibold text-white flex items-center gap-3">
                                 <div className="p-2 bg-blue-500/30 rounded-lg backdrop-blur-sm">
                                     <FileText className="text-blue-200" size={20} />
                                 </div>
-                                Lista de Arquivos ({loading ? '...' : arquivos.length})
+                                Lista de Arquivos ({loading ? '...' : statistics?.totalFiles || 0})
                             </h2>
                         </div>
                     </div>
 
                     {loading ? (
                         <div className="p-12 text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-                            <p className="text-slate-600">Carregando arquivos...</p>
+                            <Loading 
+                                variant="spinner" 
+                                size="xl" 
+                                text="Carregando arquivos..." 
+                            />
                         </div>
                     ) : arquivos.length > 0 ? (
                         <div className="divide-y divide-slate-200">
@@ -253,35 +275,37 @@ export default function AlunoArquivosPage() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <div className="p-2 bg-blue-100 rounded-lg">
-                                                {getFileIcon(arquivo.format)}
+                                                {getFileIcon(arquivo.mime_type)}
                                             </div>
                                             <div>
                                                 <h3 className="font-medium text-slate-900">
-                                                    {arquivo.name}
+                                                    {arquivo.original_name}
                                                 </h3>
                                                 <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
                                                     <span className="flex items-center gap-1 bg-blue-100 px-3 py-1 rounded-full text-blue-700">
                                                         <File className="size-4" />
-                                                        {arquivo.format.toUpperCase()}
+                                                        {arquivo.mime_type.split('/')[1]?.toUpperCase() || 'FILE'}
                                                     </span>
-                                                    <span className="bg-slate-100 px-3 py-1 rounded-full">{arquivo.size}</span>
+                                                    <span className="bg-slate-100 px-3 py-1 rounded-full">
+                                                        {formatarTamanho(parseInt(arquivo.file_size))}
+                                                    </span>
                                                     <span className="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full text-green-700">
                                                         <Calendar className="size-4" />
-                                                        {formatarData(arquivo.uploadDate)}
+                                                        {formatarData(arquivo.upload_date)}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button 
-                                                onClick={() => handleDownload(arquivo.id, arquivo.name)}
+                                                onClick={() => handleDownload(arquivo.id, arquivo.original_name)}
                                                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-300 hover:scale-110"
                                                 title="Baixar arquivo"
                                             >
                                                 <Download size={20} />
                                             </button>
                                             <button 
-                                                onClick={() => handleDelete(arquivo.id, arquivo.name)}
+                                                onClick={() => handleDelete(arquivo.id, arquivo.original_name)}
                                                 className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all duration-300 hover:scale-110"
                                                 title="Excluir arquivo"
                                             >
@@ -305,7 +329,7 @@ export default function AlunoArquivosPage() {
                             </p>
                             <label
                                 htmlFor="file-upload-empty"
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 mx-auto transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer w-fit"
+                                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 mx-auto transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer w-fit"
                             >
                                 <Upload size={20} className="animate-bounce-slow" />
                                 Fazer Upload

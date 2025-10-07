@@ -1,5 +1,5 @@
 import api from './api';
-import { Arquivo } from '../types';
+import { Arquivo, StudentFilesResponse, StudentFile } from '../types';
 
 export interface UploadFileData {
   file: File;
@@ -53,21 +53,13 @@ export const arquivosService = {
   },
 
 
-  async getArquivosByAluno(alunoId: number): Promise<Arquivo[]> {
+  async getArquivosByAluno(alunoId: number): Promise<StudentFilesResponse> {
     try {
-      const response = await api.get(`/arquivos/aluno/${alunoId}`);
-      const apiData = response.data;
-      
-
-      if (apiData.success && Array.isArray(apiData.data)) {
-        return apiData.data;
-      }
-      
-
-      return Array.isArray(response.data) ? response.data : [];
+      const response = await api.get(`/students/${alunoId}/files`);
+      return response.data;
     } catch (error) {
       console.error(`Erro ao buscar arquivos do aluno ${alunoId}:`, error);
-      return [];
+      throw error;
     }
   },
 
@@ -76,9 +68,8 @@ export const arquivosService = {
     try {
       const formData = new FormData();
       formData.append('file', data.file);
-      formData.append('alunoId', data.alunoId.toString());
 
-      const response = await api.post('/arquivos/upload', formData, {
+      const response = await api.post(`/students/${data.alunoId}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -136,11 +127,11 @@ export const arquivosService = {
   },
 
 
-  async deleteArquivo(id: number): Promise<void> {
+  async deleteArquivo(alunoId: number, fileId: number): Promise<void> {
     try {
-      await api.delete(`/arquivos/${id}`);
+      await api.delete(`/students/${alunoId}/files/${fileId}`);
     } catch (error) {
-      console.error(`Erro ao deletar arquivo ${id}:`, error);
+      console.error(`Erro ao deletar arquivo ${fileId} do aluno ${alunoId}:`, error);
       throw error;
     }
   },
