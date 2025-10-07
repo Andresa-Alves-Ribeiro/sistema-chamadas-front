@@ -21,7 +21,7 @@ export default function AlunoArquivosPage() {
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
     const handleVoltar = () => {
-        router.push('/arquivos');
+        router.back();
     };
 
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
