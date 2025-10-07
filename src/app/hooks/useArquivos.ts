@@ -78,14 +78,17 @@ export const useArquivosByAluno = (alunoId: number) => {
       setLoading(true);
       setError(null);
       
+      console.log('🔍 Tentando buscar arquivos do aluno:', alunoId);
       const response = await arquivosService.getArquivosByAluno(alunoId);
+      console.log('✅ Resposta recebida:', response);
+      
       if (response.success) {
         setArquivos(response.data.files);
         setStatistics(response.data.statistics);
       }
     } catch (err) {
+      console.error('❌ Erro detalhado ao buscar arquivos do aluno:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar arquivos do aluno');
-      console.error('Erro ao buscar arquivos do aluno:', err);
     } finally {
       setLoading(false);
     }
@@ -93,20 +96,40 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const uploadArquivo = async (file: File) => {
     try {
+      console.log('🔍 Tentando fazer upload do arquivo:', file.name);
       const novoArquivo = await arquivosService.uploadArquivo({ file, alunoId });
+      console.log('✅ Upload bem-sucedido:', novoArquivo);
       setArquivos(prev => [...prev, novoArquivo]);
       return novoArquivo;
     } catch (err) {
+      console.error('❌ Erro detalhado no upload:', err);
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload do arquivo');
+      throw err;
+    }
+  };
+
+  const uploadMultipleFiles = async (files: File[]) => {
+    try {
+      console.log('🔍 Tentando fazer upload de múltiplos arquivos:', files.length);
+      const novosArquivos = await arquivosService.uploadMultipleFiles({ files, alunoId });
+      console.log('✅ Upload múltiplo bem-sucedido:', novosArquivos);
+      setArquivos(prev => [...prev, ...novosArquivos]);
+      return novosArquivos;
+    } catch (err) {
+      console.error('❌ Erro detalhado no upload múltiplo:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao fazer upload dos arquivos');
       throw err;
     }
   };
 
   const deleteArquivo = async (fileId: number) => {
     try {
+      console.log('🔍 Tentando deletar arquivo:', fileId);
       await arquivosService.deleteArquivo(alunoId, fileId);
+      console.log('✅ Delete bem-sucedido');
       setArquivos(prev => prev.filter(a => a.id !== fileId));
     } catch (err) {
+      console.error('❌ Erro detalhado no delete:', err);
       setError(err instanceof Error ? err.message : 'Erro ao deletar arquivo');
       throw err;
     }
@@ -114,9 +137,12 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const downloadArquivo = async (id: number) => {
     try {
-      const blob = await arquivosService.downloadArquivo(id);
+      console.log('🔍 Tentando baixar arquivo:', id);
+      const blob = await arquivosService.downloadStudentFile(alunoId, id);
+      console.log('✅ Download bem-sucedido');
       return blob;
     } catch (err) {
+      console.error('❌ Erro detalhado no download:', err);
       setError(err instanceof Error ? err.message : 'Erro ao baixar arquivo');
       throw err;
     }
@@ -135,6 +161,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     error,
     fetchArquivosByAluno,
     uploadArquivo,
+    uploadMultipleFiles,
     deleteArquivo,
     downloadArquivo,
   };

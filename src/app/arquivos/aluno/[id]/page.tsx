@@ -16,7 +16,7 @@ export default function AlunoArquivosPage() {
     const [isUploading, setIsUploading] = useState(false);
 
     const { alunos, loading: alunosLoading } = useAlunos();
-    const { arquivos, statistics, loading, uploadArquivo, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
+    const { arquivos, statistics, loading, error, uploadMultipleFiles, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
 
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
@@ -28,19 +28,25 @@ export default function AlunoArquivosPage() {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
-        const file = files[0];
-        
-        if (file.size > 10 * 1024 * 1024) {
-            toast.error('Arquivo muito grande. Tamanho máximo: 10MB');
-            return;
+        const filesArray = Array.from(files);
+        for (const file of filesArray) {
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error(`Arquivo "${file.name}" muito grande. Tamanho máximo: 10MB`);
+                return;
+            }
         }
 
         setIsUploading(true);
         try {
-            await uploadArquivo(file);
-            toast.success('Arquivo enviado com sucesso!');
+            await uploadMultipleFiles(filesArray);
+            
+            if (filesArray.length === 1) {
+                toast.success('Arquivo enviado com sucesso!');
+            } else {
+                toast.success(`${filesArray.length} arquivos enviados com sucesso!`);
+            }
         } catch {
-            toast.error('Erro ao enviar arquivo');
+            toast.error('Erro ao enviar arquivo(s)');
         } finally {
             setIsUploading(false);
             event.target.value = '';
@@ -52,8 +58,8 @@ export default function AlunoArquivosPage() {
             try {
                 await deleteArquivo(arquivoId);
                 toast.success('Arquivo excluído com sucesso!');
-        } catch {
-            toast.error('Erro ao excluir arquivo');
+            } catch {
+                toast.error('Erro ao excluir arquivo');
             }
         }
     };
@@ -61,21 +67,32 @@ export default function AlunoArquivosPage() {
     const handleDownload = async (arquivoId: number, nomeArquivo: string) => {
         try {
             const blob = await downloadArquivo(arquivoId);
+            
             const url = window.URL.createObjectURL(blob);
+            
             const link = document.createElement('a');
             link.href = url;
             link.download = nomeArquivo;
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
             window.URL.revokeObjectURL(url);
-            toast.success('Download iniciado!');
-        } catch {
+            
+            console.log('✅ Download iniciado com sucesso');
+            toast.success(`Download de "${nomeArquivo}" iniciado!`);
+        } catch (error) {
+            console.error('❌ Erro no download:', error);
             toast.error('Erro ao baixar arquivo');
         }
     };
 
-    const getFileIcon = (mimeType: string) => {
+    const getFileIcon = (mimeType: string | undefined) => {
+        if (!mimeType) {
+            return <File className="text-gray-400" size={20} />;
+        }
+        
         const mimeLower = mimeType.toLowerCase();
 
         if (mimeLower === 'application/pdf') return <FileText className="text-red-500" size={20} />;
@@ -114,7 +131,6 @@ export default function AlunoArquivosPage() {
     };
 
 
-    // Mostrar loading enquanto os dados dos alunos estão sendo carregados
     if (alunosLoading) {
         return (
             <Loading 
@@ -126,7 +142,6 @@ export default function AlunoArquivosPage() {
         );
     }
 
-    // Só mostrar erro se os dados já carregaram e o aluno não foi encontrado
     if (!aluno) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex items-center justify-center">
@@ -172,6 +187,13 @@ export default function AlunoArquivosPage() {
                                 <p className="text-slate-600">
                                     {aluno.grade} às {formatTime(aluno.time)}
                                 </p>
+                                {error && (
+                                    <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded-lg">
+                                        <p className="text-xs text-red-700">
+                                            <strong>❌ Erro:</strong> {error}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -182,6 +204,7 @@ export default function AlunoArquivosPage() {
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.mp3,.wav,.zip,.rar"
                                 className="hidden"
                                 disabled={isUploading}
+                                multiple
                             />
                             <label
                                 htmlFor="file-upload"
@@ -195,7 +218,7 @@ export default function AlunoArquivosPage() {
                                 ) : (
                                     <>
                                         <Upload size={20} className="animate-bounce-slow" />
-                                        Novo Upload
+                                        Upload de Arquivos
                                     </>
                                 )}
                             </label>
@@ -270,7 +293,8 @@ export default function AlunoArquivosPage() {
                         </div>
                     ) : arquivos.length > 0 ? (
                         <div className="divide-y divide-slate-200">
-                            {arquivos.map((arquivo, index) => (
+                            {arquivos.map((arquivo, index) => {
+                                return (
                                 <div key={arquivo.id} className="p-6 hover:bg-blue-50 transition-all duration-300 stagger-animation" style={{ animationDelay: `${index * 0.05}s` }}>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
@@ -314,7 +338,8 @@ export default function AlunoArquivosPage() {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="p-12 text-center">
@@ -341,6 +366,7 @@ export default function AlunoArquivosPage() {
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.mp3,.wav,.zip,.rar"
                                 className="hidden"
                                 disabled={isUploading}
+                                multiple
                             />
                         </div>
                     )}
