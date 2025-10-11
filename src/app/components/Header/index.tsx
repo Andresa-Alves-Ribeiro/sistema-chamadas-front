@@ -38,13 +38,6 @@ export default function Header() {
                                 <Home size={16} />
                                 Início
                             </Link>
-                            <Link
-                                href="/arquivos"
-                                className="px-3 py-2 text-white hover:text-gray-300 transition-colors flex items-center gap-2"
-                            >
-                                <FileText size={16} />
-                                Arquivos
-                            </Link>
                         </div>
                         <div className="flex items-center space-x-2 lg:space-x-3 border-l border-slate-500 pl-2 lg:pl-4">
                             <div className="flex items-center space-x-2">

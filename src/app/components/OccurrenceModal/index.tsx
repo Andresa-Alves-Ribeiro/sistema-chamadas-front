@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, AlertCircle, Save, Upload, Trash2, Paperclip } from "lucide-react";
+import { X, AlertCircle, Save } from "lucide-react";
 import { Aluno } from "../../types";
 import { occurrenceService } from "../../services/occurrenceService";
 import { formatTime } from "../../utils/timeFormat";
@@ -15,28 +15,10 @@ interface OccurrenceModalProps {
 
 export default function OccurrenceModal({ isOpen, onClose, student }: OccurrenceModalProps) {
   const [newObservation, setNewObservation] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<globalThis.File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setSelectedFiles(prev => [...prev, ...files]);
-  };
-
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
 
   const handleSave = async () => {
     if (!newObservation.trim()) {
@@ -51,17 +33,12 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
     try {
       const result = await occurrenceService.createOccurrence({
         studentId: student.id,
-        observation: newObservation.trim(),
-        files: selectedFiles.length > 0 ? selectedFiles : undefined
+        observation: newObservation.trim()
       });
 
       if (result.success) {
         setSuccess("Ocorrência registrada com sucesso!");
         setNewObservation("");
-        setSelectedFiles([]);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
         
         setTimeout(() => {
           onClose();
@@ -79,12 +56,8 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
 
   const handleClose = () => {
     setNewObservation("");
-    setSelectedFiles([]);
     setError(null);
     setSuccess(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
     onClose();
   };
 
@@ -141,7 +114,7 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Ocorrências do Aluno</h2>
-              <p className="text-sm text-slate-600">Gerencie arquivos e observações relacionadas às ocorrências</p>
+              <p className="text-sm text-slate-600">Gerencie observações relacionadas às ocorrências</p>
             </div>
           </div>
           <button
@@ -199,7 +172,7 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">Registrar Nova Ocorrência</h3>
-                <p className="text-sm text-slate-600">Registre uma nova ocorrência com observação e arquivos opcionais</p>
+                <p className="text-sm text-slate-600">Registre uma nova ocorrência com observação</p>
               </div>
             </div>
 
@@ -222,81 +195,12 @@ export default function OccurrenceModal({ isOpen, onClose, student }: Occurrence
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Paperclip className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Anexar Arquivos (Opcional)</h3>
-                <p className="text-sm text-slate-600">Adicione fotos, documentos ou outros arquivos relacionados à ocorrência</p>
-              </div>
-            </div>
-
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
-                accept="image/*,.pdf,.doc,.docx,.txt"
-                disabled={isLoading}
-              />
-              
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
-                className="flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Selecionar Arquivos
-              </button>
-              
-              <p className="text-xs text-slate-500 mt-2">
-                📎 Formatos aceitos: Imagens, PDF, DOC, DOCX, TXT (máx. 10MB por arquivo)
-              </p>
-            </div>
-
-            {selectedFiles.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-slate-700">Arquivos selecionados:</h4>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {selectedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-3">
-                      <div className="flex items-center space-x-3">
-                        <Paperclip className="w-4 h-4 text-slate-500" />
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">{file.name}</p>
-                          <p className="text-xs text-slate-500">{formatFileSize(file.size)}</p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeFile(index)}
-                        disabled={isLoading}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
 
         </div>
 
         <div className="flex items-center justify-between p-6 border-t border-slate-200 bg-slate-50">
           <div className="text-sm text-slate-600">
-            {selectedFiles.length > 0 && (
-              <span className="flex items-center">
-                <Paperclip className="w-4 h-4 mr-1" />
-                {selectedFiles.length} arquivo{selectedFiles.length > 1 ? 's' : ''} selecionado{selectedFiles.length > 1 ? 's' : ''}
-              </span>
-            )}
+            <span>Digite uma observação para registrar a ocorrência</span>
           </div>
           <div className="flex items-center space-x-3">
             <button
