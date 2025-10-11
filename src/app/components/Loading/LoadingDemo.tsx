@@ -188,11 +188,11 @@ const LoadingDemo: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-medium mb-4">Casos de Uso Comuns:</h3>
             <ul className="space-y-2 text-gray-600">
-              <li>• <strong>Carregamento de dados:</strong> <code>&lt;Loading text="Carregando alunos..." /&gt;</code></li>
-              <li>• <strong>Salvando dados:</strong> <code>&lt;Loading variant="dots" text="Salvando..." /&gt;</code></li>
-              <li>• <strong>Processamento:</strong> <code>&lt;Loading variant="bars" text="Processando..." /&gt;</code></li>
-              <li>• <strong>Overlay modal:</strong> <code>&lt;Loading overlay text="Carregando..." /&gt;</code></li>
-              <li>• <strong>Página inteira:</strong> <code>&lt;Loading fullScreen text="Carregando página..." /&gt;</code></li>
+              <li>• <strong>Carregamento de dados:</strong> <code>&lt;Loading text=&quot;Carregando alunos...&quot; /&gt;</code></li>
+              <li>• <strong>Salvando dados:</strong> <code>&lt;Loading variant=&quot;dots&quot; text=&quot;Salvando...&quot; /&gt;</code></li>
+              <li>• <strong>Processamento:</strong> <code>&lt;Loading variant=&quot;bars&quot; text=&quot;Processando...&quot; /&gt;</code></li>
+              <li>• <strong>Overlay modal:</strong> <code>&lt;Loading overlay text=&quot;Carregando...&quot; /&gt;</code></li>
+              <li>• <strong>Página inteira:</strong> <code>&lt;Loading fullScreen text=&quot;Carregando página...&quot; /&gt;</code></li>
             </ul>
           </div>
         </section>

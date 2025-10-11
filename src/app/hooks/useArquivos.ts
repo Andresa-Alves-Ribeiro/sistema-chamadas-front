@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { arquivosService } from '../services/arquivosService';
-import { Arquivo, StudentFilesResponse, StudentFile, FileStatistics } from '../types';
+import { Arquivo, StudentFile, FileStatistics } from '../types';
 
 export const useArquivos = () => {
-  const [arquivos, setArquivos] = useState<Arquivo[]>([]);
+  const [arquivos, setArquivos] = useState<StudentFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

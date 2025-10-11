@@ -20,7 +20,7 @@ export interface CreateArquivoData {
 
 export const arquivosService = {
 
-  async getAllArquivos(): Promise<Arquivo[]> {
+  async getAllArquivos(): Promise<StudentFile[]> {
     try {
       const response = await api.get('/arquivos');
       const apiData = response.data;
@@ -69,7 +69,7 @@ export const arquivosService = {
   },
 
 
-  async uploadArquivo(data: UploadFileData): Promise<Arquivo> {
+  async uploadArquivo(data: UploadFileData): Promise<StudentFile> {
     try {
       console.log('🔍 Iniciando upload do arquivo:', data.file.name, 'para aluno:', data.alunoId);
       
@@ -102,12 +102,14 @@ export const arquivosService = {
       }
       
       return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Erro detalhado no upload:', error);
-      console.error('❌ Código do erro:', error.code);
-      console.error('❌ Mensagem do erro:', error.message);
-      console.error('❌ Status da resposta:', error.response?.status);
-      console.error('❌ Dados da resposta de erro:', error.response?.data);
+      if (error && typeof error === 'object') {
+        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
+        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
+        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
+        console.error('❌ Dados da resposta de erro:', 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response ? error.response.data : 'N/A');
+      }
       throw error;
     }
   },
@@ -146,12 +148,14 @@ export const arquivosService = {
       }
       
       return [];
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Erro detalhado no upload múltiplo:', error);
-      console.error('❌ Código do erro:', error.code);
-      console.error('❌ Mensagem do erro:', error.message);
-      console.error('❌ Status da resposta:', error.response?.status);
-      console.error('❌ Dados da resposta de erro:', error.response?.data);
+      if (error && typeof error === 'object') {
+        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
+        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
+        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
+        console.error('❌ Dados da resposta de erro:', 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response ? error.response.data : 'N/A');
+      }
       throw error;
     }
   },
@@ -233,11 +237,13 @@ export const arquivosService = {
       });
       
       return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`❌ Erro ao baixar arquivo ${fileId} do aluno ${alunoId}:`, error);
-      console.error('❌ Código do erro:', error.code);
-      console.error('❌ Mensagem do erro:', error.message);
-      console.error('❌ Status da resposta:', error.response?.status);
+      if (error && typeof error === 'object') {
+        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
+        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
+        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
+      }
       throw error;
     }
   },
