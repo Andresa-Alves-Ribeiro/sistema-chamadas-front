@@ -8,12 +8,16 @@ import { formatTime } from '../../../utils/timeFormat';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Loading from '../../../components/Loading';
+import DeleteFileModal from '../../../components/DeleteFileModal';
+import { StudentFile } from '../../../types';
 
 export default function AlunoArquivosPage() {
     const router = useRouter();
     const params = useParams();
     const alunoId = parseInt(params.id as string);
     const [isUploading, setIsUploading] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState<StudentFile | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const { alunos, loading: alunosLoading } = useAlunos();
     const { arquivos, statistics, loading, error, uploadMultipleFiles, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
@@ -39,12 +43,6 @@ export default function AlunoArquivosPage() {
         setIsUploading(true);
         try {
             await uploadMultipleFiles(filesArray);
-            
-            if (filesArray.length === 1) {
-                toast.success('Arquivo enviado com sucesso!');
-            } else {
-                toast.success(`${filesArray.length} arquivos enviados com sucesso!`);
-            }
         } catch {
             toast.error('Erro ao enviar arquivo(s)');
         } finally {
@@ -53,33 +51,42 @@ export default function AlunoArquivosPage() {
         }
     };
 
-    const handleDelete = async (arquivoId: number, nomeArquivo: string) => {
-        if (window.confirm(`Tem certeza que deseja excluir o arquivo "${nomeArquivo}"?`)) {
-            try {
-                await deleteArquivo(arquivoId);
-                toast.success('Arquivo excluído com sucesso!');
-            } catch {
-                toast.error('Erro ao excluir arquivo');
-            }
+    const handleDeleteClick = (arquivo: StudentFile) => {
+        setFileToDelete(arquivo);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async (arquivoId: number) => {
+        try {
+            await deleteArquivo(arquivoId);
+            setIsDeleteModalOpen(false);
+            setFileToDelete(null);
+        } catch {
+            toast.error('Erro ao excluir arquivo');
         }
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setFileToDelete(null);
     };
 
     const handleDownload = async (arquivoId: number, nomeArquivo: string) => {
         try {
             const blob = await downloadArquivo(arquivoId);
-            
+
             const url = window.URL.createObjectURL(blob);
-            
+
             const link = document.createElement('a');
             link.href = url;
             link.download = nomeArquivo;
-            
+
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             window.URL.revokeObjectURL(url);
-            
+
             console.log('✅ Download iniciado com sucesso');
             toast.success(`Download de "${nomeArquivo}" iniciado!`);
         } catch (error) {
@@ -92,7 +99,7 @@ export default function AlunoArquivosPage() {
         if (!mimeType) {
             return <File className="text-gray-400" size={20} />;
         }
-        
+
         const mimeLower = mimeType.toLowerCase();
 
         if (mimeLower === 'application/pdf') return <FileText className="text-red-500" size={20} />;
@@ -133,11 +140,11 @@ export default function AlunoArquivosPage() {
 
     if (alunosLoading) {
         return (
-            <Loading 
-                fullScreen 
-                variant="spinner" 
-                size="xl" 
-                text="Buscando informações do aluno..." 
+            <Loading
+                fullScreen
+                variant="spinner"
+                size="xl"
+                text="Buscando informações do aluno..."
             />
         );
     }
@@ -285,59 +292,59 @@ export default function AlunoArquivosPage() {
 
                     {loading ? (
                         <div className="p-12 text-center">
-                            <Loading 
-                                variant="spinner" 
-                                size="xl" 
-                                text="Carregando arquivos..." 
+                            <Loading
+                                variant="spinner"
+                                size="xl"
+                                text="Carregando arquivos..."
                             />
                         </div>
                     ) : arquivos.length > 0 ? (
                         <div className="divide-y divide-slate-200">
                             {arquivos.map((arquivo, index) => {
                                 return (
-                                <div key={arquivo.id} className="p-6 hover:bg-blue-50 transition-all duration-300 stagger-animation" style={{ animationDelay: `${index * 0.05}s` }}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-blue-100 rounded-lg">
-                                                {getFileIcon(arquivo.mime_type)}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-medium text-slate-900">
-                                                    {arquivo.original_name}
-                                                </h3>
-                                                <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-                                                    <span className="flex items-center gap-1 bg-blue-100 px-3 py-1 rounded-full text-blue-700">
-                                                        <File className="size-4" />
-                                                        {arquivo.mime_type.split('/')[1]?.toUpperCase() || 'FILE'}
-                                                    </span>
-                                                    <span className="bg-slate-100 px-3 py-1 rounded-full">
-                                                        {formatarTamanho(parseInt(arquivo.file_size))}
-                                                    </span>
-                                                    <span className="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full text-green-700">
-                                                        <Calendar className="size-4" />
-                                                        {formatarData(arquivo.upload_date)}
-                                                    </span>
+                                    <div key={arquivo.id} className="p-6 hover:bg-blue-50 transition-all duration-300 stagger-animation" style={{ animationDelay: `${index * 0.05}s` }}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2 bg-blue-100 rounded-lg">
+                                                    {getFileIcon(arquivo.mime_type)}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-medium text-slate-900">
+                                                        {arquivo.original_name}
+                                                    </h3>
+                                                    <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
+                                                        <span className="flex items-center gap-1 bg-blue-100 px-3 py-1 rounded-full text-blue-700">
+                                                            <File className="size-4" />
+                                                            {arquivo.mime_type.split('/')[1]?.toUpperCase() || 'FILE'}
+                                                        </span>
+                                                        <span className="bg-slate-100 px-3 py-1 rounded-full">
+                                                            {formatarTamanho(parseInt(arquivo.file_size))}
+                                                        </span>
+                                                        <span className="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full text-green-700">
+                                                            <Calendar className="size-4" />
+                                                            {formatarData(arquivo.upload_date)}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={() => handleDownload(arquivo.id, arquivo.original_name)}
-                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-300 hover:scale-110"
-                                                title="Baixar arquivo"
-                                            >
-                                                <Download size={20} />
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDelete(arquivo.id, arquivo.original_name)}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all duration-300 hover:scale-110"
-                                                title="Excluir arquivo"
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleDownload(arquivo.id, arquivo.original_name)}
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-300 hover:scale-110"
+                                                    title="Baixar arquivo"
+                                                >
+                                                    <Download size={20} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(arquivo)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all duration-300 hover:scale-110"
+                                                    title="Excluir arquivo"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                                 );
                             })}
                         </div>
@@ -372,6 +379,14 @@ export default function AlunoArquivosPage() {
                     )}
                 </div>
             </div>
+
+            <DeleteFileModal
+                isOpen={isDeleteModalOpen}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleConfirmDelete}
+                file={fileToDelete}
+                studentName={aluno?.name}
+            />
         </div>
     );
 }
