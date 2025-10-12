@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio, Trash2, Eye, FileEdit } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, Trash2, Eye, FileEdit } from 'lucide-react';
 import { useAlunos } from '../../../hooks/useAlunos';
 import { useArquivosByAluno } from '../../../hooks/useArquivos';
 import { formatTime } from '../../../utils/timeFormat';
@@ -168,12 +168,6 @@ export default function AlunoArquivosPage() {
             // eslint-disable-next-line jsx-a11y/alt-text
             return <Image className="text-cyan-500" size={20} />;
         }
-        if (mimeLower.includes('video')) {
-            return <FileVideo className="text-pink-500" size={20} />;
-        }
-        if (mimeLower.includes('audio')) {
-            return <FileAudio className="text-yellow-500" size={20} />;
-        }
         if (mimeLower.includes('zip') || mimeLower.includes('rar') || mimeLower.includes('compressed')) return <File className="text-gray-500" size={20} />;
 
         return <File className="text-gray-400" size={20} />;
@@ -266,7 +260,7 @@ export default function AlunoArquivosPage() {
                                 type="file"
                                 id="file-upload"
                                 onChange={handleUpload}
-                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.mp3,.wav,.zip,.rar"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip,.rar"
                                 className="hidden"
                                 disabled={isUploading}
                                 multiple
@@ -444,7 +438,7 @@ export default function AlunoArquivosPage() {
                                 type="file"
                                 id="file-upload-empty"
                                 onChange={handleUpload}
-                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.mp3,.wav,.zip,.rar"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip,.rar"
                                 className="hidden"
                                 disabled={isUploading}
                                 multiple

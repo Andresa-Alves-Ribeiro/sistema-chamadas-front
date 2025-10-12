@@ -1,6 +1,7 @@
 'use client';
 
 import { X, Download, File, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 import { StudentFile } from '../../types';
 import { useEffect, useState } from 'react';
 
@@ -26,21 +27,21 @@ export default function ViewFileModal({ isOpen, onClose, file, fileUrl, onDownlo
     const mimeType = file.mime_type?.toLowerCase() || '';
 
     const renderFileContent = () => {
-        // Imagens
         if (mimeType.includes('image')) {
             return (
-                <div className="flex items-center justify-center h-full bg-slate-50">
-                    <img
+                <div className="flex items-center justify-center h-full bg-slate-50 relative">
+                    <Image
                         src={fileUrl}
                         alt={file.original_name}
-                        className="max-w-full max-h-full object-contain"
+                        fill
+                        className="object-contain"
                         onLoad={() => setIsLoading(false)}
+                        unoptimized
                     />
                 </div>
             );
         }
 
-        // PDF
         if (mimeType === 'application/pdf') {
             return (
                 <iframe
@@ -52,49 +53,6 @@ export default function ViewFileModal({ isOpen, onClose, file, fileUrl, onDownlo
             );
         }
 
-        // Vídeos
-        if (mimeType.includes('video')) {
-            return (
-                <div className="flex items-center justify-center h-full bg-black">
-                    <video
-                        controls
-                        className="max-w-full max-h-full"
-                        onLoadedData={() => setIsLoading(false)}
-                    >
-                        <source src={fileUrl} type={mimeType} />
-                        Seu navegador não suporta a tag de vídeo.
-                    </video>
-                </div>
-            );
-        }
-
-        // Áudio
-        if (mimeType.includes('audio')) {
-            return (
-                <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-slate-50 to-blue-50">
-                    <div className="p-8 bg-white rounded-2xl shadow-xl">
-                        <div className="flex items-center justify-center mb-6">
-                            <div className="p-4 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-full">
-                                <File className="text-blue-600" size={48} />
-                            </div>
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4 text-center">
-                            {file.original_name}
-                        </h3>
-                        <audio
-                            controls
-                            className="w-full"
-                            onLoadedData={() => setIsLoading(false)}
-                        >
-                            <source src={fileUrl} type={mimeType} />
-                            Seu navegador não suporta a tag de áudio.
-                        </audio>
-                    </div>
-                </div>
-            );
-        }
-
-        // Documentos de texto (Word, Excel, PowerPoint, etc.)
         if (
             mimeType.includes('word') ||
             mimeType.includes('document') ||
@@ -172,7 +130,6 @@ export default function ViewFileModal({ isOpen, onClose, file, fileUrl, onDownlo
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col animate-scale-in">
-                {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-blue-700/90 to-cyan-800/90">
                     <div className="flex-1 min-w-0 mr-4">
                         <h2 className="text-xl font-bold text-white truncate">
@@ -200,7 +157,6 @@ export default function ViewFileModal({ isOpen, onClose, file, fileUrl, onDownlo
                     </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 overflow-auto relative">
                     {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
