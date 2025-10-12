@@ -139,6 +139,19 @@ export const useArquivosByAluno = (alunoId: number) => {
     }
   };
 
+  const renameArquivo = async (fileId: number, newName: string) => {
+    try {
+      const arquivoAtualizado = await arquivosService.renameArquivo(alunoId, fileId, newName);
+      setArquivos(prev => prev.map(a => a.id === fileId ? arquivoAtualizado : a));
+      toast.success('Arquivo renomeado com sucesso!');
+      return arquivoAtualizado;
+    } catch (err) {
+      toast.error('Erro ao renomear arquivo');
+      setError(err instanceof Error ? err.message : 'Erro ao renomear arquivo');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     if (alunoId) {
       fetchArquivosByAluno();
@@ -155,5 +168,6 @@ export const useArquivosByAluno = (alunoId: number) => {
     uploadMultipleFiles,
     deleteArquivo,
     downloadArquivo,
+    renameArquivo,
   };
 };

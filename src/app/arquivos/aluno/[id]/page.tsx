@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio, Trash2, Eye } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio, Trash2, Eye, FileEdit } from 'lucide-react';
 import { useAlunos } from '../../../hooks/useAlunos';
 import { useArquivosByAluno } from '../../../hooks/useArquivos';
 import { formatTime } from '../../../utils/timeFormat';
@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import Loading from '../../../components/Loading';
 import DeleteFileModal from '../../../components/DeleteFileModal';
 import ViewFileModal from '../../../components/ViewFileModal';
+import RenameFileModal from '../../../components/RenameFileModal';
 import { StudentFile } from '../../../types';
 
 export default function AlunoArquivosPage() {
@@ -22,9 +23,11 @@ export default function AlunoArquivosPage() {
     const [fileToView, setFileToView] = useState<StudentFile | null>(null);
     const [fileViewUrl, setFileViewUrl] = useState<string | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [fileToRename, setFileToRename] = useState<StudentFile | null>(null);
+    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
 
     const { alunos, loading: alunosLoading } = useAlunos();
-    const { arquivos, statistics, loading, error, uploadMultipleFiles, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
+    const { arquivos, statistics, loading, error, uploadMultipleFiles, deleteArquivo, downloadArquivo, renameArquivo } = useArquivosByAluno(alunoId);
 
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
@@ -128,6 +131,26 @@ export default function AlunoArquivosPage() {
         if (fileToView) {
             handleDownload(fileToView.id, fileToView.original_name);
         }
+    };
+
+    const handleRenameClick = (arquivo: StudentFile) => {
+        setFileToRename(arquivo);
+        setIsRenameModalOpen(true);
+    };
+
+    const handleConfirmRename = async (arquivoId: number, newName: string) => {
+        try {
+            await renameArquivo(arquivoId, newName);
+            setIsRenameModalOpen(false);
+            setFileToRename(null);
+        } catch {
+            // Erro já tratado no hook
+        }
+    };
+
+    const handleCloseRenameModal = () => {
+        setIsRenameModalOpen(false);
+        setFileToRename(null);
     };
 
     const getFileIcon = (mimeType: string | undefined) => {
@@ -378,6 +401,13 @@ export default function AlunoArquivosPage() {
                                                     <Download size={20} />
                                                 </button>
                                                 <button
+                                                    onClick={() => handleRenameClick(arquivo)}
+                                                    className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-100 rounded-lg transition-all duration-300 hover:scale-110"
+                                                    title="Renomear arquivo"
+                                                >
+                                                    <FileEdit size={20} />
+                                                </button>
+                                                <button
                                                     onClick={() => handleDeleteClick(arquivo)}
                                                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all duration-300 hover:scale-110"
                                                     title="Excluir arquivo"
@@ -436,6 +466,13 @@ export default function AlunoArquivosPage() {
                 file={fileToView}
                 fileUrl={fileViewUrl}
                 onDownload={handleDownloadFromModal}
+            />
+
+            <RenameFileModal
+                isOpen={isRenameModalOpen}
+                onClose={handleCloseRenameModal}
+                onConfirm={handleConfirmRename}
+                file={fileToRename}
             />
         </div>
     );
