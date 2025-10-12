@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { arquivosService } from '../services/arquivosService';
 import { Arquivo, StudentFile, FileStatistics } from '../types';
+import toast from 'react-hot-toast';
 
 export const useArquivos = () => {
   const [arquivos, setArquivos] = useState<StudentFile[]>([]);
@@ -78,16 +79,14 @@ export const useArquivosByAluno = (alunoId: number) => {
       setLoading(true);
       setError(null);
       
-      console.log('🔍 Tentando buscar arquivos do aluno:', alunoId);
       const response = await arquivosService.getArquivosByAluno(alunoId);
-      console.log('✅ Resposta recebida:', response);
       
       if (response.success) {
         setArquivos(response.data.files);
         setStatistics(response.data.statistics);
       }
     } catch (err) {
-      console.error('❌ Erro detalhado ao buscar arquivos do aluno:', err);
+      toast.error('Erro buscar arquivos do aluno');
       setError(err instanceof Error ? err.message : 'Erro ao carregar arquivos do aluno');
     } finally {
       setLoading(false);
@@ -96,13 +95,11 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const uploadArquivo = async (file: File) => {
     try {
-      console.log('🔍 Tentando fazer upload do arquivo:', file.name);
       const novoArquivo = await arquivosService.uploadArquivo({ file, alunoId });
-      console.log('✅ Upload bem-sucedido:', novoArquivo);
       setArquivos(prev => [...prev, novoArquivo]);
       return novoArquivo;
     } catch (err) {
-      console.error('❌ Erro detalhado no upload:', err);
+      toast.error('Erro fazer upload do arquivo');
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload do arquivo');
       throw err;
     }
@@ -110,13 +107,11 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const uploadMultipleFiles = async (files: File[]) => {
     try {
-      console.log('🔍 Tentando fazer upload de múltiplos arquivos:', files.length);
       const novosArquivos = await arquivosService.uploadMultipleFiles({ files, alunoId });
-      console.log('✅ Upload múltiplo bem-sucedido:', novosArquivos);
       setArquivos(prev => [...prev, ...novosArquivos]);
       return novosArquivos;
     } catch (err) {
-      console.error('❌ Erro detalhado no upload múltiplo:', err);
+      toast.error('Erro fazer upload dos arquivos');
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload dos arquivos');
       throw err;
     }
@@ -124,12 +119,10 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const deleteArquivo = async (fileId: number) => {
     try {
-      console.log('🔍 Tentando deletar arquivo:', fileId);
       await arquivosService.deleteArquivo(alunoId, fileId);
-      console.log('✅ Delete bem-sucedido');
       setArquivos(prev => prev.filter(a => a.id !== fileId));
     } catch (err) {
-      console.error('❌ Erro detalhado no delete:', err);
+      toast.error('Erro deletar arquivo');
       setError(err instanceof Error ? err.message : 'Erro ao deletar arquivo');
       throw err;
     }
@@ -137,13 +130,24 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const downloadArquivo = async (id: number) => {
     try {
-      console.log('🔍 Tentando baixar arquivo:', id);
       const blob = await arquivosService.downloadStudentFile(alunoId, id);
-      console.log('✅ Download bem-sucedido');
       return blob;
     } catch (err) {
-      console.error('❌ Erro detalhado no download:', err);
+      toast.error('Erro baixar arquivo');
       setError(err instanceof Error ? err.message : 'Erro ao baixar arquivo');
+      throw err;
+    }
+  };
+
+  const renameArquivo = async (fileId: number, newName: string) => {
+    try {
+      const arquivoAtualizado = await arquivosService.renameArquivo(alunoId, fileId, newName);
+      setArquivos(prev => prev.map(a => a.id === fileId ? arquivoAtualizado : a));
+      toast.success('Arquivo renomeado com sucesso!');
+      return arquivoAtualizado;
+    } catch (err) {
+      toast.error('Erro ao renomear arquivo');
+      setError(err instanceof Error ? err.message : 'Erro ao renomear arquivo');
       throw err;
     }
   };
@@ -164,5 +168,6 @@ export const useArquivosByAluno = (alunoId: number) => {
     uploadMultipleFiles,
     deleteArquivo,
     downloadArquivo,
+    renameArquivo,
   };
 };

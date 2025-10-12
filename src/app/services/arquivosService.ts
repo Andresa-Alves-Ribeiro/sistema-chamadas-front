@@ -265,5 +265,32 @@ export const arquivosService = {
       console.error('Erro ao buscar estatísticas dos arquivos:', error);
       throw error;
     }
+  },
+
+  async renameArquivo(alunoId: number, fileId: number, newName: string): Promise<StudentFile> {
+    try {
+      console.log('🔍 Renomeando arquivo:', fileId, 'do aluno:', alunoId, 'para:', newName);
+      
+      const response = await api.patch(`/students/${alunoId}/files/${fileId}/rename`, {
+        newName
+      });
+      
+      console.log('✅ Renomeação bem-sucedida:', response.status, response.statusText);
+      const apiData = response.data;
+      
+      if (apiData.success && apiData.data) {
+        return apiData.data;
+      }
+      
+      return response.data;
+    } catch (error: unknown) {
+      console.error(`❌ Erro ao renomear arquivo ${fileId} do aluno ${alunoId}:`, error);
+      if (error && typeof error === 'object') {
+        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
+        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
+        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
+      }
+      throw error;
+    }
   }
 };

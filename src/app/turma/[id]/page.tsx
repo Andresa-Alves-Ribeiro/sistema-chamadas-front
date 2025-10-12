@@ -503,14 +503,13 @@ export default function TurmaDetailPage() {
         );
     }
 
-    // Ordena os alunos: ativos primeiro, depois os riscados (excluídos ou remanejados da turma original)
     const sortedAlunos = [...alunos].sort((a, b) => {
         const aIsStriked = a.excluded || (a.transferred && a.originalGradeId && String(a.originalGradeId).trim() === String(turmaId).trim());
         const bIsStriked = b.excluded || (b.transferred && b.originalGradeId && String(b.originalGradeId).trim() === String(turmaId).trim());
         
-        if (aIsStriked === bIsStriked) return 0; // Mantém ordem original se ambos têm mesmo status
-        if (aIsStriked) return 1; // Move 'a' para o final
-        return -1; // Move 'b' para o final
+        if (aIsStriked === bIsStriked) return 0;
+        if (aIsStriked) return 1;
+        return -1;
     });
 
     return (
@@ -583,7 +582,9 @@ export default function TurmaDetailPage() {
                             </div>
                             <div className="ml-4 sm:ml-6">
                                 <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Alunos</p>
-                                <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{alunos.length}</p>
+                                <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                                    {alunos.filter(aluno => !aluno.excluded && !(aluno.transferred && aluno.originalGradeId && String(aluno.originalGradeId).trim() === String(turmaId).trim())).length}
+                                </p>
                             </div>
                         </div>
                     </div>

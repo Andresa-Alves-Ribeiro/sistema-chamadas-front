@@ -332,7 +332,7 @@ export default function HomePage() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl mb-8 transition-all duration-300">
                         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                             <div className="flex items-center gap-3 min-w-fit">
@@ -350,11 +350,10 @@ export default function HomePage() {
                                             onChange={(e) => handleSearchNameChange(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && !searchError && handleSearchAluno()}
                                             disabled={isSearching}
-                                            className={`w-full px-4 py-3 rounded-xl border-2 ${
-                                                searchError 
-                                                    ? '!bg-red-50 border-red-700 focus:border-red-800 focus:ring-red-100' 
+                                            className={`w-full px-4 py-3 rounded-xl border-2 ${searchError
+                                                    ? '!bg-red-50 border-red-700 focus:border-red-800 focus:ring-red-100'
                                                     : 'border-blue-200/50 focus:border-blue-500 focus:ring-blue-100'
-                                            } bg-white focus:ring-4 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                } bg-white focus:ring-4 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
                                         />
                                         {searchError && (
                                             <p className="text-red-600 text-sm font-medium mt-2 animate-fade-in">
@@ -451,20 +450,20 @@ export default function HomePage() {
                                                 .map((turma, turmaIndex) => (
                                                     <div key={turma.id} className="group bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-4 sm:p-6 border border-blue-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s`, overflow: 'visible' }} onClick={() => handleTurmaClick(turma)}>
                                                         <div className="flex items-center justify-between">
-                                                            <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
+                                                            <div className="flex gap-2 sm:gap-3 flex-1 min-w-0">
                                                                 <h3 className="font-bold text-slate-900 flex items-center gap-2 sm:gap-3">
                                                                     <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-700 to-cyan-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                                                                         <Clock className="text-white" size={16} />
                                                                     </div>
                                                                     <span className="text-lg sm:text-xl truncate">{formatTime(turma.time)}</span>
                                                                 </h3>
+                                                            </div>
+                                                            <div className="flex gap-2 ml-2">
                                                                 <div className="flex items-center gap-2">
-                                                                    <p className="text-xs sm:text-sm bg-blue-700 text-white rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 font-semibold shadow-lg">
+                                                                    <p className="text-xs sm:text-sm bg-cyan-500 text-white rounded-xl px-3 sm:px-4 py-1.5 font-semibold shadow-lg">
                                                                         {turma.studentsQuantity} alunos
                                                                     </p>
                                                                 </div>
-                                                            </div>
-                                                            <div className="flex-shrink-0 ml-2">
                                                                 <TurmaOptionsDropdown
                                                                     turma={turma}
                                                                     onEdit={() => handleEditTurma(turma)}
