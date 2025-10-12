@@ -54,7 +54,7 @@ export default function RenameFileModal({ isOpen, onClose, onConfirm, file }: Re
     if (!isOpen || !file) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-fade-in-up">
                 <div className="bg-gradient-to-r from-blue-700/90 to-cyan-800/90 rounded-t-2xl p-6 relative">
                     <div className="flex items-center gap-3">

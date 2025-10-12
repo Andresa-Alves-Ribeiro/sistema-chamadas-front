@@ -3,19 +3,12 @@
 import React from 'react';
 
 interface LoadingProps {
-  /** Tamanho do spinner */
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  /** Cor do spinner */
   color?: 'primary' | 'secondary' | 'white' | 'blue' | 'green' | 'yellow';
-  /** Texto opcional abaixo do spinner */
   text?: string;
-  /** Se deve mostrar o loading em tela cheia */
   fullScreen?: boolean;
-  /** Se deve mostrar o loading como overlay */
   overlay?: boolean;
-  /** Classe CSS adicional */
   className?: string;
-  /** Variante do loading */
   variant?: 'spinner' | 'dots' | 'pulse' | 'bars' | 'music';
 }
 
@@ -28,7 +21,6 @@ const Loading: React.FC<LoadingProps> = ({
   className = '',
   variant = 'spinner'
 }) => {
-  // Configurações de tamanho
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8',
@@ -36,7 +28,6 @@ const Loading: React.FC<LoadingProps> = ({
     xl: 'w-16 h-16'
   };
 
-  // Configurações de cor
   const colorClasses = {
     primary: 'text-blue-600',
     secondary: 'text-gray-600',
@@ -46,12 +37,10 @@ const Loading: React.FC<LoadingProps> = ({
     yellow: 'text-yellow-500'
   };
 
-  // Componente Spinner clássico
   const Spinner = () => (
     <div className={`animate-spin rounded-full border-2 border-gray-200 border-t-current ${sizeClasses[size]} ${colorClasses[color]}`} />
   );
 
-  // Componente Dots
   const Dots = () => (
     <div className="flex space-x-1">
       {[0, 1, 2].map((i) => (
@@ -64,12 +53,10 @@ const Loading: React.FC<LoadingProps> = ({
     </div>
   );
 
-  // Componente Pulse
   const Pulse = () => (
     <div className={`rounded-full bg-current animate-pulse ${sizeClasses[size]} ${colorClasses[color]}`} />
   );
 
-  // Componente Bars
   const Bars = () => (
     <div className="flex items-end space-x-1">
       {[0, 1, 2, 3].map((i) => (
@@ -87,7 +74,6 @@ const Loading: React.FC<LoadingProps> = ({
     </div>
   );
 
-  // Componente Music (notas musicais)
   const Music = () => (
     <div className="flex items-center space-x-1">
       {['♪', '♫', '♪', '♫'].map((note, i) => (
@@ -102,7 +88,6 @@ const Loading: React.FC<LoadingProps> = ({
     </div>
   );
 
-  // Selecionar componente baseado na variante
   const getLoadingComponent = () => {
     switch (variant) {
       case 'dots':
@@ -118,7 +103,6 @@ const Loading: React.FC<LoadingProps> = ({
     }
   };
 
-  // Container base
   const LoadingContainer = ({ children }: { children: React.ReactNode }) => (
     <div className={`flex flex-col items-center justify-center space-y-3 ${className}`}>
       {children}
@@ -130,10 +114,9 @@ const Loading: React.FC<LoadingProps> = ({
     </div>
   );
 
-  // Loading com overlay
   if (overlay) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-8 shadow-xl">
           <LoadingContainer>
             {getLoadingComponent()}
@@ -143,7 +126,6 @@ const Loading: React.FC<LoadingProps> = ({
     );
   }
 
-  // Loading em tela cheia
   if (fullScreen) {
     return (
       <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -154,7 +136,6 @@ const Loading: React.FC<LoadingProps> = ({
     );
   }
 
-  // Loading padrão
   return (
     <LoadingContainer>
       {getLoadingComponent()}
