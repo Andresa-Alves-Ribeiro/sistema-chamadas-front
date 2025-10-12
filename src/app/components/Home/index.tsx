@@ -12,7 +12,12 @@ import { useTurmas } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
 import { toast } from "react-hot-toast";
 import { timeToMinutes, formatTime } from "../../utils/timeFormat";
+import { z } from "zod";
 
+// Schema de validação para busca de aluno
+const searchSchema = z.string()
+    .min(1, "Digite o nome do aluno")
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, "Digite apenas letras. Números e símbolos não são permitidos");
 
 const dayOrder: Record<string, number> = {
     "Segunda-feira": 1,
@@ -50,6 +55,7 @@ export default function HomePage() {
     const [searchName, setSearchName] = useState<string>("");
     const [searchedTurmas, setSearchedTurmas] = useState<Turmas[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState<string>("");
     const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
     const { getAlunosStats, searchAluno } = useAlunos();
 
@@ -187,16 +193,42 @@ export default function HomePage() {
         });
     }
 
+    const validateSearchInput = (value: string): boolean => {
+        try {
+            searchSchema.parse(value.trim());
+            setSearchError("");
+            return true;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                setSearchError(error.issues[0]?.message || "Erro de validação");
+            }
+            return false;
+        }
+    };
+
+    const handleSearchNameChange = (value: string) => {
+        setSearchName(value);
+        if (value.trim()) {
+            validateSearchInput(value);
+        } else {
+            setSearchError("");
+        }
+    };
+
     const handleSearchAluno = async () => {
         if (!searchName.trim()) {
-            toast.error("Digite o nome do aluno para buscar");
+            setSearchError("Digite o nome do aluno para buscar");
+            return;
+        }
+
+        if (!validateSearchInput(searchName)) {
             return;
         }
 
         setIsSearching(true);
         try {
             const resultado = await searchAluno(searchName.trim());
-            
+
             if (resultado.students.length > 0) {
                 const turmasEncontradas: Turmas[] = [];
                 const turmasIds = new Set<number>();
@@ -204,12 +236,12 @@ export default function HomePage() {
                 resultado.students.forEach(aluno => {
                     if (aluno.grade_info) {
                         const turmaId = Number(aluno.grade_info.id);
-                        
+
                         if (!turmasIds.has(turmaId)) {
                             turmasIds.add(turmaId);
-                            
+
                             const turma = turmasArray.find(t => Number(t.id) === turmaId);
-                            
+
                             if (turma) {
                                 turmasEncontradas.push(turma);
                             }
@@ -219,7 +251,7 @@ export default function HomePage() {
 
                 if (turmasEncontradas.length > 0) {
                     setSearchedTurmas(turmasEncontradas);
-                    
+
                     if (resultado.count === 1) {
                         toast.success(`Aluno "${resultado.students[0].name}" encontrado na turma ${turmasEncontradas[0].grade} - ${formatTime(turmasEncontradas[0].time)}`);
                     } else {
@@ -245,6 +277,7 @@ export default function HomePage() {
     const handleClearSearch = () => {
         setSearchName("");
         setSearchedTurmas([]);
+        setSearchError("");
     };
 
     return (
@@ -273,7 +306,7 @@ export default function HomePage() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4 sm:gap-8 mb-6 sm:mb-10">
                     <div className="group bg-blue-50/50 rounded-2xl shadow-xl border border-blue-200/50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
                         <div className="flex items-center">
                             <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -299,46 +332,60 @@ export default function HomePage() {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg border border-blue-200/50 p-4 sm:p-6 mb-8 transition-all duration-300">
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                        <div className="flex items-center gap-3 min-w-fit">
-                            <label className="text-base sm:text-lg font-bold text-slate-800">
-                                Buscar Aluno:
-                            </label>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:flex-1">
-                            <input 
-                                type="text" 
-                                placeholder="Digite o nome do aluno..." 
-                                value={searchName}
-                                onChange={(e) => setSearchName(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSearchAluno()}
-                                disabled={isSearching}
-                                className="flex-1 px-4 py-3 rounded-xl border-2 border-blue-200/50 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleSearchAluno}
-                                    disabled={isSearching || !searchName.trim()}
-                                    className="group inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-700 to-cyan-700 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg active:translate-y-0 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <SearchIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                                    <span>{isSearching ? 'Buscando...' : 'Buscar'}</span>
-                                </button>
-                                {searchedTurmas.length > 0 && (
-                                    <button
-                                        onClick={handleClearSearch}
-                                        className="inline-flex items-center justify-center px-6 py-3 bg-slate-500 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all duration-300 shadow-lg whitespace-nowrap"
-                                    >
-                                        <span>Limpar</span>
-                                    </button>
-                                )}
+                    
+                    <div className="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl mb-8 transition-all duration-300">
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                            <div className="flex items-center gap-3 min-w-fit">
+                                <label className="text-base sm:text-lg font-bold text-slate-800">
+                                    Buscar Aluno:
+                                </label>
+                            </div>
+                            <div className="flex flex-col gap-2 w-full sm:flex-1">
+                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
+                                    <div className="flex flex-col w-full md:w-[500px]">
+                                        <input
+                                            type="text"
+                                            placeholder="Digite o nome do aluno..."
+                                            value={searchName}
+                                            onChange={(e) => handleSearchNameChange(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && !searchError && handleSearchAluno()}
+                                            disabled={isSearching}
+                                            className={`w-full px-4 py-3 rounded-xl border-2 ${
+                                                searchError 
+                                                    ? '!bg-red-50 border-red-700 focus:border-red-800 focus:ring-red-100' 
+                                                    : 'border-blue-200/50 focus:border-blue-500 focus:ring-blue-100'
+                                            } bg-white focus:ring-4 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        />
+                                        {searchError && (
+                                            <p className="text-red-600 text-sm font-medium mt-2 animate-fade-in">
+                                                {searchError}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={handleSearchAluno}
+                                            disabled={isSearching || !searchName.trim() || !!searchError}
+                                            className="group inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-700 to-cyan-700 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg active:translate-y-0 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] h-[48px]"
+                                        >
+                                            <SearchIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                                            <span>{isSearching ? 'Buscando...' : 'Buscar'}</span>
+                                        </button>
+                                        {searchedTurmas.length > 0 && (
+                                            <button
+                                                onClick={handleClearSearch}
+                                                className="inline-flex items-center justify-center px-6 py-3 bg-slate-500 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all duration-300 shadow-lg whitespace-nowrap"
+                                            >
+                                                <span>Limpar</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
                 {error && (
                     <div className="mb-4 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/50 rounded-2xl shadow-lg">
@@ -375,10 +422,10 @@ export default function HomePage() {
                                 return orderA - orderB;
                             })
                             .map(([dia, turmas], index) => (
-                                <div 
-                                    key={dia} 
+                                <div
+                                    key={dia}
                                     ref={(el) => { turmaRefs.current[dia] = el; }}
-                                    className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" 
+                                    className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation"
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                 >
                                     <div className="relative p-4 sm:p-8">
