@@ -123,6 +123,25 @@ export function getAlunosColumns(
     
     return [
         {
+            key: "options",
+            label: "Opções",
+            width: "80px",
+            align: "center",
+            render: (value: unknown, row: Aluno) => {
+                return (
+                    <OptionsDropdown
+                        onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
+                        onOccurrences={onOccurrencesStudent ? () => onOccurrencesStudent(row) : undefined}
+                        onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
+                        onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
+                        onInclude={onIncludeStudent ? () => onIncludeStudent(row) : undefined}
+                        onArchive={onArchiveStudent ? () => onArchiveStudent(row) : undefined}
+                        student={row}
+                    />
+                );
+            }
+        },
+        {
             key: "name",
             label: "Nome do Aluno",
             width: "150px",
@@ -169,24 +188,5 @@ export function getAlunosColumns(
             }
         },
         ...dateColumns,
-        {
-            key: "options",
-            label: "Opções",
-            width: "80px",
-            align: "center",
-            render: (value: unknown, row: Aluno) => {
-                return (
-                    <OptionsDropdown
-                        onReorder={onReorderStudent ? () => onReorderStudent(row) : undefined}
-                        onOccurrences={onOccurrencesStudent ? () => onOccurrencesStudent(row) : undefined}
-                        onEdit={onEditStudent ? () => onEditStudent(row) : undefined}
-                        onDelete={onDeleteStudent ? () => onDeleteStudent(row) : undefined}
-                        onInclude={onIncludeStudent ? () => onIncludeStudent(row) : undefined}
-                        onArchive={onArchiveStudent ? () => onArchiveStudent(row) : undefined}
-                        student={row}
-                    />
-                );
-            }
-        },
     ];
 }

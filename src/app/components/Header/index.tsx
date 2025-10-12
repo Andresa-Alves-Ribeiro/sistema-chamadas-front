@@ -21,7 +21,7 @@ export default function Header() {
                                         alt="Villa Logo"
                                         width={44}
                                         height={44}
-                                        className="h-8 w-12 sm:h-10 sm:w-24"
+                                        className="h-8 w-12 sm:h-8 sm:w-24"
                                         priority
                                     />
                                 </div>

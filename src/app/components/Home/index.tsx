@@ -6,7 +6,7 @@ import DeleteTurmaModal from "../DeleteTurmaModal";
 import TurmaOptionsDropdown from "../TurmaOptionsDropdown";
 import { useRouter } from "next/navigation";
 import { Turmas } from "../../types";
-import { Notebook, PlusIcon, UsersRound, Clock } from "lucide-react";
+import { Notebook, PlusIcon, UsersRound, Clock, SearchIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTurmas } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
@@ -21,8 +21,6 @@ const dayOrder: Record<string, number> = {
     "Quinta-feira": 4,
     "Sexta-feira": 5
 };
-
-
 
 const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
     return [...turmas].sort((a, b) => {
@@ -217,6 +215,30 @@ export default function HomePage() {
                     </div>
                 </div>
 
+                <div className="bg-gradient-to-br from-white to-blue-50/30 mb-8 transition-all duration-300">
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <div className="flex items-center gap-3 min-w-fit">
+                            <label className="text-base sm:text-lg font-bold text-slate-800">
+                                Buscar Aluno:
+                            </label>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:flex-1">
+                            <input 
+                                type="text" 
+                                placeholder="Digite o nome do aluno..." 
+                                className="flex-1 px-4 py-3 rounded-xl border-2 border-blue-200/50 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium"
+                            />
+                            <button
+                                //onClick={handleSearchAluno}
+                                className="group inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-700 to-cyan-700 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg active:translate-y-0 whitespace-nowrap"
+                            >
+                                <SearchIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                                <span>Buscar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 {error && (
                     <div className="mb-4 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/50 rounded-2xl shadow-lg">
                         <p className="text-red-600 text-sm font-medium">Erro ao carregar turmas</p>
@@ -234,7 +256,7 @@ export default function HomePage() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
                     </div>
-                ) : Object.entries(turmasPorDia).filter(([dia, turmas]) => turmas.length > 0).length === 0 ? (
+                ) : Object.entries(turmasPorDia).filter(([turmas]) => turmas.length > 0).length === 0 ? (
                     <div className="text-center py-12">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                             <Notebook className="w-8 h-8 text-blue-600" />
@@ -245,7 +267,7 @@ export default function HomePage() {
                 ) : (
                     <div className="space-y-4 sm:space-y-8">
                         {Object.entries(turmasPorDia)
-                            .filter(([dia, turmas]) => turmas.length > 0) // Só mostra dias que têm turmas
+                            .filter(([turmas]) => turmas.length > 0)
                             .sort(([diaA], [diaB]) => {
                                 const orderA = dayOrder[diaA] || 999;
                                 const orderB = dayOrder[diaB] || 999;
