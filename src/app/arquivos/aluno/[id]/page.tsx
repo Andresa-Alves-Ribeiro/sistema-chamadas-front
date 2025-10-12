@@ -106,6 +106,7 @@ export default function AlunoArquivosPage() {
             const blob = await downloadArquivo(arquivo.id);
             const url = window.URL.createObjectURL(blob);
             setFileViewUrl(url);
+            toast.success('Arquivo carregado com sucesso!');
         } catch (error) {
             console.error('❌ Erro ao visualizar arquivo:', error);
             toast.error('Erro ao carregar arquivo para visualização');

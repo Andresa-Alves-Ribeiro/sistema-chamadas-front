@@ -131,7 +131,6 @@ export const useArquivosByAluno = (alunoId: number) => {
   const downloadArquivo = async (id: number) => {
     try {
       const blob = await arquivosService.downloadStudentFile(alunoId, id);
-      toast.success('Download bem-sucedido');
       return blob;
     } catch (err) {
       toast.error('Erro baixar arquivo');
