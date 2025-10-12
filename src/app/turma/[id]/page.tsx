@@ -341,7 +341,11 @@ export default function TurmaDetailPage() {
     }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, handleArchiveStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
 
     const handleBackClick = () => {
-        router.push('/');
+        if (turma) {
+            router.push(`/?scrollToTurma=${turma.grade}`);
+        } else {
+            router.push('/');
+        }
     };
 
     const handleAddStudent = () => {
@@ -451,18 +455,10 @@ export default function TurmaDetailPage() {
 
     const handleConfirmPermanentDelete = async (studentIds: number[]) => {
         try {
-            console.log('IDs recebidos na página:', studentIds);
-            console.log('Dados dos alunos:', alunos.map(a => ({ id: a.id, name: a.name, idType: typeof a.id })));
-            
             const result = await deleteStudentsPermanently(studentIds);
             
-            // Mostrar mensagem de sucesso
             toast.success(result.message);
-            
-            // Log detalhado para debug
-            console.log('Exclusão permanente realizada:', result);
-            
-            // Atualizar dados da turma
+                        
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
             

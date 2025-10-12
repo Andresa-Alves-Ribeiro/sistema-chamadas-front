@@ -4,10 +4,10 @@ import AddTurmaModal from "../AddTurmaModal";
 import EditTurmaModal from "../EditTurmaModal";
 import DeleteTurmaModal from "../DeleteTurmaModal";
 import TurmaOptionsDropdown from "../TurmaOptionsDropdown";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Turmas } from "../../types";
 import { Notebook, PlusIcon, UsersRound, Clock, SearchIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTurmas } from "../../hooks/useTurmas";
 import { useAlunos } from "../../hooks/useAlunos";
 import { toast } from "react-hot-toast";
@@ -40,6 +40,8 @@ const sortTurmasByDayAndTime = (turmas: Turmas[]): Turmas[] => {
 
 export default function HomePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const turmaRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -74,6 +76,18 @@ export default function HomePage() {
 
         fetchStats();
     }, [getAlunosStats]);
+
+    useEffect(() => {
+        const scrollToTurma = searchParams.get('scrollToTurma');
+        if (scrollToTurma && !loading && turmaRefs.current[scrollToTurma]) {
+            setTimeout(() => {
+                turmaRefs.current[scrollToTurma]?.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'center'
+                });
+            }, 100);
+        }
+    }, [searchParams, loading, turmas]);
 
     const handleTurmaClick = (turma: Turmas) => {
         router.push(`/turma/${turma.id}`);
@@ -361,7 +375,12 @@ export default function HomePage() {
                                 return orderA - orderB;
                             })
                             .map(([dia, turmas], index) => (
-                                <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
+                                <div 
+                                    key={dia} 
+                                    ref={(el) => { turmaRefs.current[dia] = el; }}
+                                    className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" 
+                                    style={{ animationDelay: `${index * 0.1}s` }}
+                                >
                                     <div className="relative p-4 sm:p-8">
                                         <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
                                         <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
