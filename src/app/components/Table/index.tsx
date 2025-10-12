@@ -147,15 +147,14 @@ export default function Table<T extends Record<string, unknown>>({
                   key={index}
                   className={`px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200 ${column.align === 'center' ? 'text-center' :
                       column.align === 'right' ? 'text-right' : 'text-left'
-                    } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''} ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''
-                    } ${column.key === 'options' ? 'min-w-[80px]' : ''}`}
+                    } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''                    } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''}`}
                   style={{
                     width: column.width,
-                    minWidth: column.key === 'name' ? '120px' :
-                      column.key === 'options' ? '80px' :
+                    minWidth: column.key === 'name' ? '150px' :
+                      column.key === 'options' ? (column.width || '80px') :
                         column.width || '90px',
-                    maxWidth: column.key === 'name' ? '200px' :
-                      column.key === 'options' ? '80px' :
+                    maxWidth: column.key === 'name' ? '250px' :
+                      column.key === 'options' ? (column.width || '80px') :
                         column.width || '90px'
                   }}
                   onClick={column.isHeaderClickable ? column.onHeaderClick : undefined}
@@ -185,20 +184,20 @@ export default function Table<T extends Record<string, unknown>>({
                 {columns.map((column, colIndex) => (
                   <td
                     key={colIndex}
-                    className={`px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-900 ${column.align === 'center' ? 'text-center' :
+                    className={`px-3 sm:px-6 py-3 sm:py-4 ${column.key === 'name' ? '' : 'whitespace-nowrap'} text-xs sm:text-sm font-medium text-slate-900 ${column.align === 'center' ? 'text-center' :
                         column.align === 'right' ? 'text-right' : 'text-left'
-                      } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''} ${column.key === 'options' ? 'min-w-[80px]' : ''}`}
+                      } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''}`}
                     style={{
                       width: column.width,
-                      minWidth: column.key === 'name' ? '120px' :
-                        column.key === 'options' ? '80px' :
+                      minWidth: column.key === 'name' ? '150px' :
+                        column.key === 'options' ? (column.width || '80px') :
                           column.width || '90px',
-                      maxWidth: column.key === 'name' ? '200px' :
-                        column.key === 'options' ? '80px' :
+                      maxWidth: column.key === 'name' ? '250px' :
+                        column.key === 'options' ? (column.width || '80px') :
                           column.width || '90px'
                     }}
                   >
-                    <div className="truncate">
+                    <div className={column.key === 'name' ? '' : 'truncate'}>
                       {column.render
                         ? column.render(row[column.key], row)
                         : String(row[column.key] ?? '')
