@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio, Trash2 } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio, Trash2, Eye } from 'lucide-react';
 import { useAlunos } from '../../../hooks/useAlunos';
 import { useArquivosByAluno } from '../../../hooks/useArquivos';
 import { formatTime } from '../../../utils/timeFormat';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Loading from '../../../components/Loading';
 import DeleteFileModal from '../../../components/DeleteFileModal';
+import ViewFileModal from '../../../components/ViewFileModal';
 import { StudentFile } from '../../../types';
 
 export default function AlunoArquivosPage() {
@@ -18,6 +19,9 @@ export default function AlunoArquivosPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [fileToDelete, setFileToDelete] = useState<StudentFile | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [fileToView, setFileToView] = useState<StudentFile | null>(null);
+    const [fileViewUrl, setFileViewUrl] = useState<string | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     const { alunos, loading: alunosLoading } = useAlunos();
     const { arquivos, statistics, loading, error, uploadMultipleFiles, deleteArquivo, downloadArquivo } = useArquivosByAluno(alunoId);
@@ -87,11 +91,41 @@ export default function AlunoArquivosPage() {
 
             window.URL.revokeObjectURL(url);
 
-            console.log('✅ Download iniciado com sucesso');
             toast.success(`Download de "${nomeArquivo}" iniciado!`);
         } catch (error) {
             console.error('❌ Erro no download:', error);
             toast.error('Erro ao baixar arquivo');
+        }
+    };
+
+    const handleViewClick = async (arquivo: StudentFile) => {
+        try {
+            setFileToView(arquivo);
+            setIsViewModalOpen(true);
+
+            const blob = await downloadArquivo(arquivo.id);
+            const url = window.URL.createObjectURL(blob);
+            setFileViewUrl(url);
+        } catch (error) {
+            console.error('❌ Erro ao visualizar arquivo:', error);
+            toast.error('Erro ao carregar arquivo para visualização');
+            setIsViewModalOpen(false);
+            setFileToView(null);
+        }
+    };
+
+    const handleCloseViewModal = () => {
+        setIsViewModalOpen(false);
+        setFileToView(null);
+        if (fileViewUrl) {
+            window.URL.revokeObjectURL(fileViewUrl);
+            setFileViewUrl(null);
+        }
+    };
+
+    const handleDownloadFromModal = () => {
+        if (fileToView) {
+            handleDownload(fileToView.id, fileToView.original_name);
         }
     };
 
@@ -192,7 +226,7 @@ export default function AlunoArquivosPage() {
                                     Arquivos de {aluno.name}
                                 </h1>
                                 <p className="text-slate-600">
-                                    {aluno.grade} às {formatTime(aluno.time)}
+                                    Turma: {aluno.grade} às {formatTime(aluno.time)}
                                 </p>
                                 {error && (
                                     <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded-lg">
@@ -329,6 +363,13 @@ export default function AlunoArquivosPage() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <button
+                                                    onClick={() => handleViewClick(arquivo)}
+                                                    className="p-2 text-slate-400 hover:text-cyan-600 hover:bg-cyan-100 rounded-lg transition-all duration-300 hover:scale-110"
+                                                    title="Visualizar arquivo"
+                                                >
+                                                    <Eye size={20} />
+                                                </button>
+                                                <button
                                                     onClick={() => handleDownload(arquivo.id, arquivo.original_name)}
                                                     className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-300 hover:scale-110"
                                                     title="Baixar arquivo"
@@ -386,6 +427,14 @@ export default function AlunoArquivosPage() {
                 onConfirm={handleConfirmDelete}
                 file={fileToDelete}
                 studentName={aluno?.name}
+            />
+
+            <ViewFileModal
+                isOpen={isViewModalOpen}
+                onClose={handleCloseViewModal}
+                file={fileToView}
+                fileUrl={fileViewUrl}
+                onDownload={handleDownloadFromModal}
             />
         </div>
     );
