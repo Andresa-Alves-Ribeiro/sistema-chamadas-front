@@ -191,10 +191,9 @@ export const alunosService = {
                 data: requestData
             });
             
-            console.log('✅ Resposta recebida:', response.data);
             return response.data;
         } catch (error) {
-            console.error('❌ Erro ao excluir alunos permanentemente:', error);
+            console.error('Erro ao excluir alunos permanentemente:', error);
             throw error;
         }
     },
