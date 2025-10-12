@@ -186,11 +186,6 @@ export const alunosService = {
     async deleteStudentsPermanently(studentIds: number[]): Promise<PermanentDeleteStudentsResponse> {
         try {
             const requestData = { ids: studentIds };
-            console.log('🚀 Enviando requisição para exclusão permanente:');
-            console.log('📤 URL:', '/students/permanent');
-            console.log('📤 Método:', 'DELETE');
-            console.log('📤 Dados enviados:', requestData);
-            console.log('📤 IDs dos alunos:', studentIds);
             
             const response = await api.delete('/students/permanent', {
                 data: requestData
@@ -200,6 +195,28 @@ export const alunosService = {
             return response.data;
         } catch (error) {
             console.error('❌ Erro ao excluir alunos permanentemente:', error);
+            throw error;
+        }
+    },
+
+    async searchAluno(name: string): Promise<{ students: Student[]; count: number }> {
+        try {
+            const response = await api.get('/students/search', {
+                params: { name }
+            });
+            
+            const apiData = response.data;
+
+            if (apiData.success && Array.isArray(apiData.data)) {
+                return {
+                    students: apiData.data,
+                    count: apiData.count || apiData.data.length
+                };
+            }
+
+            return { students: [], count: 0 };
+        } catch (error) {
+            console.error('Erro ao buscar aluno:', error);
             throw error;
         }
     }

@@ -45,16 +45,18 @@ export default function HomePage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedTurma, setSelectedTurma] = useState<Turmas | null>(null);
     const [turmaToDelete, setTurmaToDelete] = useState<Turmas | null>(null);
-
+    const [searchName, setSearchName] = useState<string>("");
+    const [searchedTurmas, setSearchedTurmas] = useState<Turmas[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
     const { turmas, loading, error, createTurma, updateTurma, deleteTurma } = useTurmas();
-    const { getAlunosStats } = useAlunos();
+    const { getAlunosStats, searchAluno } = useAlunos();
 
     const [totalAlunos, setTotalAlunos] = useState<number>(0);
     const [loadingStats, setLoadingStats] = useState(true);
 
     const turmasArray = Array.isArray(turmas) ? turmas : [];
     const sortedTurmas = sortTurmasByDayAndTime(turmasArray);
-    const filteredTurmas = sortedTurmas;
+    const filteredTurmas = searchedTurmas.length > 0 ? searchedTurmas : sortedTurmas;
     const totalTurmas = turmasArray.length;
 
     useEffect(() => {
@@ -149,17 +151,87 @@ export default function HomePage() {
 
     const turmasPorDia: Record<string, Turmas[]> = {};
 
-    Object.keys(dayOrder).forEach(dia => {
-        turmasPorDia[dia] = [];
-    });
+    if (searchedTurmas.length > 0) {
+        filteredTurmas.forEach(turma => {
+            if (turmasPorDia[turma.grade]) {
+                turmasPorDia[turma.grade].push(turma);
+            } else {
+                turmasPorDia[turma.grade] = [turma];
+            }
+        });
+    } else {
+        Object.keys(dayOrder).forEach(dia => {
+            turmasPorDia[dia] = [];
+        });
 
-    filteredTurmas.forEach(turma => {
-        if (turmasPorDia[turma.grade]) {
-            turmasPorDia[turma.grade].push(turma);
-        } else {
-            turmasPorDia[turma.grade] = [turma];
+        filteredTurmas.forEach(turma => {
+            if (turmasPorDia[turma.grade]) {
+                turmasPorDia[turma.grade].push(turma);
+            } else {
+                turmasPorDia[turma.grade] = [turma];
+            }
+        });
+    }
+
+    const handleSearchAluno = async () => {
+        if (!searchName.trim()) {
+            toast.error("Digite o nome do aluno para buscar");
+            return;
         }
-    });
+
+        setIsSearching(true);
+        try {
+            const resultado = await searchAluno(searchName.trim());
+            
+            if (resultado.students.length > 0) {
+                const turmasEncontradas: Turmas[] = [];
+                const turmasIds = new Set<number>();
+
+                resultado.students.forEach(aluno => {
+                    if (aluno.grade_info) {
+                        const turmaId = Number(aluno.grade_info.id);
+                        
+                        if (!turmasIds.has(turmaId)) {
+                            turmasIds.add(turmaId);
+                            
+                            const turma = turmasArray.find(t => Number(t.id) === turmaId);
+                            
+                            if (turma) {
+                                turmasEncontradas.push(turma);
+                            }
+                        }
+                    }
+                });
+
+                if (turmasEncontradas.length > 0) {
+                    setSearchedTurmas(turmasEncontradas);
+                    
+                    if (resultado.count === 1) {
+                        toast.success(`Aluno "${resultado.students[0].name}" encontrado na turma ${turmasEncontradas[0].grade} - ${formatTime(turmasEncontradas[0].time)}`);
+                    } else {
+                        toast.success(`${resultado.count} aluno(s) encontrado(s) em ${turmasEncontradas.length} turma(s)`);
+                    }
+                } else {
+                    toast.error("Turma(s) do(s) aluno(s) não encontrada(s)");
+                    setSearchedTurmas([]);
+                }
+            } else {
+                toast.error("Nenhum aluno encontrado");
+                setSearchedTurmas([]);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar aluno:', error);
+            toast.error("Erro ao buscar aluno");
+            setSearchedTurmas([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleClearSearch = () => {
+        setSearchName("");
+        setSearchedTurmas([]);
+    };
 
     return (
         <div className="min-h-screen p-4 sm:p-8">
@@ -215,7 +287,7 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-white to-blue-50/30 mb-8 transition-all duration-300">
+                <div className="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg border border-blue-200/50 p-4 sm:p-6 mb-8 transition-all duration-300">
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                         <div className="flex items-center gap-3 min-w-fit">
                             <label className="text-base sm:text-lg font-bold text-slate-800">
@@ -226,15 +298,30 @@ export default function HomePage() {
                             <input 
                                 type="text" 
                                 placeholder="Digite o nome do aluno..." 
-                                className="flex-1 px-4 py-3 rounded-xl border-2 border-blue-200/50 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium"
+                                value={searchName}
+                                onChange={(e) => setSearchName(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSearchAluno()}
+                                disabled={isSearching}
+                                className="flex-1 px-4 py-3 rounded-xl border-2 border-blue-200/50 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none text-slate-900 placeholder:text-slate-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             />
-                            <button
-                                //onClick={handleSearchAluno}
-                                className="group inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-700 to-cyan-700 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg active:translate-y-0 whitespace-nowrap"
-                            >
-                                <SearchIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                                <span>Buscar</span>
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleSearchAluno}
+                                    disabled={isSearching || !searchName.trim()}
+                                    className="group inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-700 to-cyan-700 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg active:translate-y-0 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <SearchIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                                    <span>{isSearching ? 'Buscando...' : 'Buscar'}</span>
+                                </button>
+                                {searchedTurmas.length > 0 && (
+                                    <button
+                                        onClick={handleClearSearch}
+                                        className="inline-flex items-center justify-center px-6 py-3 bg-slate-500 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all duration-300 shadow-lg whitespace-nowrap"
+                                    >
+                                        <span>Limpar</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -256,7 +343,7 @@ export default function HomePage() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
                     </div>
-                ) : Object.entries(turmasPorDia).filter(([turmas]) => turmas.length > 0).length === 0 ? (
+                ) : Object.entries(turmasPorDia).filter(([, turmas]) => turmas.length > 0).length === 0 ? (
                     <div className="text-center py-12">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                             <Notebook className="w-8 h-8 text-blue-600" />
@@ -267,7 +354,7 @@ export default function HomePage() {
                 ) : (
                     <div className="space-y-4 sm:space-y-8">
                         {Object.entries(turmasPorDia)
-                            .filter(([turmas]) => turmas.length > 0)
+                            .filter(([, turmas]) => turmas.length > 0)
                             .sort(([diaA], [diaB]) => {
                                 const orderA = dayOrder[diaA] || 999;
                                 const orderB = dayOrder[diaB] || 999;

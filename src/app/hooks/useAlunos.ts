@@ -97,6 +97,16 @@ export const useAlunos = () => {
     }
   }, []);
 
+  const searchAluno = async (name: string) => {
+    try {
+      const result = await alunosService.searchAluno(name);
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar aluno');
+      throw err;
+    }
+  };
+
   const deleteStudentsPermanently = async (studentIds: number[]) => {
     try {
       const result = await alunosService.deleteStudentsPermanently(studentIds);
@@ -121,6 +131,7 @@ export const useAlunos = () => {
     includeAluno,
     transferAluno,
     getAlunosStats,
+    searchAluno,
     deleteStudentsPermanently,
   };
 };
