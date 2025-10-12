@@ -669,6 +669,7 @@ export default function TurmaDetailPage() {
                 onClose={handleClosePermanentDeleteModal}
                 onConfirm={handleConfirmPermanentDelete}
                 students={sortedAlunos}
+                currentGradeId={turmaId}
             />
         </div>
     );
