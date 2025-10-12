@@ -341,7 +341,11 @@ export default function TurmaDetailPage() {
     }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, handleArchiveStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
 
     const handleBackClick = () => {
-        router.push('/');
+        if (turma) {
+            router.push(`/?scrollToTurma=${turma.grade}`);
+        } else {
+            router.push('/');
+        }
     };
 
     const handleAddStudent = () => {
@@ -451,18 +455,10 @@ export default function TurmaDetailPage() {
 
     const handleConfirmPermanentDelete = async (studentIds: number[]) => {
         try {
-            console.log('IDs recebidos na página:', studentIds);
-            console.log('Dados dos alunos:', alunos.map(a => ({ id: a.id, name: a.name, idType: typeof a.id })));
-            
             const result = await deleteStudentsPermanently(studentIds);
             
-            // Mostrar mensagem de sucesso
             toast.success(result.message);
-            
-            // Log detalhado para debug
-            console.log('Exclusão permanente realizada:', result);
-            
-            // Atualizar dados da turma
+                        
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
             
@@ -506,6 +502,16 @@ export default function TurmaDetailPage() {
             </div>
         );
     }
+
+    // Ordena os alunos: ativos primeiro, depois os riscados (excluídos ou remanejados da turma original)
+    const sortedAlunos = [...alunos].sort((a, b) => {
+        const aIsStriked = a.excluded || (a.transferred && a.originalGradeId && String(a.originalGradeId).trim() === String(turmaId).trim());
+        const bIsStriked = b.excluded || (b.transferred && b.originalGradeId && String(b.originalGradeId).trim() === String(turmaId).trim());
+        
+        if (aIsStriked === bIsStriked) return 0; // Mantém ordem original se ambos têm mesmo status
+        if (aIsStriked) return 1; // Move 'a' para o final
+        return -1; // Move 'b' para o final
+    });
 
     return (
         <div className="min-h-screen p-4 sm:p-8">
@@ -601,7 +607,7 @@ export default function TurmaDetailPage() {
 
                     <div className="p-4 sm:p-8">
                         <Table
-                            data={alunos}
+                            data={sortedAlunos}
                             columns={alunosColumns}
                             emptyMessage="Nenhum aluno encontrado nesta turma"
                             className="shadow-none border-0"
@@ -662,7 +668,7 @@ export default function TurmaDetailPage() {
                 isOpen={isPermanentDeleteModalOpen}
                 onClose={handleClosePermanentDeleteModal}
                 onConfirm={handleConfirmPermanentDelete}
-                students={alunos}
+                students={sortedAlunos}
             />
         </div>
     );

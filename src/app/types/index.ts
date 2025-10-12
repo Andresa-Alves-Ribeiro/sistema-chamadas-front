@@ -29,6 +29,11 @@ export interface Student {
     originalGradeId?: string;
     old_grade?: string;
     newGradeId?: string;
+    grade_info?: {
+        id: string;
+        grade: string;
+        time: string;
+    };
     new_grade_info?: {
         id: string;
         grade: string;

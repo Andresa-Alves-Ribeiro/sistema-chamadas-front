@@ -12,6 +12,8 @@ export interface Column<T> {
   sortable?: boolean;
   onHeaderClick?: () => void;
   isHeaderClickable?: boolean;
+  sticky?: boolean;
+  stickyLeft?: string;
 }
 
 export interface TableProps<T> {
@@ -147,16 +149,16 @@ export default function Table<T extends Record<string, unknown>>({
                   key={index}
                   className={`px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200 ${column.align === 'center' ? 'text-center' :
                       column.align === 'right' ? 'text-right' : 'text-left'
-                    } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''} ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''
-                    } ${column.key === 'options' ? 'min-w-[80px]' : ''}`}
+                    } ${column.isHeaderClickable ? 'cursor-pointer hover:bg-slate-200 transition-colors' : ''                    } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''} ${column.sticky ? 'sticky z-20 bg-gradient-to-r from-slate-50 to-slate-100' : ''}`}
                   style={{
                     width: column.width,
-                    minWidth: column.key === 'name' ? '120px' :
-                      column.key === 'options' ? '80px' :
+                    minWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
+                      column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
                         column.width || '90px',
-                    maxWidth: column.key === 'name' ? '200px' :
-                      column.key === 'options' ? '80px' :
-                        column.width || '90px'
+                    maxWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
+                      column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
+                        column.width || '90px',
+                    ...(column.sticky ? { left: column.stickyLeft || '0' } : {})
                   }}
                   onClick={column.isHeaderClickable ? column.onHeaderClick : undefined}
                 >
@@ -185,20 +187,24 @@ export default function Table<T extends Record<string, unknown>>({
                 {columns.map((column, colIndex) => (
                   <td
                     key={colIndex}
-                    className={`px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-900 ${column.align === 'center' ? 'text-center' :
+                    className={`px-3 sm:px-6 py-3 sm:py-4 ${column.key === 'name' ? '' : 'whitespace-nowrap'} text-xs sm:text-sm font-medium text-slate-900 ${column.align === 'center' ? 'text-center' :
                         column.align === 'right' ? 'text-right' : 'text-left'
-                      } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''} ${column.key === 'options' ? 'min-w-[80px]' : ''}`}
+                      } ${column.key !== 'name' && column.key !== 'options' ? 'min-w-[90px]' : ''} ${column.sticky ? 'sticky z-10' : ''}`}
                     style={{
                       width: column.width,
-                      minWidth: column.key === 'name' ? '120px' :
-                        column.key === 'options' ? '80px' :
+                      minWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
+                        column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
                           column.width || '90px',
-                      maxWidth: column.key === 'name' ? '200px' :
-                        column.key === 'options' ? '80px' :
-                          column.width || '90px'
+                      maxWidth: column.key === 'name' ? 'clamp(185px, 15vw, 250px)' :
+                        column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
+                          column.width || '90px',
+                      ...(column.sticky ? { 
+                        left: column.stickyLeft || '0',
+                        backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'
+                      } : {})
                     }}
                   >
-                    <div className="truncate">
+                    <div className={column.key === 'name' ? '' : 'truncate'}>
                       {column.render
                         ? column.render(row[column.key], row)
                         : String(row[column.key] ?? '')

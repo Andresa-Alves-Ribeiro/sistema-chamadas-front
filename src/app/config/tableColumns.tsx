@@ -41,7 +41,7 @@ export function getTurmasColumns(
         { 
             key: "options", 
             label: "Opções",
-            width: "80px",
+            width: "140px",
             align: "center",
             render: (value: unknown, row: Turmas) => {
                 return (
@@ -123,57 +123,12 @@ export function getAlunosColumns(
     
     return [
         {
-            key: "name",
-            label: "Nome do Aluno",
-            width: "150px",
-            sortable: true,
-            render: (value: unknown, row: Aluno) => {
-                const name = value as string;
-                const isClickable = row.transferred && onStudentNameClick;
-                
-                const isInOriginalTurma = row.transferred && row.originalGradeId && currentTurmaId && 
-                    String(row.originalGradeId).trim() === String(currentTurmaId).trim();
-                
-                
-                return (
-                    <div className="flex flex-col space-y-1">
-                        <div className="flex items-center space-x-2">
-                            <span 
-                                className={`
-                                    ${row.excluded ? "text-slate-400 line-through" : ""}
-                                    ${isInOriginalTurma ? "text-slate-400 line-through" : ""}
-                                    ${isClickable ? "cursor-pointer hover:text-blue-600 hover:underline transition-colors" : ""}
-                                `}
-                                onClick={isClickable ? () => onStudentNameClick!(row) : undefined}
-                            >
-                                {name}
-                            </span>
-                            {row.excluded && (
-                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
-                                    Desistência
-                                </span>
-                            )}
-                            {row.inclusionDate && !row.excluded && !row.transferred && (
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                                    Novo
-                                </span>
-                            )}
-                            {row.transferred && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                                    Remanejado
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                );
-            }
-        },
-        ...dateColumns,
-        {
             key: "options",
             label: "Opções",
-            width: "80px",
+            width: "95px",
             align: "center",
+            sticky: true,
+            stickyLeft: "0px",
             render: (value: unknown, row: Aluno) => {
                 return (
                     <OptionsDropdown
@@ -188,5 +143,54 @@ export function getAlunosColumns(
                 );
             }
         },
+        {
+            key: "name",
+            label: "Nome do Aluno",
+            width: "250px",
+            sticky: true,
+            stickyLeft: "clamp(50px, 6vw, 95px)",
+            render: (value: unknown, row: Aluno) => {
+                const name = value as string;
+                const isClickable = row.transferred && onStudentNameClick;
+                
+                const isInOriginalTurma = row.transferred && row.originalGradeId && currentTurmaId && 
+                    String(row.originalGradeId).trim() === String(currentTurmaId).trim();
+                
+                
+                return (
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <span 
+                                className={`
+                                    whitespace-nowrap
+                                    ${row.excluded ? "text-slate-400 line-through" : ""}
+                                    ${isInOriginalTurma ? "text-slate-400 line-through" : ""}
+                                    ${isClickable ? "cursor-pointer hover:text-blue-600 hover:underline transition-colors" : ""}
+                                `}
+                                onClick={isClickable ? () => onStudentNameClick!(row) : undefined}
+                            >
+                                {name}
+                            </span>
+                            {row.excluded && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                                    Desistência
+                                </span>
+                            )}
+                            {row.inclusionDate && !row.excluded && !row.transferred && (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                                    Novo
+                                </span>
+                            )}
+                            {row.transferred && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                                    Remanejado
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+        },
+        ...dateColumns,
     ];
 }
