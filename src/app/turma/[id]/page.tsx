@@ -503,6 +503,16 @@ export default function TurmaDetailPage() {
         );
     }
 
+    // Ordena os alunos: ativos primeiro, depois os riscados (excluídos ou remanejados da turma original)
+    const sortedAlunos = [...alunos].sort((a, b) => {
+        const aIsStriked = a.excluded || (a.transferred && a.originalGradeId && String(a.originalGradeId).trim() === String(turmaId).trim());
+        const bIsStriked = b.excluded || (b.transferred && b.originalGradeId && String(b.originalGradeId).trim() === String(turmaId).trim());
+        
+        if (aIsStriked === bIsStriked) return 0; // Mantém ordem original se ambos têm mesmo status
+        if (aIsStriked) return 1; // Move 'a' para o final
+        return -1; // Move 'b' para o final
+    });
+
     return (
         <div className="min-h-screen p-4 sm:p-8">
             <div className="w-full">
@@ -597,7 +607,7 @@ export default function TurmaDetailPage() {
 
                     <div className="p-4 sm:p-8">
                         <Table
-                            data={alunos}
+                            data={sortedAlunos}
                             columns={alunosColumns}
                             emptyMessage="Nenhum aluno encontrado nesta turma"
                             className="shadow-none border-0"
@@ -658,7 +668,7 @@ export default function TurmaDetailPage() {
                 isOpen={isPermanentDeleteModalOpen}
                 onClose={handleClosePermanentDeleteModal}
                 onConfirm={handleConfirmPermanentDelete}
-                students={alunos}
+                students={sortedAlunos}
             />
         </div>
     );

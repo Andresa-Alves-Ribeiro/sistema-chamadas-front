@@ -278,13 +278,16 @@ body {
 /* Colunas fixas (sticky) */
 .sticky {
   position: sticky;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-  background-clip: padding-box;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.08);
+  background-clip: padding-box !important;
+  /* Forçar renderização em camada própria para evitar bleeding */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
-/* Garantir fundo opaco nas colunas sticky do tbody */
+/* Garantir fundo opaco nas colunas sticky do tbody - remover herança */
 tbody .sticky {
-  background-color: inherit;
+  background-clip: padding-box !important;
 }
 
 /* Garantir fundo opaco nas colunas sticky do thead */
@@ -297,13 +300,13 @@ tr:hover td.sticky {
   background-color: #eff6ff !important;
 }
 
-/* Garantir que sempre tenha fundo opaco */
+/* Garantir que sempre tenha fundo completamente opaco */
 tbody tr:nth-child(even) td.sticky {
-  background-color: rgba(248, 250, 252, 0.3);
+  background-color: #f8fafc !important;
 }
 
 tbody tr:nth-child(odd) td.sticky {
-  background-color: #ffffff;
+  background-color: #ffffff !important;
 }
 
 /* Animações suaves */

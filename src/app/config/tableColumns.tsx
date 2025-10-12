@@ -148,7 +148,7 @@ export function getAlunosColumns(
             label: "Nome do Aluno",
             width: "250px",
             sticky: true,
-            stickyLeft: "clamp(85px, 10vw, 95px)",
+            stickyLeft: "clamp(50px, 6vw, 95px)",
             render: (value: unknown, row: Aluno) => {
                 const name = value as string;
                 const isClickable = row.transferred && onStudentNameClick;

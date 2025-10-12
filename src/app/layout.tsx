@@ -53,11 +53,15 @@ export default function RootLayout({
         {children}
         <Toaster
           position="top-right"
+          gutter={8}
+          containerStyle={{}}
           toastOptions={{
             duration: 4000,
             style: {
               background: '#363636',
               color: '#fff',
+              padding: '16px',
+              borderRadius: '8px',
             },
             success: {
               duration: 3000,

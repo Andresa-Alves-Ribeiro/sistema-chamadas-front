@@ -153,10 +153,10 @@ export default function Table<T extends Record<string, unknown>>({
                   style={{
                     width: column.width,
                     minWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
-                      column.key === 'options' ? 'clamp(85px, 10vw, 95px)' :
+                      column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
                         column.width || '90px',
                     maxWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
-                      column.key === 'options' ? 'clamp(85px, 10vw, 95px)' :
+                      column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
                         column.width || '90px',
                     ...(column.sticky ? { left: column.stickyLeft || '0' } : {})
                   }}
@@ -193,14 +193,14 @@ export default function Table<T extends Record<string, unknown>>({
                     style={{
                       width: column.width,
                       minWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
-                        column.key === 'options' ? 'clamp(85px, 10vw, 95px)' :
+                        column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
                           column.width || '90px',
-                      maxWidth: column.key === 'name' ? 'clamp(150px, 15vw, 250px)' :
-                        column.key === 'options' ? 'clamp(85px, 10vw, 95px)' :
+                      maxWidth: column.key === 'name' ? 'clamp(185px, 15vw, 250px)' :
+                        column.key === 'options' ? 'clamp(50px, 6vw, 95px)' :
                           column.width || '90px',
                       ...(column.sticky ? { 
                         left: column.stickyLeft || '0',
-                        backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : 'rgba(248, 250, 252, 0.3)'
+                        backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'
                       } : {})
                     }}
                   >
