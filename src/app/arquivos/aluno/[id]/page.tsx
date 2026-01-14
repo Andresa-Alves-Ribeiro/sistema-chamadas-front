@@ -12,7 +12,9 @@ import OccurrenceModal from '../../../components/OccurrenceModal';
 export default function AlunoArquivosPage() {
     const router = useRouter();
     const params = useParams();
-    const alunoId = parseInt(params.id as string);
+    const rawId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+    const parsedId = rawId ? Number.parseInt(rawId, 10) : 0;
+    const alunoId = Number.isNaN(parsedId) ? 0 : parsedId;
 
     const { alunos, loading: loadingAlunos } = useAlunos();
     const {

@@ -277,7 +277,6 @@ export default function HomePage() {
                                             </button>
                                             <div className="flex-shrink-0">
                                                 <TurmaOptionsDropdown
-                                                    turma={turma}
                                                     onEdit={() => handleEditTurma(turma)}
                                                     onDelete={() => handleDeleteTurma(turma)}
                                                 />

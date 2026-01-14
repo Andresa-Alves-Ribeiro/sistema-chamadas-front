@@ -23,7 +23,9 @@ import { formatTime } from "../../utils/timeFormat";
 export default function TurmaDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const turmaId = Number(params.id);
+    const rawId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+    const parsedId = rawId ? Number.parseInt(rawId, 10) : 0;
+    const turmaId = Number.isNaN(parsedId) ? 0 : parsedId;
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
     const { createAluno, updateAluno, includeAluno } = useAlunos();
