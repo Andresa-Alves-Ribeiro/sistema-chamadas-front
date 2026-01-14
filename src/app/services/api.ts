@@ -60,7 +60,12 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    console.error('❌ Erro na resposta:', error.response?.status, error.message);
+    console.error(
+      '❌ Erro na resposta:',
+      error.response?.status,
+      error.message,
+      error
+    );
 
     const status = error.response?.status;
     const method = error.config?.method?.toUpperCase();

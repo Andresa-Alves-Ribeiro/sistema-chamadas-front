@@ -1,13 +1,8 @@
 import api from './api';
-import { Arquivo, StudentFilesResponse, StudentFile } from '../types';
+import { Arquivo, OcorrenciasPorTurma, OccurrenceByStudent } from '../types';
 
 export interface UploadFileData {
   file: File;
-  alunoId: number;
-}
-
-export interface UploadFilesData {
-  files: File[];
   alunoId: number;
 }
 
@@ -18,22 +13,74 @@ export interface CreateArquivoData {
   alunoId: number;
 }
 
+interface RawOccurrenceStudent {
+  studentId?: number;
+  student_id?: number;
+  id?: number;
+  studentName?: string;
+  student_name?: string;
+  name?: string;
+  totalOccurrences?: number;
+  total_occurrences?: number;
+  occurrencesQuantity?: number;
+  occurrences_count?: number;
+  students?: {
+    id?: number;
+    name?: string;
+  };
+}
+
+const normalizeOccurrenceStudent = (
+  student: RawOccurrenceStudent
+): OccurrenceByStudent | null => {
+  const studentId = student.studentId ?? student.student_id ?? student.id ?? student.students?.id;
+  const studentName = student.studentName ?? student.student_name ?? student.name ?? student.students?.name;
+  const totalOccurrences =
+    typeof student.totalOccurrences === 'number'
+      ? student.totalOccurrences
+      : typeof student.total_occurrences === 'number'
+        ? student.total_occurrences
+        : typeof student.occurrencesQuantity === 'number'
+          ? student.occurrencesQuantity
+          : typeof student.occurrences_count === 'number'
+            ? student.occurrences_count
+            : 0;
+
+  if (typeof studentId !== 'number' || typeof studentName !== 'string') {
+    return null;
+  }
+
+  return {
+    studentId,
+    studentName,
+    totalOccurrences,
+  };
+};
+
 export const arquivosService = {
 
-  async getAllArquivos(): Promise<StudentFile[]> {
+  async getAllArquivos(): Promise<OcorrenciasPorTurma[]> {
     try {
-      const response = await api.get('/arquivos');
+      const response = await api.get('/occurrences');
+      console.log('Resposta GET /occurrences:', response.data);
       const apiData = response.data;
       
 
       if (apiData.success && Array.isArray(apiData.data)) {
-        return apiData.data;
+        return (apiData.data as OcorrenciasPorTurma[]).map(item => ({
+          ...item,
+          students: Array.isArray(item.students)
+            ? item.students
+                .map((student: RawOccurrenceStudent) => normalizeOccurrenceStudent(student))
+                .filter((student): student is OccurrenceByStudent => Boolean(student))
+            : [],
+        }));
       }
       
 
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
-      console.error('Erro ao buscar arquivos:', error);
+      console.error('Erro ao buscar ocorrências:', error);
       return [];
     }
   },
@@ -58,104 +105,46 @@ export const arquivosService = {
   },
 
 
-  async getArquivosByAluno(alunoId: number): Promise<StudentFilesResponse> {
+  async getArquivosByAluno(alunoId: number): Promise<Arquivo[]> {
     try {
-      const response = await api.get(`/students/${alunoId}/files`);
-      return response.data;
+      const response = await api.get(`/arquivos/aluno/${alunoId}`);
+      const apiData = response.data;
+      
+
+      if (apiData.success && Array.isArray(apiData.data)) {
+        return apiData.data;
+      }
+      
+
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error(`Erro ao buscar arquivos do aluno ${alunoId}:`, error);
-      throw error;
+      return [];
     }
   },
 
 
-  async uploadArquivo(data: UploadFileData): Promise<StudentFile> {
+  async uploadArquivo(data: UploadFileData): Promise<Arquivo> {
     try {
-      console.log('🔍 Iniciando upload do arquivo:', data.file.name, 'para aluno:', data.alunoId);
-      
       const formData = new FormData();
-      // O endpoint espera um campo 'files' (array), então enviamos o arquivo como array
-      formData.append('files', data.file);
+      formData.append('file', data.file);
+      formData.append('alunoId', data.alunoId.toString());
 
-      console.log('📤 Enviando requisição para:', `/students/${data.alunoId}/upload`);
-      console.log('📊 Tamanho do arquivo:', data.file.size, 'bytes');
-      console.log('📋 Tipo do arquivo:', data.file.type);
-      console.log('📋 Campo usado: files (array)');
-
-      const response = await api.post(`/students/${data.alunoId}/upload`, formData, {
+      const response = await api.post('/arquivos/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 30000, // 30 segundos
       });
-      
-      console.log('✅ Resposta recebida:', response.status, response.statusText);
       const apiData = response.data;
-      console.log('📄 Dados da resposta:', apiData);
+      
 
       if (apiData.success && apiData.data) {
-        // A resposta pode ter uploadedFiles (array) ou data (objeto único)
-        if (apiData.data.uploadedFiles && Array.isArray(apiData.data.uploadedFiles)) {
-          return apiData.data.uploadedFiles[0]; // Retorna o primeiro arquivo
-        }
         return apiData.data;
       }
       
       return response.data;
-    } catch (error: unknown) {
-      console.error('❌ Erro detalhado no upload:', error);
-      if (error && typeof error === 'object') {
-        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
-        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
-        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
-        console.error('❌ Dados da resposta de erro:', 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response ? error.response.data : 'N/A');
-      }
-      throw error;
-    }
-  },
-
-  async uploadMultipleFiles(data: UploadFilesData): Promise<StudentFile[]> {
-    try {
-      console.log('🔍 Iniciando upload de múltiplos arquivos:', data.files.length, 'arquivos para aluno:', data.alunoId);
-      
-      const formData = new FormData();
-      // Adicionar cada arquivo ao campo 'files'
-      data.files.forEach((file, index) => {
-        formData.append('files', file);
-        console.log(`📁 Arquivo ${index + 1}:`, file.name, '- Tamanho:', file.size, 'bytes');
-      });
-
-      console.log('📤 Enviando requisição para:', `/students/${data.alunoId}/upload`);
-      console.log('📊 Total de arquivos:', data.files.length);
-
-      const response = await api.post(`/students/${data.alunoId}/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 60000, // 60 segundos para múltiplos arquivos
-      });
-      
-      console.log('✅ Resposta recebida:', response.status, response.statusText);
-      const apiData = response.data;
-      console.log('📄 Dados da resposta:', apiData);
-
-      if (apiData.success && apiData.data) {
-        // A resposta pode ter uploadedFiles (array) ou data (objeto único)
-        if (apiData.data.uploadedFiles && Array.isArray(apiData.data.uploadedFiles)) {
-          return apiData.data.uploadedFiles;
-        }
-        return Array.isArray(apiData.data) ? apiData.data : [apiData.data];
-      }
-      
-      return [];
-    } catch (error: unknown) {
-      console.error('❌ Erro detalhado no upload múltiplo:', error);
-      if (error && typeof error === 'object') {
-        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
-        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
-        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
-        console.error('❌ Dados da resposta de erro:', 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response ? error.response.data : 'N/A');
-      }
+    } catch (error) {
+      console.error('Erro ao fazer upload do arquivo:', error);
       throw error;
     }
   },
@@ -199,11 +188,11 @@ export const arquivosService = {
   },
 
 
-  async deleteArquivo(alunoId: number, fileId: number): Promise<void> {
+  async deleteArquivo(id: number): Promise<void> {
     try {
-      await api.delete(`/students/${alunoId}/files/${fileId}`);
+      await api.delete(`/arquivos/${id}`);
     } catch (error) {
-      console.error(`Erro ao deletar arquivo ${fileId} do aluno ${alunoId}:`, error);
+      console.error(`Erro ao deletar arquivo ${id}:`, error);
       throw error;
     }
   },
@@ -217,33 +206,6 @@ export const arquivosService = {
       return response.data;
     } catch (error) {
       console.error(`Erro ao baixar arquivo ${id}:`, error);
-      throw error;
-    }
-  },
-
-  async downloadStudentFile(alunoId: number, fileId: number): Promise<Blob> {
-    try {
-      console.log('🔍 Tentando baixar arquivo do estudante:', fileId, 'do aluno:', alunoId);
-      
-      const response = await api.get(`/students/${alunoId}/files/${fileId}/download`, {
-        responseType: 'blob',
-      });
-      
-      console.log('✅ Download bem-sucedido:', response.status, response.statusText);
-      console.log('📄 Headers da resposta:', {
-        contentType: response.headers['content-type'],
-        contentDisposition: response.headers['content-disposition'],
-        contentLength: response.headers['content-length']
-      });
-      
-      return response.data;
-    } catch (error: unknown) {
-      console.error(`❌ Erro ao baixar arquivo ${fileId} do aluno ${alunoId}:`, error);
-      if (error && typeof error === 'object') {
-        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
-        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
-        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
-      }
       throw error;
     }
   },
@@ -263,33 +225,6 @@ export const arquivosService = {
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar estatísticas dos arquivos:', error);
-      throw error;
-    }
-  },
-
-  async renameArquivo(alunoId: number, fileId: number, newName: string): Promise<StudentFile> {
-    try {
-      console.log('🔍 Renomeando arquivo:', fileId, 'do aluno:', alunoId, 'para:', newName);
-      
-      const response = await api.patch(`/students/${alunoId}/files/${fileId}/rename`, {
-        newName
-      });
-      
-      console.log('✅ Renomeação bem-sucedida:', response.status, response.statusText);
-      const apiData = response.data;
-      
-      if (apiData.success && apiData.data) {
-        return apiData.data;
-      }
-      
-      return response.data;
-    } catch (error: unknown) {
-      console.error(`❌ Erro ao renomear arquivo ${fileId} do aluno ${alunoId}:`, error);
-      if (error && typeof error === 'object') {
-        console.error('❌ Código do erro:', 'code' in error ? error.code : 'N/A');
-        console.error('❌ Mensagem do erro:', 'message' in error ? error.message : 'N/A');
-        console.error('❌ Status da resposta:', 'response' in error && error.response && typeof error.response === 'object' && 'status' in error.response ? error.response.status : 'N/A');
-      }
       throw error;
     }
   }

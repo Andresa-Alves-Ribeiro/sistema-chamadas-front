@@ -3,15 +3,12 @@
 import { Edit3, Trash2, MoreVertical } from 'lucide-react';
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Turmas } from '../../types';
-
 interface TurmaOptionsDropdownProps {
   onEdit?: () => void;
   onDelete?: () => void;
-  turma?: Turmas;
 }
 
-export default function TurmaOptionsDropdown({ onEdit, onDelete, turma }: TurmaOptionsDropdownProps) {
+export default function TurmaOptionsDropdown({ onEdit, onDelete }: TurmaOptionsDropdownProps) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>

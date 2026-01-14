@@ -29,11 +29,6 @@ export interface Student {
     originalGradeId?: string;
     old_grade?: string;
     newGradeId?: string;
-    grade_info?: {
-        id: string;
-        grade: string;
-        time: string;
-    };
     new_grade_info?: {
         id: string;
         grade: string;
@@ -76,49 +71,19 @@ export interface File {
     studentId: number;
 }
 
-// Nova estrutura da API
-export interface StudentFile {
-    id: number;
-    student_id: number;
-    file_name: string;
-    original_name: string;
-    file_path: string;
-    file_url: string;
-    file_size: string;
-    mime_type: string;
-    upload_date: string;
-}
-
-export interface FileStatistics {
-    totalFiles: number;
-    lastUpload: string;
-    totalSize: {
-        bytes: number;
-        size: number;
-        unit: string;
-        formatted: string;
-    };
-}
-
-export interface StudentFilesResponse {
-    success: boolean;
-    data: {
-        student: {
-            id: number;
-            name: string;
-            grade: string;
-            time: string;
-        };
-        files: StudentFile[];
-        statistics: FileStatistics;
-    };
-}
-
-export interface FileByStudent {
+export interface OccurrenceByStudent {
     studentId: number;
     studentName: string;
-    quantityFiles: number;
-    files: File[];
+    totalOccurrences: number;
+}
+
+export interface OcorrenciasPorTurma {
+    gradeId: string | number;
+    grade: string;
+    time: string;
+    studentsQuantity: number;
+    totalOccurrences: number;
+    students?: OccurrenceByStudent[];
 }
 
 export interface OccurrenceFile {
@@ -133,6 +98,8 @@ export interface OccurrenceFile {
   upload_date: string;
   created_at: string;
 }
+
+export type StudentFile = OccurrenceFile;
 
 export interface Occurrence {
   id: number;
@@ -171,31 +138,12 @@ export interface TransferStudentResponse {
   };
 }
 
-export interface PermanentDeleteStudentsRequest {
-  studentIds: number[];
-}
-
-export interface DeletedStudentInfo {
-  id: number;
-  name: string;
-  grade: string;
-  time: string;
-  wasActive: boolean;
-}
-
-export interface PermanentDeleteSummary {
-  totalRequested: number;
-  totalFound: number;
-  totalDeleted: number;
-  activeStudentsDeleted: number;
-  excludedStudentsDeleted: number;
-}
-
 export interface PermanentDeleteStudentsResponse {
   success: boolean;
-  message: string;
-  deletedStudents: DeletedStudentInfo[];
-  summary: PermanentDeleteSummary;
+  message?: string;
+  deletedIds?: number[];
+  notFoundIds?: number[];
+  [key: string]: unknown;
 }
 
 export interface AttendanceData {

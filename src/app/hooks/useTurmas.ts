@@ -93,7 +93,7 @@ export const useTurma = (id: string | number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTurma = async () => {
+  const fetchTurma = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -104,7 +104,7 @@ export const useTurma = (id: string | number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) {

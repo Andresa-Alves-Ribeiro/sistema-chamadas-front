@@ -79,54 +79,32 @@ export default function ReorderStudentModal({
   const selectedTurma = turmas.find(t => t.id === Number(selectedTurmaId));
 
   const modalContent = (
-    <div 
-      style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 99999,
-        padding: '16px'
-      }}
-    >
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        maxWidth: '448px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <ArrowDownUp className="w-6 h-6 text-blue-600" />
+    <div className="modal-overlay">
+      <div className="modal-card max-w-md">
+        <div className="modal-header">
+          <div className="flex items-center gap-3">
+            <div className="modal-icon bg-blue-50 text-blue-600">
+              <ArrowDownUp className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Remanejar Aluno</h2>
-              <p className="text-sm text-slate-600">Transferir aluno para outra turma (mantém na turma atual)</p>
+              <h2 className="modal-title">Remanejar Aluno</h2>
+              <p className="modal-subtitle">Transferir aluno para outra turma.</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 rounded-xl text-slate-500 transition hover:bg-slate-100"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h3 className="font-semibold text-slate-900 mb-2">Aluno selecionado:</h3>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-semibold text-sm">
+        <div className="modal-body">
+          <div className="card-soft">
+            <h3 className="font-semibold text-slate-900 mb-2">Aluno selecionado</h3>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <span className="text-blue-700 font-semibold text-sm">
                   {student.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </span>
               </div>
@@ -139,29 +117,26 @@ export default function ReorderStudentModal({
             </div>
           </div>
 
-          <div className="text-center">
-            <p className="text-lg font-medium text-slate-900 mb-2">
-              Para qual turma você deseja transferir este aluno?
+          <div className="text-center space-y-3">
+            <p className="text-lg font-medium text-slate-900">
+              Para qual turma deseja transferir este aluno?
             </p>
-            <p className="text-sm text-slate-600 mb-3">
-              Selecione uma das turmas disponíveis abaixo:
+            <p className="text-sm text-slate-600">
+              Selecione uma das turmas disponíveis abaixo.
             </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-3">
               <p className="text-sm text-amber-800">
-                <strong>Importante:</strong> O aluno será mantido nesta turma e também será adicionado à nova turma selecionada. 
-                Em ambas as turmas será exibida a informação de remanejamento.
+                <strong>Importante:</strong> O aluno permanecerá nesta turma e também será adicionado à nova turma.
               </p>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-3">
-              Nova turma:
-            </label>
+            <label className="form-label">Nova turma</label>
             <select
               value={selectedTurmaId}
               onChange={(e) => setSelectedTurmaId(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="form-input"
             >
               <option value="">Selecione uma turma...</option>
               {availableTurmas.map((turma) => (
@@ -173,11 +148,11 @@ export default function ReorderStudentModal({
           </div>
 
           {selectedTurma && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-900 mb-2">Nova turma:</h4>
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold text-xs">
+            <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4">
+              <h4 className="font-semibold text-blue-900 mb-2">Nova turma</h4>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <span className="text-blue-700 font-semibold text-xs">
                     {selectedTurma.grade.slice(0, 2)}
                   </span>
                 </div>
@@ -194,17 +169,17 @@ export default function ReorderStudentModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-200 bg-slate-50">
+        <div className="modal-footer">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            className="btn-secondary"
           >
             Cancelar
           </button>
           <button
             onClick={handleConfirm}
             disabled={!selectedTurmaId}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:border-slate-300 disabled:cursor-not-allowed transition-colors"
+            className="btn-primary disabled:opacity-60"
           >
             Confirmar Remanejo
           </button>

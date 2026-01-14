@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { arquivosService } from '../services/arquivosService';
-import { Arquivo, StudentFile, FileStatistics } from '../types';
-import toast from 'react-hot-toast';
+import { Arquivo, OcorrenciasPorTurma } from '../types';
 
 export const useArquivos = () => {
-  const [arquivos, setArquivos] = useState<StudentFile[]>([]);
+  const [turmasOcorrencias, setTurmasOcorrencias] = useState<OcorrenciasPorTurma[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,10 +12,10 @@ export const useArquivos = () => {
       setLoading(true);
       setError(null);
       const data = await arquivosService.getAllArquivos();
-      setArquivos(data);
+      setTurmasOcorrencias(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar arquivos');
-      console.error('Erro ao buscar arquivos:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao carregar ocorrências');
+      console.error('Erro ao buscar ocorrências:', err);
     } finally {
       setLoading(false);
     }
@@ -25,7 +24,7 @@ export const useArquivos = () => {
   const uploadArquivo = async (file: File, alunoId: number) => {
     try {
       const novoArquivo = await arquivosService.uploadArquivo({ file, alunoId });
-      setArquivos(prev => [...prev, novoArquivo]);
+      await fetchArquivos();
       return novoArquivo;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload do arquivo');
@@ -33,10 +32,10 @@ export const useArquivos = () => {
     }
   };
 
-  const deleteArquivo = async (alunoId: number, fileId: number) => {
+  const deleteArquivo = async (id: number) => {
     try {
-      await arquivosService.deleteArquivo(alunoId, fileId);
-      setArquivos(prev => prev.filter(a => a.id !== fileId));
+      await arquivosService.deleteArquivo(id);
+      await fetchArquivos();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar arquivo');
       throw err;
@@ -58,7 +57,7 @@ export const useArquivos = () => {
   }, []);
 
   return {
-    arquivos,
+    turmasOcorrencias,
     loading,
     error,
     fetchArquivos,
@@ -69,8 +68,7 @@ export const useArquivos = () => {
 };
 
 export const useArquivosByAluno = (alunoId: number) => {
-  const [arquivos, setArquivos] = useState<StudentFile[]>([]);
-  const [statistics, setStatistics] = useState<FileStatistics | null>(null);
+  const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,16 +76,11 @@ export const useArquivosByAluno = (alunoId: number) => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await arquivosService.getArquivosByAluno(alunoId);
-      
-      if (response.success) {
-        setArquivos(response.data.files);
-        setStatistics(response.data.statistics);
-      }
+      const data = await arquivosService.getArquivosByAluno(alunoId);
+      setArquivos(data);
     } catch (err) {
-      toast.error('Erro buscar arquivos do aluno');
       setError(err instanceof Error ? err.message : 'Erro ao carregar arquivos do aluno');
+      console.error('Erro ao buscar arquivos do aluno:', err);
     } finally {
       setLoading(false);
     }
@@ -99,30 +92,16 @@ export const useArquivosByAluno = (alunoId: number) => {
       setArquivos(prev => [...prev, novoArquivo]);
       return novoArquivo;
     } catch (err) {
-      toast.error('Erro fazer upload do arquivo');
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload do arquivo');
       throw err;
     }
   };
 
-  const uploadMultipleFiles = async (files: File[]) => {
+  const deleteArquivo = async (id: number) => {
     try {
-      const novosArquivos = await arquivosService.uploadMultipleFiles({ files, alunoId });
-      setArquivos(prev => [...prev, ...novosArquivos]);
-      return novosArquivos;
+      await arquivosService.deleteArquivo(id);
+      setArquivos(prev => prev.filter(a => a.id !== id));
     } catch (err) {
-      toast.error('Erro fazer upload dos arquivos');
-      setError(err instanceof Error ? err.message : 'Erro ao fazer upload dos arquivos');
-      throw err;
-    }
-  };
-
-  const deleteArquivo = async (fileId: number) => {
-    try {
-      await arquivosService.deleteArquivo(alunoId, fileId);
-      setArquivos(prev => prev.filter(a => a.id !== fileId));
-    } catch (err) {
-      toast.error('Erro deletar arquivo');
       setError(err instanceof Error ? err.message : 'Erro ao deletar arquivo');
       throw err;
     }
@@ -130,24 +109,10 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   const downloadArquivo = async (id: number) => {
     try {
-      const blob = await arquivosService.downloadStudentFile(alunoId, id);
+      const blob = await arquivosService.downloadArquivo(id);
       return blob;
     } catch (err) {
-      toast.error('Erro baixar arquivo');
       setError(err instanceof Error ? err.message : 'Erro ao baixar arquivo');
-      throw err;
-    }
-  };
-
-  const renameArquivo = async (fileId: number, newName: string) => {
-    try {
-      const arquivoAtualizado = await arquivosService.renameArquivo(alunoId, fileId, newName);
-      setArquivos(prev => prev.map(a => a.id === fileId ? arquivoAtualizado : a));
-      toast.success('Arquivo renomeado com sucesso!');
-      return arquivoAtualizado;
-    } catch (err) {
-      toast.error('Erro ao renomear arquivo');
-      setError(err instanceof Error ? err.message : 'Erro ao renomear arquivo');
       throw err;
     }
   };
@@ -160,14 +125,11 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   return {
     arquivos,
-    statistics,
     loading,
     error,
     fetchArquivosByAluno,
     uploadArquivo,
-    uploadMultipleFiles,
     deleteArquivo,
     downloadArquivo,
-    renameArquivo,
   };
 };

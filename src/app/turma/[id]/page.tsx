@@ -10,7 +10,6 @@ import DeleteStudentModal from "../../components/DeleteStudentModal";
 import IncludeStudentModal from "../../components/IncludeStudentModal";
 import OccurrenceModal from "../../components/OccurrenceModal";
 import TransferInfoPopup from "../../components/TransferInfoPopup";
-import PermanentDeleteStudentsModal from "../../components/PermanentDeleteStudentsModal";
 import { getAlunosColumns } from "../../config/tableColumns";
 import { Aluno } from "../../types";
 import { Column } from "../../components/Table";
@@ -24,11 +23,13 @@ import { formatTime } from "../../utils/timeFormat";
 export default function TurmaDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const turmaId = Number(params.id);
+    const rawId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+    const parsedId = rawId ? Number.parseInt(rawId, 10) : 0;
+    const turmaId = Number.isNaN(parsedId) ? 0 : parsedId;
 
     const { turmaData, loading: turmaLoading, fetchTurmaWithStudents } = useTurmaWithStudents(turmaId);
-    const { createAluno, updateAluno, includeAluno, transferAluno } = useAlunos();
-    const { alunos, loading: alunosLoading, fetchAlunosByGradeId, deleteAluno, deleteStudentsPermanently } = useAlunosByGradeId(turmaId.toString());
+    const { createAluno, updateAluno, includeAluno } = useAlunos();
+    const { alunos, loading: alunosLoading, fetchAlunosByGradeId } = useAlunosByGradeId(turmaId.toString());
 
     const turma = turmaData?.grade || null;
     const [initialLoading, setInitialLoading] = useState(true);
@@ -41,7 +42,6 @@ export default function TurmaDetailPage() {
     const [isOccurrenceModalOpen, setIsOccurrenceModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
     const [isTransferInfoPopupOpen, setIsTransferInfoPopupOpen] = useState(false);
-    const [isPermanentDeleteModalOpen, setIsPermanentDeleteModalOpen] = useState(false);
     const [alunosColumns, setAlunosColumns] = useState<Column<Aluno>[]>([]);
     const [daysOff, setDaysOff] = useState<Set<string>>(new Set());
     const [statusMap, setStatusMap] = useState<Map<string, Map<number, "presente" | "falta" | "falta_justificada" | "invalido">>>(new Map());
@@ -84,10 +84,6 @@ export default function TurmaDetailPage() {
         setSelectedStudent(student);
         setIsOccurrenceModalOpen(true);
     }, []);
-
-    const handleArchiveStudent = useCallback((student: Aluno) => {
-        router.push(`/arquivos/aluno/${student.id}`);
-    }, [router]);
 
     const convertDateKeyToApiFormat = useCallback((dateKey: string): string => {
         
@@ -328,7 +324,7 @@ export default function TurmaDetailPage() {
                 handleEditStudent,
                 handleDeleteStudent,
                 handleIncludeStudent,
-                handleArchiveStudent,
+                undefined,
                 turma.id,
                 statusMap,
                 handleStatusChange,
@@ -338,14 +334,10 @@ export default function TurmaDetailPage() {
             );
             setAlunosColumns(columns);
         }
-    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, handleArchiveStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
+    }, [daysOff, turma, toggleDayOff, handleReorderStudent, handleOccurrencesStudent, handleEditStudent, handleDeleteStudent, handleIncludeStudent, statusMap, handleStatusChange, handleBulkStatusChange, handleStudentNameClick, pendingChanges]);
 
     const handleBackClick = () => {
-        if (turma) {
-            router.push(`/?scrollToTurma=${turma.grade}`);
-        } else {
-            router.push('/');
-        }
+        router.push('/');
     };
 
     const handleAddStudent = () => {
@@ -403,17 +395,8 @@ export default function TurmaDetailPage() {
         setSelectedStudent(null);
     };
 
-    const handleOpenPermanentDeleteModal = () => {
-        setIsPermanentDeleteModalOpen(true);
-    };
-
-    const handleClosePermanentDeleteModal = () => {
-        setIsPermanentDeleteModalOpen(false);
-    };
-
-    const handleConfirmReorder = async (studentId: number, newTurmaId: string) => {
+    const handleConfirmReorder = async () => {
         try {
-            await transferAluno(studentId, { newGradeId: newTurmaId });
             await fetchTurmaWithStudents();
             await fetchAlunosByGradeId();
             toast.success("Aluno remanejado com sucesso");
@@ -433,10 +416,11 @@ export default function TurmaDetailPage() {
         }
     };
 
-    const handleConfirmDelete = async (studentId: number) => {
+    const handleConfirmDelete = async () => {
         try {
-            await deleteAluno(studentId);
-            // Toast de sucesso é mostrado automaticamente pelo interceptor da API
+            await fetchTurmaWithStudents();
+            await fetchAlunosByGradeId();
+            toast.success("Aluno deletado com sucesso");
         } catch {
             toast.error("Erro ao deletar aluno");
         }
@@ -453,27 +437,11 @@ export default function TurmaDetailPage() {
         }
     };
 
-    const handleConfirmPermanentDelete = async (studentIds: number[]) => {
-        try {
-            const result = await deleteStudentsPermanently(studentIds);
-            
-            toast.success(result.message);
-                        
-            await fetchTurmaWithStudents();
-            await fetchAlunosByGradeId();
-            
-            handleClosePermanentDeleteModal();
-        } catch (error) {
-            console.error("Erro ao excluir alunos permanentemente:", error);
-            toast.error("Erro ao excluir alunos permanentemente");
-        }
-    };
-
     if (loading) {
         return (
-            <div className="min-h-screen p-4 sm:p-8 flex items-center justify-center">
+            <div className="flex min-h-[60vh] items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+                    <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600"></div>
                     <p className="text-slate-600 font-medium">Carregando dados da turma...</p>
                 </div>
             </div>
@@ -482,20 +450,15 @@ export default function TurmaDetailPage() {
 
     if (!turma) {
         return (
-            <div className="min-h-screen p-4 sm:p-8 flex items-center justify-center">
-                <div className="text-center max-w-md mx-auto p-8">
-                    <div className="w-20 h-20 bg-gradient-to-r from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-red-200/50">
-                        <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                        </svg>
-                    </div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent mb-4">Turma não encontrada</h1>
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <div className="text-center max-w-md mx-auto p-6">
+                    <h1 className="text-2xl font-semibold text-slate-900 mb-3">Turma não encontrada</h1>
                     <p className="text-slate-600 mb-6">A turma que você está procurando não existe ou foi removida.</p>
                     <button
                         onClick={handleBackClick}
-                        className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect"
+                        className="btn-secondary"
                     >
-                        <ArrowLeftIcon className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
+                        <ArrowLeftIcon className="w-4 h-4" />
                         Voltar ao início
                     </button>
                 </div>
@@ -503,119 +466,100 @@ export default function TurmaDetailPage() {
         );
     }
 
-    const sortedAlunos = [...alunos].sort((a, b) => {
-        const aIsStriked = a.excluded || (a.transferred && a.originalGradeId && String(a.originalGradeId).trim() === String(turmaId).trim());
-        const bIsStriked = b.excluded || (b.transferred && b.originalGradeId && String(b.originalGradeId).trim() === String(turmaId).trim());
-        
-        if (aIsStriked === bIsStriked) return 0;
-        if (aIsStriked) return 1;
-        return -1;
-    });
-
     return (
-        <div className="min-h-screen p-4 sm:p-8">
-            <div className="w-full">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
-                    <div className="animate-fade-in-up">
-                        <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            <div className="flex items-center gap-2 sm:gap-4">
-                                <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-2xl shadow-xl ring-4 ring-blue-100/50 cursor-pointer hover:scale-110 transition-transform duration-300" onClick={handleBackClick}>
-                                    <ArrowLeftIcon className="text-white" size={24} />
-                                </div>
-                                <span>Turma {turma.grade} - {formatTime(turma.time)}</span>
-                            </div>
-                        </h1>
-                        <p className="text-slate-600 mt-2 sm:mt-3 text-sm sm:text-lg">
-                            Gerencie a presença dos alunos e controle a frequência
+        <div className="page-shell">
+            <section className="surface-card p-6 sm:p-8">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleBackClick}
+                                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/70 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+                            >
+                                <ArrowLeftIcon size={18} />
+                            </button>
+                            <h1 className="page-title">
+                                Turma {turma.grade} - {formatTime(turma.time)}
+                            </h1>
+                        </div>
+                        <p className="page-subtitle mt-2">
+                            Gerencie a presença dos alunos e controle a frequência.
                         </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                         {hasPendingChanges && (
                             <button 
                                 onClick={handleSaveChanges}
                                 disabled={isSaving}
-                                className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white text-sm font-semibold rounded-2xl hover:from-green-500 hover:to-emerald-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-green-100/50 ripple-effect glow-effect disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                className="btn-primary w-full sm:w-auto disabled:opacity-60"
                             >
                                 {isSaving ? (
                                     <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2 sm:mr-3"></div>
-                                        <span className="text-sm sm:text-base">Salvando...</span>
+                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                        Salvando...
                                     </>
                                 ) : (
                                     <>
-                                        <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
-                                        <span className="text-sm sm:text-base">Salvar Alterações</span>
+                                        Salvar alterações
                                     </>
                                 )}
                             </button>
                         )}
                         <button 
                             onClick={handleAddStudent}
-                            className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect w-full sm:w-auto"
+                            className="btn-secondary w-full sm:w-auto"
                         >
-                            <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            <span className="text-sm sm:text-base">Adicionar Aluno</span>
+                            Adicionar aluno
                         </button>
-                        <button 
-                            onClick={handleOpenPermanentDeleteModal}
-                            className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-700 to-red-800 text-white text-sm font-semibold rounded-2xl hover:from-red-500 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-red-100/50 ripple-effect glow-effect w-full sm:w-auto"
-                        >
-                            <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </div>
+                </div>
+            </section>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="stat-card">
+                    <div className="flex items-center gap-4">
+                        <div className="stat-icon-amber">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            <span className="text-sm sm:text-base">Exclusão Permanente</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-10">
-                    <div className="group bg-blue-50/50 rounded-2xl shadow-xl border border-blue-200/50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
-                        <div className="flex items-center">
-                            <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4 sm:ml-6">
-                                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Alunos</p>
-                                <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                                    {alunos.filter(aluno => !aluno.excluded && !(aluno.transferred && aluno.originalGradeId && String(aluno.originalGradeId).trim() === String(turmaId).trim())).length}
-                                </p>
-                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation">
-                    <div className="relative p-4 sm:p-8">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
-                        <div className="relative">
-                            <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-4">
-                                <div className="p-2 sm:p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
-                                    <svg className="text-blue-100 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                                    </svg>
-                                </div>
-                                <span className="truncate">Lista de Presença</span>
-                            </h2>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total de alunos</p>
+                            <p className="text-2xl font-semibold text-slate-900">{alunos.length}</p>
                         </div>
-                    </div>
-
-                    <div className="p-4 sm:p-8">
-                        <Table
-                            data={sortedAlunos}
-                            columns={alunosColumns}
-                            emptyMessage="Nenhum aluno encontrado nesta turma"
-                            className="shadow-none border-0"
-                        />
                     </div>
                 </div>
             </div>
+
+            <section className="surface-panel">
+                <div className="section-header">
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                        </span>
+                        <div>
+                        <h2 className="section-title">Lista de presença</h2>
+                        <p className="section-subtitle">Controle diário de presença</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-4 sm:p-6">
+                    <Table
+                        data={alunos}
+                        columns={alunosColumns}
+                        emptyMessage="Nenhum aluno encontrado nesta turma"
+                        className="shadow-none border-0"
+                    />
+                </div>
+            </section>
 
             <AddStudentModal
                 isOpen={isModalOpen}
@@ -663,14 +607,6 @@ export default function TurmaDetailPage() {
                 isOpen={isTransferInfoPopupOpen}
                 onClose={handleCloseTransferInfoPopup}
                 student={selectedStudent}
-            />
-
-            <PermanentDeleteStudentsModal
-                isOpen={isPermanentDeleteModalOpen}
-                onClose={handleClosePermanentDeleteModal}
-                onConfirm={handleConfirmPermanentDelete}
-                students={sortedAlunos}
-                currentGradeId={turmaId}
             />
         </div>
     );
