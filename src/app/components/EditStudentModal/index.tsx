@@ -50,54 +50,32 @@ export default function EditStudentModal({
   if (!isOpen || !student) return null;
 
   const modalContent = (
-    <div 
-      style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 99999,
-        padding: '16px'
-      }}
-    >
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        maxWidth: '448px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <UserPen className="w-6 h-6 text-green-600" />
+    <div className="modal-overlay">
+      <div className="modal-card max-w-md">
+        <div className="modal-header">
+          <div className="flex items-center gap-3">
+            <div className="modal-icon bg-emerald-50 text-emerald-600">
+              <UserPen className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Editar Aluno</h2>
-              <p className="text-sm text-slate-600">Altere o nome do aluno</p>
+              <h2 className="modal-title">Editar Aluno</h2>
+              <p className="modal-subtitle">Atualize o nome do aluno com segurança.</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 rounded-xl text-slate-500 transition hover:bg-slate-100"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h3 className="font-semibold text-slate-900 mb-2">Aluno selecionado:</h3>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-green-600 font-semibold text-sm">
+        <div className="modal-body">
+          <div className="card-soft">
+            <h3 className="font-semibold text-slate-900 mb-2">Aluno selecionado</h3>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center">
+                <span className="text-emerald-700 font-semibold text-sm">
                   {student.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </span>
               </div>
@@ -112,17 +90,15 @@ export default function EditStudentModal({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Nome atual:
-              </label>
-              <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-600">
+              <label className="form-label">Nome atual</label>
+              <div className="rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 text-slate-600">
                 {student.name}
               </div>
             </div>
 
             <div>
-              <label htmlFor="newName" className="block text-sm font-medium text-slate-700 mb-2">
-                Novo nome:
+              <label htmlFor="newName" className="form-label">
+                Novo nome
               </label>
               <input
                 id="newName"
@@ -131,23 +107,23 @@ export default function EditStudentModal({
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Digite o novo nome do aluno"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="form-input"
                 autoFocus
               />
             </div>
 
             {newName.trim() && newName.trim() !== student.name && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-semibold text-green-900 mb-2">Preview:</h4>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-semibold text-xs">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                <h4 className="font-semibold text-emerald-900 mb-2">Pré-visualização</h4>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <span className="text-emerald-700 font-semibold text-xs">
                       {newName.trim().split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-green-900">{newName.trim()}</p>
-                    <p className="text-sm text-green-700">
+                    <p className="font-medium text-emerald-900">{newName.trim()}</p>
+                    <p className="text-sm text-emerald-700">
                       Turma: {student.grade} - {formatTime(student.time)}
                     </p>
                   </div>
@@ -157,17 +133,17 @@ export default function EditStudentModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-200 bg-slate-50">
+        <div className="modal-footer">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            className="btn-secondary"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={!newName.trim() || newName.trim() === student.name}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:border-slate-300 disabled:cursor-not-allowed transition-colors"
+            className="btn-success disabled:opacity-60"
           >
             Salvar Alterações
           </button>

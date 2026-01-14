@@ -71,11 +71,19 @@ export interface File {
     studentId: number;
 }
 
-export interface FileByStudent {
+export interface OccurrenceByStudent {
     studentId: number;
     studentName: string;
-    quantityFiles: number;
-    files: File[];
+    totalOccurrences: number;
+}
+
+export interface OcorrenciasPorTurma {
+    gradeId: string | number;
+    grade: string;
+    time: string;
+    studentsQuantity: number;
+    totalOccurrences: number;
+    students?: OccurrenceByStudent[];
 }
 
 export interface OccurrenceFile {

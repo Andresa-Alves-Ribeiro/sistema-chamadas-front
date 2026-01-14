@@ -66,18 +66,20 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
     if (!isOpen || !turma) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
-                <div className="px-6 py-4 border-b border-slate-200">
-                    <h3 className="text-lg font-semibold text-slate-900">Editar Turma</h3>
-                    <p className="text-sm text-slate-600 mt-1">
-                        Atualize as informações da turma
-                    </p>
+        <div className="modal-overlay">
+            <div className="modal-card max-w-md">
+                <div className="modal-header">
+                    <div>
+                        <h3 className="modal-title">Editar Turma</h3>
+                        <p className="modal-subtitle">
+                            Atualize as informações da turma.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="p-6">
-                    <div className="mb-4">
-                        <label htmlFor="turmaName" className="block text-sm font-medium text-slate-700 mb-2">
+                <div className="modal-body">
+                    <div>
+                        <label htmlFor="turmaName" className="form-label">
                             Nome da Turma
                         </label>
                         <input
@@ -86,14 +88,14 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
                             value={turmaName}
                             onChange={(e) => setTurmaName(e.target.value)}
                             placeholder="Ex: 6º Ano"
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="form-input"
                             autoFocus
                             onKeyDown={handleKeyDown}
                         />
                     </div>
 
-                    <div className="mb-4">
-                        <label htmlFor="turmaTime" className="block text-sm font-medium text-slate-700 mb-2">
+                    <div>
+                        <label htmlFor="turmaTime" className="form-label">
                             Horário
                         </label>
                         <input
@@ -104,29 +106,26 @@ export default function EditTurmaModal({ isOpen, onClose, onSave, turma }: EditT
                                 setTurmaTime(e.target.value);
                                 setTimeError("");
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                timeError ? 'border-red-300' : 'border-slate-300'
-                            }`}
+                            className={`form-input ${timeError ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/30' : ''}`}
                             onKeyDown={handleKeyDown}
                         />
                         {timeError && (
-                            <p className="mt-1 text-sm text-red-600">{timeError}</p>
+                            <p className="mt-2 text-sm text-rose-600">{timeError}</p>
                         )}
                     </div>
-
                 </div>
 
-                <div className="px-6 py-4 border-t border-slate-200 flex justify-end space-x-3">
+                <div className="modal-footer">
                     <button
                         onClick={handleClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors duration-200"
+                        className="btn-secondary"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={!turmaName.trim() || !turmaTime.trim()}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:border-slate-400 disabled:cursor-not-allowed transition-colors duration-200"
+                        className="btn-primary disabled:opacity-60"
                     >
                         Salvar Alterações
                     </button>

@@ -1,12 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Turmas } from '../types';
 import { FileText, Users, Calendar, Clock } from 'lucide-react';
 import './arquivos.css';
-import { useTurmas } from '../hooks/useTurmas';
-import { useAlunos } from '../hooks/useAlunos';
 import { useArquivos } from '../hooks/useArquivos';
+import { OcorrenciasPorTurma } from '../types';
 import { timeToMinutes, formatTime } from '../utils/timeFormat';
 
 const dayOrder: Record<string, number> = {
@@ -23,17 +21,15 @@ const dayOrder: Record<string, number> = {
 export default function ArquivosPage() {
     const router = useRouter();
     
-    const { turmas } = useTurmas();
-    const { alunos } = useAlunos();
-    const { arquivos } = useArquivos();
+    const { turmasOcorrencias } = useArquivos();
     
-    const turmasPorDia = turmas.reduce((acc, turma) => {
+    const turmasPorDia = turmasOcorrencias.reduce((acc, turma) => {
         if (!acc[turma.grade]) {
             acc[turma.grade] = [];
         }
         acc[turma.grade].push(turma);
         return acc;
-    }, {} as Record<string, Turmas[]>);
+    }, {} as Record<string, OcorrenciasPorTurma[]>);
 
     Object.keys(turmasPorDia).forEach(dia => {
         turmasPorDia[dia].sort((a, b) => {
@@ -48,130 +44,137 @@ export default function ArquivosPage() {
         router.push(`/arquivos/aluno/${alunoId}`);
     };
 
-    const getAlunosPorTurma = (turma: Turmas) => {
-        return alunos.filter(aluno => 
-            aluno.gradeId === turma.id.toString()
-        );
+    const getTotalOcorrenciasAluno = (student: NonNullable<OcorrenciasPorTurma['students']>[number]) => {
+        if (typeof student.totalOccurrences === 'number') return student.totalOccurrences;
+        const legacyTotal = (student as { total_occurrences?: number }).total_occurrences;
+        return typeof legacyTotal === 'number' ? legacyTotal : 0;
     };
 
-    const getArquivosPorTurma = (turma: Turmas) => {
-        const alunosDaTurma = getAlunosPorTurma(turma);
-        return arquivos.filter(arquivo => 
-            alunosDaTurma.some(aluno => aluno.id === arquivo.studentId)
-        );
+    const getOcorrenciasPorTurma = (turma: OcorrenciasPorTurma) => {
+        if (!Array.isArray(turma.students)) return [];
+        return turma.students.filter(student => getTotalOcorrenciasAluno(student) > 0 && !!student.studentId);
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
-            <div className="w-full">
-                <div className="flex justify-between items-center mb-8">
-                    <div className="animate-fade-in-up">
-                        <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-xl shadow-lg">
-                                <FileText className="text-white" size={28} />
-                            </div>
-                            Arquivos dos Alunos
-                        </h1>
-                        <p className="text-slate-600 mt-2">
-                            Visualize e gerencie os arquivos enviados pelos alunos
-                        </p>
+        <div className="page-shell">
+            <section className="surface-card p-6 sm:p-8">
+                <div className="flex flex-col gap-3">
+                    <span className="badge-amber">Histórico</span>
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white shadow-sm">
+                            <FileText size={22} />
+                        </div>
+                        <div>
+                            <h1 className="page-title">Ocorrências dos Alunos</h1>
+                            <p className="page-subtitle">
+                                Visualize e gerencie as ocorrências registradas.
+                            </p>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div className="space-y-8">
-                    {Object.entries(turmasPorDia)
-                        .sort(([diaA], [diaB]) => {
-                            const orderA = dayOrder[diaA] || 999;
-                            const orderB = dayOrder[diaB] || 999;
-                            return orderA - orderB;
-                        })
-                        .map(([dia, turmas], index) => (
-                        <div key={dia} className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
-                            <div className="gradient-bg p-6 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
-                                <div className="relative">
-                                    <h2 className="text-xl font-semibold text-white flex items-center gap-3">
-                                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm border border-white/30">
-                                            <Calendar className="text-blue-100" size={20} />
-                                        </div>
-                                        {dia}
-                                    </h2>
+            <div className="space-y-6">
+                {Object.entries(turmasPorDia)
+                    .sort(([diaA], [diaB]) => {
+                        const orderA = dayOrder[diaA] || 999;
+                        const orderB = dayOrder[diaB] || 999;
+                        return orderA - orderB;
+                    })
+                    .map(([dia, turmas], index) => (
+                    <section key={dia} className="surface-panel">
+                        <div className="section-header">
+                            <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                                    <Calendar size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="section-title">{dia}</h2>
+                                    <p className="section-subtitle">Ocorrências por turma</p>
                                 </div>
                             </div>
-                            <div className="p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {turmas.map((turma, turmaIndex) => {
-                                        const arquivosDaTurma = getArquivosPorTurma(turma);
-                                        const totalArquivos = arquivosDaTurma.length;
-                                        
-                                        return (
-                                            <div key={turma.id} className="bg-gradient-to-br from-white to-blue-50/50 rounded-xl p-5 border border-blue-200/50 hover-lift card-glow stagger-animation" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}>
-                                                <div className="flex items-center justify-between mb-5">
-                                                    <div>
-                                                        <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-1">
-                                                            <div className="p-1.5 bg-blue-100 rounded-lg">
-                                                                <Clock className="text-blue-600" size={16} />
-                                                            </div>
-                                                            {formatTime(turma.time)}
-                                                        </h3>
-                                                        <p className="text-sm text-slate-600">
-                                                            {turma.studentsQuantity} alunos
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-right flex items-center gap-2">
-                                                        <p className="text-sm text-slate-600">Total de arquivos</p>
-                                                        <p className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                                                            {totalArquivos}
-                                                        </p>
-                                                    </div>
+                            <span className="pill-count">
+                                {turmas.length} turmas
+                            </span>
+                        </div>
+                        <div className="p-5 sm:p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {turmas.map((turma, turmaIndex) => {
+                                    const alunosComOcorrencias = getOcorrenciasPorTurma(turma);
+                                    const totalOcorrencias = turma.totalOccurrences || 0;
+                                    const semDetalhesComOcorrencias = alunosComOcorrencias.length === 0 && totalOcorrencias > 0;
+                                    
+                                    return (
+                                        <div
+                                            key={turma.gradeId}
+                                            className="card-elevated"
+                                            style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s` }}
+                                        >
+                                            <div className="flex items-center justify-between gap-3 mb-4">
+                                                <div>
+                                                    <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-1">
+                                                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 text-white">
+                                                            <Clock size={14} />
+                                                        </span>
+                                                        {formatTime(turma.time)}
+                                                    </h3>
+                                                    <p className="text-sm text-slate-600">
+                                                        {turma.studentsQuantity} alunos
+                                                    </p>
                                                 </div>
-
-                                                <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                    {arquivosDaTurma.map((arquivo, alunoIndex) => (
-                                                        <div
-                                                            key={arquivo.studentId}
-                                                            onClick={() => handleAlunoClick(arquivo.studentId)}
-                                                            className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-300 hover-lift"
-                                                            style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05) + (alunoIndex * 0.02)}s` }}
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="p-1.5 bg-blue-100 rounded-lg">
-                                                                    <Users className="text-blue-600" size={16} />
-                                                                </div>
-                                                                <div>
-                                                                    <p className="font-medium text-slate-900 text-sm">
-                                                                        {alunos.find(aluno => aluno.id === arquivo.studentId)?.name || 'Aluno não encontrado'}
-                                                                    </p>
-                                                                    <p className="text-xs text-slate-500">
-                                                                        1 arquivo
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className="text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 px-3 py-1 rounded-full shadow-md">
-                                                                    1
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    
-                                                    {arquivosDaTurma.length === 0 && (
-                                                        <div className="text-center py-6 text-slate-500 text-sm">
-                                                            <div className="p-3 bg-slate-100 rounded-full w-fit mx-auto mb-2 animate-float">
-                                                                <FileText className="text-slate-300" size={24} />
-                                                            </div>
-                                                            Nenhum arquivo encontrado
-                                                        </div>
-                                                    )}
+                                                <div className="text-right">
+                                                    <p className="text-xs text-slate-500">Total de ocorrências</p>
+                                                    <p className="text-lg font-semibold text-slate-900">{totalOcorrencias}</p>
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {alunosComOcorrencias.map((item, alunoIndex) => (
+                                                    <button
+                                                        key={item.studentId}
+                                                        type="button"
+                                                        onClick={() => handleAlunoClick(item.studentId)}
+                                                        className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200/70 bg-white px-3 py-2 text-left text-sm transition hover:bg-slate-50"
+                                                        style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05) + (alunoIndex * 0.02)}s` }}
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+                                                                <Users size={14} />
+                                                            </span>
+                                                            <span>
+                                                                <span className="block font-medium text-slate-900">
+                                                                    {item.studentName}
+                                                                </span>
+                                                                <span className="block text-xs text-slate-500">
+                                                                    {getTotalOcorrenciasAluno(item)} ocorrência(s)
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                        <span className="rounded-full bg-gradient-to-r from-amber-600 to-orange-500 px-2.5 py-1 text-xs font-medium text-white">
+                                                            {getTotalOcorrenciasAluno(item)}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                                
+                                                {semDetalhesComOcorrencias && (
+                                                    <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-4 text-center text-sm text-slate-500">
+                                                        Detalhes por aluno indisponíveis
+                                                    </div>
+                                                )}
+
+                                                {alunosComOcorrencias.length === 0 && totalOcorrencias === 0 && (
+                                                    <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-4 text-center text-sm text-slate-500">
+                                                        Nenhuma ocorrência encontrada
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
-                    ))}
-                </div>
+                    </section>
+                ))}
             </div>
         </div>
     );

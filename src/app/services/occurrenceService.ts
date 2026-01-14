@@ -1,5 +1,5 @@
 import api from './api';
-import { CreateOccurrenceRequest, CreateOccurrenceResponse } from '../types';
+import { CreateOccurrenceRequest, CreateOccurrenceResponse, Occurrence } from '../types';
 
 export interface OccurrenceObservation {
   id?: number;
@@ -38,6 +38,45 @@ export const occurrenceService = {
       return response.data;
     } catch (error) {
       console.error('Erro ao criar ocorrência:', error);
+      throw error;
+    }
+  },
+  async getOccurrencesByStudent(studentId: number): Promise<Occurrence[]> {
+    try {
+      const response = await api.get(`/occurrences/${studentId}`);
+      console.log(`Resposta GET /occurrences/${studentId}:`, response.data);
+      const apiData = response.data;
+
+      if (apiData.success && Array.isArray(apiData.data)) {
+        return apiData.data;
+      }
+
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error(`Erro ao buscar ocorrências do aluno ${studentId}:`, error);
+      return [];
+    }
+  },
+  async updateOccurrence(id: number, data: { observation: string }): Promise<Occurrence> {
+    try {
+      const response = await api.put(`/occurrences/${id}`, data);
+      const apiData = response.data;
+
+      if (apiData.success && apiData.data) {
+        return apiData.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Erro ao atualizar ocorrência ${id}:`, error);
+      throw error;
+    }
+  },
+  async deleteOccurrence(id: number): Promise<void> {
+    try {
+      await api.delete(`/occurrences/${id}`);
+    } catch (error) {
+      console.error(`Erro ao deletar ocorrência ${id}:`, error);
       throw error;
     }
   },

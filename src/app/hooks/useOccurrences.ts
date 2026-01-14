@@ -1,77 +1,59 @@
-import { useState, useEffect } from 'react';
-import { occurrenceService, OccurrenceObservation } from '../services/occurrenceService';
+import { useState, useEffect, useCallback } from 'react';
+import { occurrenceService } from '../services/occurrenceService';
+import { Occurrence } from '../types';
 
 export const useOccurrences = (studentId: number) => {
-  const [observations, setObservations] = useState<OccurrenceObservation[]>([]);
+  const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchObservations = async () => {
+  const fetchOccurrences = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await occurrenceService.getObservationsByStudent(studentId);
-      setObservations(data);
+      const data = await occurrenceService.getOccurrencesByStudent(studentId);
+      setOccurrences(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar observações');
-      console.error('Erro ao buscar observações:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao carregar ocorrências');
+      console.error('Erro ao buscar ocorrências:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [studentId]);
 
-  const createObservation = async (observationsText: string) => {
+  const updateOccurrence = async (id: number, observation: string) => {
     try {
-      const newObservation = await occurrenceService.createObservation({
-        studentId,
-        observations: observationsText
-      });
-      setObservations(prev => [...prev, newObservation]);
-      return newObservation;
+      const updated = await occurrenceService.updateOccurrence(id, { observation });
+      setOccurrences(prev => prev.map(item => (item.id === id ? updated : item)));
+      return updated;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar observação');
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar ocorrência');
       throw err;
     }
   };
 
-  const updateObservation = async (id: number, observationsText: string) => {
+  const deleteOccurrence = async (id: number) => {
     try {
-      const updatedObservation = await occurrenceService.updateObservation(id, {
-        observations: observationsText
-      });
-      setObservations(prev => prev.map(obs => 
-        obs.id === id ? updatedObservation : obs
-      ));
-      return updatedObservation;
+      await occurrenceService.deleteOccurrence(id);
+      setOccurrences(prev => prev.filter(item => item.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao atualizar observação');
-      throw err;
-    }
-  };
-
-  const deleteObservation = async (id: number) => {
-    try {
-      await occurrenceService.deleteObservation(id);
-      setObservations(prev => prev.filter(obs => obs.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao deletar observação');
+      setError(err instanceof Error ? err.message : 'Erro ao deletar ocorrência');
       throw err;
     }
   };
 
   useEffect(() => {
     if (studentId) {
-      fetchObservations();
+      fetchOccurrences();
     }
-  }, [studentId, fetchObservations]);
+  }, [studentId, fetchOccurrences]);
 
   return {
-    observations,
+    occurrences,
     loading,
     error,
-    fetchObservations,
-    createObservation,
-    updateObservation,
-    deleteObservation,
+    fetchOccurrences,
+    updateOccurrence,
+    deleteOccurrence,
   };
 };

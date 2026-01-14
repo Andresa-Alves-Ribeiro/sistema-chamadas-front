@@ -151,125 +151,145 @@ export default function HomePage() {
     });
 
     return (
-        <div className="min-h-screen p-4 sm:p-8">
-            <div className="w-full">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
-                    <div className="animate-fade-in-up">
-                        <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            <div className="flex items-center gap-2 sm:gap-4">
-                                <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-2xl shadow-xl ring-4 ring-blue-100/50">
-                                    <Notebook className="text-white" size={24} />
-                                </div>
-                                <span>Sistema de Chamada</span>
+        <div className="page-shell">
+            <section className="surface-card p-6 sm:p-8">
+                <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="space-y-4">
+                        <span className="badge-emerald">Gestão acadêmica</span>
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500 text-white shadow-sm">
+                                <Notebook size={22} />
                             </div>
-                        </h1>
-                        <p className="text-slate-600 mt-2 sm:mt-3 text-sm sm:text-lg">
-                            Gerencie suas turmas e controle a frequência dos alunos
-                        </p>
-                    </div>
-                    <button 
-                        onClick={handleOpenModal}
-                        className="group inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-700 to-cyan-700 text-white text-sm font-semibold rounded-2xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 ring-4 ring-blue-100/50 ripple-effect glow-effect w-full sm:w-auto"
-                    >
-                        <PlusIcon className="w-4 sm:w-5 h-4 sm:h-5 mr-2 sm:mr-3 group-hover:rotate-90 transition-transform duration-300" />
-                        <span className="text-sm sm:text-base">Nova Turma</span>
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-10">
-                    <div className="group bg-blue-50/50 rounded-2xl shadow-xl border border-blue-200/50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
-                        <div className="flex items-center">
-                            <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Notebook className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                            </div>
-                            <div className="ml-4 sm:ml-6">
-                                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Turmas</p>
-                                <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{isNaN(totalTurmas) ? 0 : totalTurmas}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="group bg-blue-50/30 rounded-2xl shadow-xl border border-blue-200/50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 glow-effect">
-                        <div className="flex items-center">
-                            <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300" style={{animationDelay: '0.5s'}}>
-                                <UsersRound className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                            </div>
-                            <div className="ml-4 sm:ml-6">
-                                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total de Alunos</p>
-                                <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                                    {loadingStats ? '...' : (isNaN(totalAlunos) ? 0 : totalAlunos)}
+                            <div>
+                                <h1 className="page-title">
+                                    Sistema de Chamada
+                                </h1>
+                                <p className="page-subtitle">
+                                    Controle turmas, horários e frequência com visão centralizada.
                                 </p>
                             </div>
                         </div>
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                onClick={handleOpenModal}
+                                className="btn-primary group w-full sm:w-auto"
+                            >
+                                <PlusIcon className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+                                Nova Turma
+                            </button>
+                            <span className="tag-soft">
+                                Status atualizado em tempo real
+                            </span>
+                        </div>
                     </div>
-                </div>
-
-                {error && (
-                    <div className="mb-4 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/50 rounded-2xl shadow-lg">
-                        <p className="text-red-600 text-sm font-medium">Erro ao carregar turmas</p>
-                    </div>
-                )}
-
-                <div className="space-y-4 sm:space-y-8">
-                    {Object.entries(turmasPorDia)
-                        .sort(([diaA], [diaB]) => {
-                            const orderA = dayOrder[diaA] || 999;
-                            const orderB = dayOrder[diaB] || 999;
-                            return orderA - orderB;
-                        })
-                        .map(([dia, turmas], index) => (
-                        <div key={dia} className="bg-gradient-to-br from-white to-blue-50/20 rounded-2xl shadow-xl border border-blue-200/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
-                            <div className="relative p-4 sm:p-8">
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-800 opacity-90"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-transparent to-cyan-700/20"></div>
-                                <div className="relative">
-                                    <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-4">
-                                        <div className="p-2 sm:p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
-                                            <Notebook className="text-blue-100" size={20} />
-                                        </div>
-                                        <span className="truncate">{dia}</span>
-                                    </h2>
+                    <div className="grid w-full gap-4 sm:grid-cols-2 lg:max-w-md">
+                        <div className="stat-card">
+                            <div className="flex items-center gap-4">
+                                <div className="stat-icon-amber">
+                                    <Notebook className="h-5 w-5" />
                                 </div>
-                            </div>
-                            <div className="p-4 sm:p-8">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                    {turmas
-                                        .sort((a, b) => {
-                                            const timeA = timeToMinutes(a.time);
-                                            const timeB = timeToMinutes(b.time);
-                                            return timeA - timeB;
-                                        })
-                                        .map((turma, turmaIndex) => (
-                                        <div key={turma.id} className="group bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-4 sm:p-6 border border-blue-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 cursor-pointer" style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s`, overflow: 'visible' }} onClick={() => handleTurmaClick(turma)}>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0">
-                                                    <h3 className="font-bold text-slate-900 flex items-center gap-2 sm:gap-3">
-                                                        <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-700 to-cyan-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                                                            <Clock className="text-white" size={16} />
-                                                        </div>
-                                                        <span className="text-lg sm:text-xl truncate">{formatTime(turma.time)}</span>
-                                                    </h3>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-xs sm:text-sm bg-blue-700 text-white rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 font-semibold shadow-lg">
-                                                            {turma.studentsQuantity} alunos
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex-shrink-0 ml-2">
-                                                    <TurmaOptionsDropdown
-                                                        turma={turma}
-                                                        onEdit={() => handleEditTurma(turma)}
-                                                        onDelete={() => handleDeleteTurma(turma)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total de Turmas</p>
+                                    <p className="text-2xl sm:text-3xl font-semibold text-slate-900">
+                                        {Number.isNaN(totalTurmas) ? 0 : totalTurmas}
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                    ))}
+                        <div className="stat-card">
+                            <div className="flex items-center gap-4">
+                                <div className="stat-icon-emerald">
+                                    <UsersRound className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total de Alunos</p>
+                                    <p className="text-2xl sm:text-3xl font-semibold text-slate-900">
+                                        {loadingStats ? '...' : (Number.isNaN(totalAlunos) ? 0 : totalAlunos)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </section>
+
+            {error && (
+                <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm font-medium text-red-700">
+                    Erro ao carregar turmas
+                </div>
+            )}
+
+            <div className="space-y-6">
+                {Object.entries(turmasPorDia)
+                    .sort(([diaA], [diaB]) => {
+                        const orderA = dayOrder[diaA] || 999;
+                        const orderB = dayOrder[diaB] || 999;
+                        return orderA - orderB;
+                    })
+                    .map(([dia, turmas], index) => {
+                    const sortedByTime = [...turmas].sort((a, b) => {
+                        const timeA = timeToMinutes(a.time);
+                        const timeB = timeToMinutes(b.time);
+                        return timeA - timeB;
+                    });
+
+                    return (
+                    <section key={dia} className="surface-panel stagger-animation" style={{ animationDelay: `${index * 0.1}s` }}>
+                        <div className="section-header">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                    <Notebook size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="section-title">{dia}</h2>
+                                    <p className="section-subtitle">Organização por horário</p>
+                                </div>
+                            </div>
+                            <span className="pill-count">
+                                {turmas.length} turmas
+                            </span>
+                        </div>
+                        <div className="p-5 sm:p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {sortedByTime.map((turma, turmaIndex) => (
+                                    <div
+                                        key={turma.id}
+                                        className="card-elevated group"
+                                        style={{ animationDelay: `${(index * 0.1) + (turmaIndex * 0.05)}s`, overflow: 'visible' }}
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <button
+                                                type="button"
+                                                className="flex min-w-0 flex-1 flex-col gap-2 text-left"
+                                                onClick={() => handleTurmaClick(turma)}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 text-white">
+                                                        <Clock size={14} />
+                                                    </span>
+                                                    <h3 className="truncate text-base font-semibold text-slate-900">
+                                                        {formatTime(turma.time)}
+                                                    </h3>
+                                                </div>
+                                                <span className="inline-flex w-fit items-center rounded-full bg-gradient-to-r from-blue-700 to-cyan-600 px-3 py-1 text-xs font-medium text-white">
+                                                    {turma.studentsQuantity} alunos
+                                                </span>
+                                            </button>
+                                            <div className="flex-shrink-0">
+                                                <TurmaOptionsDropdown
+                                                    turma={turma}
+                                                    onEdit={() => handleEditTurma(turma)}
+                                                    onDelete={() => handleDeleteTurma(turma)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                    );
+                })}
             </div>
 
             <AddTurmaModal
