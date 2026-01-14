@@ -74,6 +74,9 @@ api.interceptors.response.use(
     if (status === 401) {
       toast.error('Sessão expirada. Redirecionando para login...');
       localStorage.removeItem('authToken');
+      if (typeof document !== 'undefined') {
+        document.cookie = 'authToken=; path=/; max-age=0';
+      }
       window.location.href = '/login';
     } else if (status === 403) {
       toast.error('Você não tem permissão para realizar esta ação');

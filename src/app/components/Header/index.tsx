@@ -1,11 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { User, BookOpen, Menu, X, FileText, Home } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Header() {
+    const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    if (pathname === '/login' || pathname === '/register') {
+        return null;
+    }
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-white/60 bg-white/80 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur">
