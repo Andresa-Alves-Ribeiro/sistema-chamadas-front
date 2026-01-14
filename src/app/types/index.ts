@@ -99,6 +99,8 @@ export interface OccurrenceFile {
   created_at: string;
 }
 
+export type StudentFile = OccurrenceFile;
+
 export interface Occurrence {
   id: number;
   student_id: number;
@@ -134,6 +136,14 @@ export interface TransferStudentResponse {
     originalStudent: Student;
     newStudent: Student;
   };
+}
+
+export interface PermanentDeleteStudentsResponse {
+  success: boolean;
+  message?: string;
+  deletedIds?: number[];
+  notFoundIds?: number[];
+  [key: string]: unknown;
 }
 
 export interface AttendanceData {

@@ -324,6 +324,7 @@ export default function TurmaDetailPage() {
                 handleEditStudent,
                 handleDeleteStudent,
                 handleIncludeStudent,
+                undefined,
                 turma.id,
                 statusMap,
                 handleStatusChange,
