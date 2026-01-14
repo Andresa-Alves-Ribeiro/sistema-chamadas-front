@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="format-detection" content="telephone=no" />
@@ -41,10 +41,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased text-slate-900`}
       >
-        <Header />
-        {children}
+        <div className="min-h-screen bg-[radial-gradient(800px_420px_at_15%_-120px,rgba(191,219,254,0.7)_0%,transparent_60%),radial-gradient(900px_520px_at_85%_-120px,rgba(224,231,255,0.6)_0%,transparent_55%),radial-gradient(700px_320px_at_80%_60%,rgba(186,230,253,0.25)_0%,transparent_55%),linear-gradient(180deg,#f5f7fb_0%,#edf2f7_100%)]">
+          <Header />
+          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+        </div>
         <Toaster
           position="top-right"
           toastOptions={{

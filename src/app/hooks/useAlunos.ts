@@ -112,7 +112,7 @@ export const useAlunosByTurma = (gradeId: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAlunosByTurma = async () => {
+  const fetchAlunosByTurma = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -124,7 +124,7 @@ export const useAlunosByTurma = (gradeId: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [gradeId]);
 
   const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
     try {
@@ -141,7 +141,7 @@ export const useAlunosByTurma = (gradeId: number) => {
     if (gradeId) {
       fetchAlunosByTurma();
     }
-  }, [gradeId]);
+  }, [gradeId, fetchAlunosByTurma]);
 
   return {
     alunos,

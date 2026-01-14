@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { arquivosService } from '../services/arquivosService';
-import { Arquivo } from '../types';
+import { Arquivo, OcorrenciasPorTurma } from '../types';
 
 export const useArquivos = () => {
-  const [arquivos, setArquivos] = useState<Arquivo[]>([]);
+  const [turmasOcorrencias, setTurmasOcorrencias] = useState<OcorrenciasPorTurma[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,10 +12,10 @@ export const useArquivos = () => {
       setLoading(true);
       setError(null);
       const data = await arquivosService.getAllArquivos();
-      setArquivos(data);
+      setTurmasOcorrencias(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar arquivos');
-      console.error('Erro ao buscar arquivos:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao carregar ocorrências');
+      console.error('Erro ao buscar ocorrências:', err);
     } finally {
       setLoading(false);
     }
@@ -24,7 +24,7 @@ export const useArquivos = () => {
   const uploadArquivo = async (file: File, alunoId: number) => {
     try {
       const novoArquivo = await arquivosService.uploadArquivo({ file, alunoId });
-      setArquivos(prev => [...prev, novoArquivo]);
+      await fetchArquivos();
       return novoArquivo;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload do arquivo');
@@ -35,7 +35,7 @@ export const useArquivos = () => {
   const deleteArquivo = async (id: number) => {
     try {
       await arquivosService.deleteArquivo(id);
-      setArquivos(prev => prev.filter(a => a.id !== id));
+      await fetchArquivos();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar arquivo');
       throw err;
@@ -57,7 +57,7 @@ export const useArquivos = () => {
   }, []);
 
   return {
-    arquivos,
+    turmasOcorrencias,
     loading,
     error,
     fetchArquivos,
@@ -72,7 +72,7 @@ export const useArquivosByAluno = (alunoId: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchArquivosByAluno = async () => {
+  const fetchArquivosByAluno = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -84,7 +84,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [alunoId]);
 
   const uploadArquivo = async (file: File) => {
     try {

@@ -134,7 +134,7 @@ export default function Table<T extends Record<string, unknown>>({
           className="table-scroll-container"
         >
         <table
-          className="bg-white border border-slate-200 rounded-lg shadow-sm"
+          className="bg-white/95 border border-slate-200/70 rounded-2xl shadow-sm"
           style={{
             minWidth: 'max-content',
             width: '100%'
@@ -174,8 +174,8 @@ export default function Table<T extends Record<string, unknown>>({
             {data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className={`hover:bg-blue-50 transition-all duration-200 ${onRowClick ? 'cursor-pointer' : ''
-                  } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                className={`hover:bg-blue-50/40 transition-all duration-200 ${onRowClick ? 'cursor-pointer' : ''
+                  } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
                 onClick={(e) => {
                   if (!(e.target as HTMLElement).closest('button')) {
                     handleRowClick(row);

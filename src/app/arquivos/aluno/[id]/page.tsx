@@ -1,19 +1,34 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Upload, FileText, Calendar, Download, File, Image, FileSpreadsheet, FileVideo, FileAudio } from 'lucide-react';
+import { ArrowLeft, FileText, Calendar, AlertCircle, Pencil, Save, X, Trash2 } from 'lucide-react';
 import '../../arquivos.css';
 import { useAlunos } from '../../../hooks/useAlunos';
-import { useArquivosByAluno } from '../../../hooks/useArquivos';
+import { useOccurrences } from '../../../hooks/useOccurrences';
 import { formatTime } from '../../../utils/timeFormat';
+import OccurrenceModal from '../../../components/OccurrenceModal';
 
 export default function AlunoArquivosPage() {
     const router = useRouter();
     const params = useParams();
-    const alunoId = parseInt(params.id as string);
+    const rawId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+    const parsedId = rawId ? Number.parseInt(rawId, 10) : 0;
+    const alunoId = Number.isNaN(parsedId) ? 0 : parsedId;
 
-    const { alunos } = useAlunos();
-    const { arquivos } = useArquivosByAluno(alunoId);
+    const { alunos, loading: loadingAlunos } = useAlunos();
+    const {
+        occurrences,
+        loading: loadingOccurrences,
+        fetchOccurrences,
+        updateOccurrence,
+        deleteOccurrence,
+    } = useOccurrences(alunoId);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingText, setEditingText] = useState('');
+    const [savingId, setSavingId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const aluno = alunos.find(a => a.id === alunoId) || null;
 
@@ -21,43 +36,74 @@ export default function AlunoArquivosPage() {
         router.push('/arquivos');
     };
 
-    const handleUpload = () => {
-        router.push(`/arquivos/upload?alunoId=${aluno?.id}`);
+    const handleNovaOcorrencia = () => {
+        setIsModalOpen(true);
     };
 
-    const getFileIcon = (formato: string) => {
-        const formatLower = formato.toLowerCase();
-
-        if (formatLower === 'pdf') return <FileText className="text-red-500" size={20} />;
-        if (formatLower === 'docx' || formatLower === 'doc') return <FileText className="text-blue-500" size={20} />;
-        if (formatLower === 'xlsx' || formatLower === 'xls') return <FileSpreadsheet className="text-green-500" size={20} />;
-        if (formatLower === 'pptx' || formatLower === 'ppt') return <FileText className="text-orange-500" size={20} />;
-        if (formatLower.includes('jpg') || formatLower.includes('jpeg') || formatLower.includes('png') || formatLower.includes('gif')) {
-            return <Image className="text-purple-500" size={20} />;
-        }
-        if (formatLower.includes('mp4') || formatLower.includes('avi') || formatLower.includes('mov')) {
-            return <FileVideo className="text-pink-500" size={20} />;
-        }
-        if (formatLower.includes('mp3') || formatLower.includes('wav') || formatLower.includes('flac')) {
-            return <FileAudio className="text-yellow-500" size={20} />;
-        }
-        if (formatLower === 'zip' || formatLower === 'rar') return <File className="text-gray-500" size={20} />;
-
-        return <File className="text-gray-400" size={20} />;
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        fetchOccurrences();
     };
 
-    const formatarData = (data: string) => {
+    const formatarData = (data?: string) => {
+        if (!data) return 'N/A';
         return new Date(data).toLocaleDateString('pt-BR');
     };
 
+    const getArquivosOcorrencia = (occurrence: typeof occurrences[number]) => {
+        const files = (occurrence as { occurrence_files?: Array<{ file_url?: string; original_name?: string; file_name?: string; file_path?: string }> }).occurrence_files;
+        return Array.isArray(files) ? files : [];
+    };
+
+    const handleEditar = (occurrenceId?: number, currentText?: string | null) => {
+        if (!occurrenceId) return;
+        setEditingId(occurrenceId);
+        setEditingText(currentText || '');
+    };
+
+    const handleCancelarEdicao = () => {
+        setEditingId(null);
+        setEditingText('');
+    };
+
+    const handleSalvarEdicao = async (occurrenceId?: number) => {
+        if (!occurrenceId) return;
+        setSavingId(occurrenceId);
+        try {
+            await updateOccurrence(occurrenceId, editingText.trim());
+            handleCancelarEdicao();
+        } finally {
+            setSavingId(null);
+        }
+    };
+
+    const handleExcluir = async (occurrenceId?: number) => {
+        if (!occurrenceId) return;
+        if (!globalThis.confirm('Deseja excluir esta ocorrência?')) return;
+        setDeletingId(occurrenceId);
+        try {
+            await deleteOccurrence(occurrenceId);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    if (loadingAlunos) {
+        return (
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <p className="text-slate-500">Carregando aluno...</p>
+            </div>
+        );
+    }
+
     if (!aluno) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="flex min-h-[60vh] items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600">Aluno não encontrado</p>
+                    <p className="text-slate-600">Aluno não encontrado</p>
                     <button
                         onClick={handleVoltar}
-                        className="mt-4 text-blue-600 hover:text-blue-800"
+                        className="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
                     >
                         Voltar
                     </button>
@@ -67,151 +113,218 @@ export default function AlunoArquivosPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
-            <div className="max-w-6xl mx-auto">
-                <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-8 hover-lift animate-fade-in-up">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={handleVoltar}
-                                className="p-2 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110"
-                            >
-                                <ArrowLeft size={20} className="text-slate-600" />
-                            </button>
-                            <div>
-                                <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                                    <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-lg animate-pulse-slow">
-                                        <FileText className="text-white" size={20} />
-                                    </div>
-                                    Arquivos de {aluno.name}
-                                </h1>
-                                <p className="text-slate-600">
-                                    {aluno.grade} às {formatTime(aluno.time)}
-                                </p>
-                            </div>
-                        </div>
+        <div className="page-shell">
+            <section className="surface-card p-6 sm:p-8">
+                <div className="page-header">
+                    <div className="flex items-center gap-4">
                         <button
-                            onClick={handleUpload}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            onClick={handleVoltar}
+                            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/70 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
                         >
-                            <Upload size={20} className="animate-bounce-slow" />
-                            Novo Upload
+                            <ArrowLeft size={18} />
                         </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.1s' }}>
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg">
-                                <FileText className="text-blue-600" size={24} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-600">Total de Arquivos</p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{arquivos.length}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.2s' }}>
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-gradient-to-r from-green-100 to-green-200 rounded-lg">
-                                <Calendar className="text-green-600" size={24} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-600">Último Upload</p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                    {arquivos.length > 0 ? formatarData(arquivos[arquivos.length - 1].uploadDate) : 'N/A'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover-lift card-glow stagger-animation" style={{ animationDelay: '0.3s' }}>
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg">
-                                <File className="text-purple-600" size={24} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-600">Tipos de Arquivo</p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    {new Set(arquivos.map(a => a.format)).size}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hover-lift card-glow">
-                    <div className="gradient-bg p-6 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
-                        <div className="relative">
-                            <h2 className="text-lg font-semibold text-white flex items-center gap-3">
-                                <div className="p-2 bg-blue-500/30 rounded-lg backdrop-blur-sm">
-                                    <FileText className="text-blue-200" size={20} />
-                                </div>
-                                Lista de Arquivos ({arquivos.length})
-                            </h2>
-                        </div>
-                    </div>
-
-                    {arquivos.length > 0 ? (
-                        <div className="divide-y divide-slate-200">
-                            {arquivos.map((arquivo, index) => (
-                                <div key={arquivo.id} className="p-6 hover:bg-blue-50 transition-all duration-300 stagger-animation" style={{ animationDelay: `${index * 0.05}s` }}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-blue-100 rounded-lg">
-                                                {getFileIcon(arquivo.format)}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-medium text-slate-900">
-                                                    {arquivo.name}
-                                                </h3>
-                                                <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-                                                    <span className="flex items-center gap-1 bg-blue-100 px-3 py-1 rounded-full text-blue-700">
-                                                        <File className="size-4" />
-                                                        {arquivo.format}
-                                                    </span>
-                                                    <span className="bg-slate-100 px-3 py-1 rounded-full">{arquivo.size}</span>
-                                                    <span className="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full text-green-700">
-                                                        <Calendar className="size-4" />
-                                                        {formatarData(arquivo.uploadDate)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-300 hover:scale-110">
-                                                <Download size={20} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="p-12 text-center">
-                            <div className="animate-float">
-                                <FileText className="mx-auto text-slate-300 mb-4" size={48} />
-                            </div>
-                            <h3 className="text-lg font-medium text-slate-900 mb-2">
-                                Nenhum arquivo encontrado
-                            </h3>
-                            <p className="text-slate-600 mb-6">
-                                Este aluno ainda não fez upload de nenhum arquivo.
+                        <div>
+                            <h1 className="page-title flex items-center gap-3">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-700 via-indigo-600 to-rose-500 text-white">
+                                    <FileText size={18} />
+                                </span>
+                                Ocorrências de {aluno.name}
+                            </h1>
+                            <p className="page-subtitle">
+                                {aluno.grade} às {formatTime(aluno.time)}
                             </p>
-                            <button
-                                onClick={handleUpload}
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 mx-auto transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                            >
-                                <Upload size={20} className="animate-bounce-slow" />
-                                Fazer Upload
-                            </button>
                         </div>
-                    )}
+                    </div>
+                    <button
+                        onClick={handleNovaOcorrencia}
+                        className="btn-primary w-full sm:w-auto"
+                    >
+                        <AlertCircle size={18} />
+                        Nova ocorrência
+                    </button>
+                </div>
+            </section>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="stat-card">
+                    <div className="flex items-center gap-4">
+                        <div className="stat-icon-amber">
+                            <FileText size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total de ocorrências</p>
+                            <p className="text-2xl font-semibold text-slate-900">{occurrences.length}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="stat-card">
+                    <div className="flex items-center gap-4">
+                        <div className="stat-icon-emerald">
+                            <Calendar size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Última ocorrência</p>
+                            <p className="text-2xl font-semibold text-slate-900">
+                                {occurrences.length > 0 ? formatarData(occurrences.at(-1)?.occurrence_date || occurrences.at(-1)?.created_at) : 'N/A'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="stat-card">
+                    <div className="flex items-center gap-4">
+                        <div className="stat-icon-rose">
+                            <AlertCircle size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Com observação</p>
+                            <p className="text-2xl font-semibold text-slate-900">
+                                {occurrences.filter(occ => occ.observation?.trim()).length}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <section className="surface-panel overflow-hidden">
+                <div className="section-header">
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                            <FileText size={18} />
+                        </span>
+                        <div>
+                            <h2 className="section-title">Lista de ocorrências</h2>
+                            <p className="section-subtitle">{occurrences.length} registros</p>
+                        </div>
+                    </div>
+                </div>
+
+                {loadingOccurrences ? (
+                    <div className="p-10 text-center text-slate-500">
+                        Carregando ocorrências...
+                    </div>
+                ) : occurrences.length > 0 ? (
+                        <div className="divide-y divide-slate-100">
+                        {occurrences.map((occurrence, index) => (
+                            <div key={occurrence.id || index} className="p-6 transition hover:bg-slate-50/70">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                            <AlertCircle size={18} />
+                                        </div>
+                                        <div>
+                                            {editingId === occurrence.id ? (
+                                                <div className="space-y-3">
+                                                    <textarea
+                                                        value={editingText}
+                                                        onChange={(e) => setEditingText(e.target.value)}
+                                                        className="input-field min-h-[96px] resize-none"
+                                                        rows={3}
+                                                        disabled={savingId === occurrence.id}
+                                                    />
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleSalvarEdicao(occurrence.id)}
+                                                            disabled={savingId === occurrence.id || !editingText.trim()}
+                                                            className="btn-primary px-4 py-2 text-xs"
+                                                        >
+                                                            <Save size={14} />
+                                                            Salvar
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelarEdicao}
+                                                            disabled={savingId === occurrence.id}
+                                                            className="btn-secondary px-4 py-2 text-xs"
+                                                        >
+                                                            <X size={14} />
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <h3 className="text-base font-semibold text-slate-900">
+                                                        {occurrence.observation || 'Ocorrência registrada'}
+                                                    </h3>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                                                            <Calendar className="size-4" />
+                                                            {formatarData(occurrence.occurrence_date || occurrence.created_at)}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {getArquivosOcorrencia(occurrence).length > 0 && (
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {getArquivosOcorrencia(occurrence).map((file, fileIndex) => {
+                                                        const fileName = file.original_name || file.file_name || 'arquivo';
+                                                        const fileUrl = file.file_url || file.file_path || '';
+                                                        return (
+                                                            <a
+                                                                key={`${occurrence.id}-${fileIndex}`}
+                                                                href={fileUrl}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="chip-link"
+                                                            >
+                                                                Download {fileName}
+                                                            </a>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {editingId !== occurrence.id && (
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleEditar(occurrence.id, occurrence.observation)}
+                                                className="rounded-xl border border-slate-200/70 bg-white p-2 text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-700"
+                                                title="Editar ocorrência"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleExcluir(occurrence.id)}
+                                                disabled={deletingId === occurrence.id}
+                                                className="rounded-xl border border-slate-200/70 bg-white p-2 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                                                title="Excluir ocorrência"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="p-10 text-center">
+                        <FileText className="mx-auto mb-4 text-slate-300" size={48} />
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                            Nenhuma ocorrência encontrada
+                        </h3>
+                        <p className="text-slate-600 mb-6">
+                            Este aluno ainda não possui ocorrências registradas.
+                        </p>
+                        <button
+                            onClick={handleNovaOcorrencia}
+                            className="btn-primary"
+                        >
+                            <AlertCircle size={18} />
+                            Registrar ocorrência
+                        </button>
+                    </div>
+                )}
+            </section>
+            {aluno && (
+                <OccurrenceModal
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                    student={aluno}
+                />
+            )}
         </div>
     );
 }
