@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownUp, UserPen, UserRoundX, UserPlus, CircleAlert, MoreVertical } from 'lucide-react';
+import { ArrowDownUp, UserPen, UserRoundX, UserPlus, CircleAlert, MoreVertical, FileText } from 'lucide-react';
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Aluno } from '../../types';
@@ -11,10 +11,11 @@ interface OptionsDropdownProps {
   onReorder?: () => void;
   onOccurrences?: () => void;
   onInclude?: () => void;
+  onArchive?: () => void;
   student?: Aluno;
 }
 
-export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurrences, onInclude, student }: OptionsDropdownProps) {
+export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurrences, onInclude, onArchive, student }: OptionsDropdownProps) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -75,6 +76,21 @@ export default function OptionsDropdown({ onEdit, onDelete, onReorder, onOccurre
                 <CircleAlert size={16} className="text-yellow-600" />
               </div>
               <span className="font-medium">Ocorrências</span>
+            </DropdownMenu.Item>
+          )}
+
+          {onArchive && (
+            <DropdownMenu.Item
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchive();
+              }}
+              className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-purple-50 hover:text-purple-700 focus:bg-purple-50 focus:text-purple-700 focus:outline-none cursor-pointer rounded-md transition-all duration-200"
+            >
+              <div className="p-1.5 bg-purple-100 rounded-md mr-3">
+                <FileText size={16} className="text-purple-600" />
+              </div>
+              <span className="font-medium">Arquivos</span>
             </DropdownMenu.Item>
           )}
 

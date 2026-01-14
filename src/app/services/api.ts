@@ -37,7 +37,7 @@ api.interceptors.response.use(
         if (method === 'POST') toast.success('Aluno criado com sucesso!');
         else if (method === 'PUT') toast.success('Aluno atualizado com sucesso!');
         else if (method === 'PATCH') toast.success('Aluno modificado com sucesso!');
-        else if (method === 'DELETE') toast.success('Aluno removido com sucesso!');
+        else if (method === 'DELETE' && !url.includes('/permanent')) toast.success('Aluno removido com sucesso!');
       } else if (url.includes('/grades')) {
         if (method === 'POST') toast.success('Turma criada com sucesso!');
         else if (method === 'PUT') toast.success('Turma atualizada com sucesso!');
@@ -89,7 +89,7 @@ api.interceptors.response.use(
       if (url.includes('/students')) {
         if (method === 'POST') toast.error('Erro ao criar aluno');
         else if (method === 'PUT') toast.error('Erro ao atualizar aluno');
-        else if (method === 'DELETE') toast.error('Erro ao remover aluno');
+        else if (method === 'DELETE' && !url.includes('/permanent')) toast.error('Erro ao remover aluno');
       } else if (url.includes('/grades')) {
         if (method === 'POST') toast.error('Erro ao criar turma');
         else if (method === 'PUT') toast.error('Erro ao atualizar turma');

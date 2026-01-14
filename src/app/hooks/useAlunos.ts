@@ -46,7 +46,11 @@ export const useAlunos = () => {
   const deleteAluno = async (id: number) => {
     try {
       await alunosService.deleteAluno(id);
-      setAlunos(prev => prev.filter(a => a.id !== id));
+      setAlunos(prev => prev.map(a => 
+        a.id === id 
+          ? { ...a, excluded: true, exclusionDate: new Date().toISOString() }
+          : a
+      ));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar aluno');
       throw err;
@@ -93,6 +97,29 @@ export const useAlunos = () => {
     }
   }, []);
 
+  const searchAluno = async (name: string) => {
+    try {
+      const result = await alunosService.searchAluno(name);
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar aluno');
+      throw err;
+    }
+  };
+
+  const deleteStudentsPermanently = async (studentIds: number[]) => {
+    try {
+      const result = await alunosService.deleteStudentsPermanently(studentIds);
+      
+      setAlunos(prev => prev.filter(aluno => !studentIds.includes(aluno.id)));
+      
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir alunos permanentemente');
+      throw err;
+    }
+  };
+
   return {
     alunos,
     loading,
@@ -104,6 +131,8 @@ export const useAlunos = () => {
     includeAluno,
     transferAluno,
     getAlunosStats,
+    searchAluno,
+    deleteStudentsPermanently,
   };
 };
 
@@ -171,6 +200,20 @@ export const useAlunosByGradeId = (gradeId: string) => {
     }
   }, [gradeId]);
 
+  const deleteAluno = async (id: number) => {
+    try {
+      await alunosService.deleteAluno(id);
+      setAlunos(prev => prev.map(a => 
+        a.id === id 
+          ? { ...a, excluded: true, exclusionDate: new Date().toISOString() }
+          : a
+      ));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao deletar aluno');
+      throw err;
+    }
+  };
+
   const reorderAlunos = async (turmaId: number, alunoIds: number[]) => {
     try {
       await alunosService.reorderAlunos(turmaId, alunoIds);
@@ -178,6 +221,19 @@ export const useAlunosByGradeId = (gradeId: string) => {
       setAlunos(alunosReordenados);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao reordenar alunos');
+      throw err;
+    }
+  };
+
+  const deleteStudentsPermanently = async (studentIds: number[]) => {
+    try {
+      const result = await alunosService.deleteStudentsPermanently(studentIds);
+      
+      setAlunos(prev => prev.filter(aluno => !studentIds.includes(aluno.id)));
+      
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir alunos permanentemente');
       throw err;
     }
   };
@@ -193,6 +249,8 @@ export const useAlunosByGradeId = (gradeId: string) => {
     loading,
     error,
     fetchAlunosByGradeId,
+    deleteAluno,
     reorderAlunos,
+    deleteStudentsPermanently,
   };
 };

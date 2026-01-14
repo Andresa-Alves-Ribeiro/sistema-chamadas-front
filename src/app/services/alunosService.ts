@@ -1,5 +1,5 @@
 import api from './api';
-import { Student, TransferStudentResponse } from '../types';
+import { Student, TransferStudentResponse, PermanentDeleteStudentsResponse } from '../types';
 
 export interface CreateAlunoData {
     name: string;
@@ -179,6 +179,43 @@ export const alunosService = {
             return { totalAlunos: apiData.totalStudents || 0 };
         } catch (error) {
             console.error('Erro ao buscar estatísticas dos alunos:', error);
+            throw error;
+        }
+    },
+
+    async deleteStudentsPermanently(studentIds: number[]): Promise<PermanentDeleteStudentsResponse> {
+        try {
+            const requestData = { ids: studentIds };
+            
+            const response = await api.delete('/students/permanent', {
+                data: requestData
+            });
+            
+            return response.data;
+        } catch (error) {
+            console.error('Erro ao excluir alunos permanentemente:', error);
+            throw error;
+        }
+    },
+
+    async searchAluno(name: string): Promise<{ students: Student[]; count: number }> {
+        try {
+            const response = await api.get('/students/search', {
+                params: { name }
+            });
+            
+            const apiData = response.data;
+
+            if (apiData.success && Array.isArray(apiData.data)) {
+                return {
+                    students: apiData.data,
+                    count: apiData.count || apiData.data.length
+                };
+            }
+
+            return { students: [], count: 0 };
+        } catch (error) {
+            console.error('Erro ao buscar aluno:', error);
             throw error;
         }
     }
