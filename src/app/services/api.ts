@@ -71,6 +71,10 @@ api.interceptors.response.use(
     const method = error.config?.method?.toUpperCase();
     const url = error.config?.url || '';
 
+    if (url.includes('/auth/login')) {
+      return Promise.reject(error);
+    }
+
     if (status === 401) {
       toast.error('Sessão expirada. Redirecionando para login...');
       localStorage.removeItem('authToken');

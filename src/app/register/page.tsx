@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -13,16 +14,20 @@ type RegisterFormState = {
   role: string;
 };
 
+const DEFAULT_ROLE = 'administrador';
+
 export default function RegisterPage() {
+  const router = useRouter();
   const [formState, setFormState] = useState<RegisterFormState>({
     name: '',
     email: '',
     password: '',
-    role: 'admin',
+    role: DEFAULT_ROLE,
   });
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     if (!avatar) {
@@ -60,7 +65,8 @@ export default function RegisterPage() {
     payload.append('email', formState.email);
     payload.append('password', formState.password);
     payload.append('name', formState.name);
-    payload.append('role', formState.role);
+    const normalizedRole = formState.role === 'admin' ? DEFAULT_ROLE : formState.role;
+    payload.append('role', normalizedRole);
     if (avatar) {
       payload.append('avatar', avatar);
     }
@@ -74,8 +80,9 @@ export default function RegisterPage() {
       });
 
       toast.success('Conta criada com sucesso!');
-      setFormState({ name: '', email: '', password: '', role: 'admin' });
+      setFormState({ name: '', email: '', password: '', role: DEFAULT_ROLE });
       setAvatar(null);
+      setIsConfirmModalOpen(true);
     } catch (error) {
       console.error('Erro ao criar conta:', error);
       toast.error('Nao foi possivel criar a conta.');
@@ -95,6 +102,30 @@ export default function RegisterPage() {
       }}
     >
       <div className="absolute inset-0 bg-slate-950/55" />
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-slate-950/70" />
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 text-slate-900 shadow-2xl">
+            <h3 className="text-lg font-semibold">Confirme seu email</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Enviamos um email de confirmacao. Verifique a caixa de entrada do email
+              cadastrado para concluir o cadastro.
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                className="rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-800"
+                onClick={() => {
+                  setIsConfirmModalOpen(false);
+                  router.push('/login');
+                }}
+              >
+                Ir para o login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="relative z-10 w-full max-w-5xl">
         <div className="relative grid overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_-55px_rgba(15,23,42,0.6)] lg:grid-cols-[1fr_1.1fr]">
           <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-700 px-8 py-12 text-white">

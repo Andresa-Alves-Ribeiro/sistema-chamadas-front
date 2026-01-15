@@ -55,6 +55,19 @@ export default function LoginPage() {
       router.push('/');
     } catch (error) {
       console.error('Erro ao realizar login:', error);
+      const responseData = (error as { response?: { data?: { message?: string; error?: string } } })
+        ?.response?.data;
+      const messageText = responseData?.message?.trim() ?? '';
+      const errorText = responseData?.error?.trim() ?? '';
+
+      if (messageText || errorText) {
+        const combinedMessage = messageText && errorText
+          ? `${messageText} (${errorText})`
+          : messageText || errorText;
+        toast.error(combinedMessage);
+        return;
+      }
+
       toast.error('Nao foi possivel realizar o login.');
     } finally {
       setIsSubmitting(false);
@@ -174,19 +187,6 @@ export default function LoginPage() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Entrando...' : 'Sign in'}
-              </button>
-
-              <div className="flex items-center gap-3 text-xs text-slate-400">
-                <span className="h-px flex-1 bg-slate-200" />
-                <span>Or</span>
-                <span className="h-px flex-1 bg-slate-200" />
-              </div>
-
-              <button
-                type="button"
-                className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
-              >
-                Sign in with other
               </button>
 
               <p className="text-center text-xs text-slate-500">
