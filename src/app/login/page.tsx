@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye } from 'lucide-react';
 import loginBackground from '../assets/login.jpg';
 import toast from 'react-hot-toast';
@@ -14,11 +14,21 @@ type LoginFormState = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formState, setFormState] = useState<LoginFormState>({
     email: '',
     password: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const getRedirectPath = () => {
+    const redirectParam = searchParams.get('redirect');
+    if (!redirectParam) return '/';
+    if (redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+      return redirectParam;
+    }
+    return '/';
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -43,16 +53,22 @@ export default function LoginPage() {
       const token =
         response.data?.token ??
         response.data?.accessToken ??
+        response.data?.access_token ??
         response.data?.data?.token ??
-        response.data?.data?.accessToken;
+        response.data?.data?.accessToken ??
+        response.data?.data?.access_token ??
+        response.data?.data?.session?.access_token;
 
       if (token) {
         localStorage.setItem('authToken', token);
         document.cookie = `authToken=${encodeURIComponent(token)}; path=/; samesite=lax`;
+      } else {
+        toast.error('Token de autenticação não retornado.');
+        return;
       }
 
       toast.success('Login realizado com sucesso!');
-      router.push('/');
+      router.replace(getRedirectPath());
     } catch (error) {
       console.error('Erro ao realizar login:', error);
       const responseData = (error as { response?: { data?: { message?: string; error?: string } } })
