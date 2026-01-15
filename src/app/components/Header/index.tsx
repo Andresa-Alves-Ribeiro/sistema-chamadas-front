@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { User, BookOpen, Menu, X, FileText, Home, LogOut } from 'lucide-react';
+import { User, BookOpen, Menu, X, FileText, Home, LogOut, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 
@@ -37,6 +37,7 @@ export default function Header() {
         const token = localStorage.getItem('authToken');
         if (!token) {
             setProfile(null);
+            router.replace('/login');
             return;
         }
 
@@ -48,8 +49,13 @@ export default function Header() {
                 if (!isActive) return;
                 const profileData = response.data?.data?.profile ?? null;
                 setProfile(profileData);
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error('Erro ao buscar perfil do usuário:', error);
+                const status = (error as { response?: { status?: number } })?.response?.status;
+                if (status === 401) {
+                    setProfile(null);
+                    router.replace('/login');
+                }
             }
         };
 
@@ -72,6 +78,30 @@ export default function Header() {
         setProfile(null);
         setIsMobileMenuOpen(false);
         router.replace('/login');
+    };
+
+    const handleDownloadPdf = async () => {
+        if (globalThis.window === undefined) {
+            return;
+        }
+
+        try {
+            const response = await api.get('/relatorios/pdf/geral', {
+                responseType: 'blob',
+            });
+            const pdfBlob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: 'application/pdf' });
+            const url = globalThis.URL.createObjectURL(pdfBlob);
+            const link = globalThis.document.createElement('a');
+            link.href = url;
+            link.download = 'relatorio-geral.pdf';
+            globalThis.document.body.appendChild(link);
+            link.click();
+            link.remove();
+            globalThis.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Erro ao baixar PDF:', error);
+            globalThis.window.alert('Não foi possível gerar o PDF agora. Tente novamente.');
+        }
     };
 
     return (
@@ -104,6 +134,14 @@ export default function Header() {
                                 <FileText size={16} />
                                 Arquivos
                             </Link>
+                            <button
+                                type="button"
+                                onClick={handleDownloadPdf}
+                                className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
+                            >
+                                <Download size={16} />
+                                Download PDF
+                            </button>
                         </nav>
                         <div className="flex items-center gap-3 rounded-full border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm">
                             {profile?.avatar_url ? (
@@ -163,6 +201,17 @@ export default function Header() {
                                     <FileText size={16} />
                                     Arquivos
                                 </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        handleDownloadPdf();
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"
+                                >
+                                    <Download size={16} />
+                                    Baixar PDF
+                                </button>
                                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-3">
                                     {profile?.avatar_url ? (
                                         <img

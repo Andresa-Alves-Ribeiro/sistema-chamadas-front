@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Mail, Lock, Eye } from 'lucide-react';
 import loginBackground from '../assets/login.jpg';
 import toast from 'react-hot-toast';
@@ -206,7 +207,10 @@ export default function LoginPage() {
               </button>
 
               <p className="text-center text-xs text-slate-500">
-                Don&apos;t have an account? <span className="font-semibold text-blue-600">Sign up</span>
+                Don&apos;t have an account?{' '}
+                <Link href="/register" className="font-semibold !text-blue-600">
+                  Sign up
+                </Link>
               </p>
             </form>
           </div>

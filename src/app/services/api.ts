@@ -80,7 +80,7 @@ api.interceptors.response.use(
       const locationRef = hasGlobalThis ? globalThis.location : undefined;
       const currentPath = locationRef?.pathname ?? '';
       const isAuthScreen = currentPath === '/login' || currentPath === '/register';
-      const isAuthRequest = url.includes('/auth/login') || url.includes('/auth/user');
+      const isLoginRequest = url.includes('/auth/login');
 
       if (isAuthScreen) {
         // Nada: evita aviso redundante na tela de login/registro.
@@ -97,11 +97,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      if (isAuthRequest) {
-        return Promise.reject(error);
-      }
-
-      if (locationRef?.assign) {
+      if (!isLoginRequest && locationRef?.assign) {
         locationRef.assign('/login');
       }
     } else if (status === 403) {
