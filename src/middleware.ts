@@ -3,6 +3,14 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('authToken')?.value;
+  const pathname = request.nextUrl.pathname;
+
+  if (token && (pathname === '/login' || pathname === '/register')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
 
   if (!token) {
     const loginUrl = request.nextUrl.clone();
@@ -16,6 +24,8 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!login|register|_next|favicon.ico|site.webmanifest|assets|api).*)',
+    '/login',
+    '/register',
+    '/((?!_next|favicon.ico|site.webmanifest|assets|api).*)',
   ],
 };
