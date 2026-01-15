@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { User, BookOpen, Menu, X, FileText, Home } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { User, BookOpen, Menu, X, FileText, Home, LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 
@@ -25,10 +25,21 @@ type AuthUserResponse = {
 
 export default function Header() {
     const pathname = usePathname();
+    const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [profile, setProfile] = useState<AuthProfile | null>(null);
 
     useEffect(() => {
+        if (pathname === '/login' || pathname === '/register') {
+            return;
+        }
+
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            setProfile(null);
+            return;
+        }
+
         let isActive = true;
 
         const fetchProfile = async () => {
@@ -47,11 +58,21 @@ export default function Header() {
         return () => {
             isActive = false;
         };
-    }, []);
+    }, [pathname]);
 
     if (pathname === '/login' || pathname === '/register') {
         return null;
     }
+
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        if (typeof document !== 'undefined') {
+            document.cookie = 'authToken=; path=/; max-age=0';
+        }
+        setProfile(null);
+        setIsMobileMenuOpen(false);
+        router.replace('/login');
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-white/60 bg-white/80 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur">
@@ -101,6 +122,14 @@ export default function Header() {
                                 <p className="text-[11px] text-slate-500">{profile?.role ?? 'Perfil'}</p>
                             </div>
                         </div>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 rounded-full border border-red-100/70 bg-white/80 px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
+                        >
+                            <LogOut size={14} />
+                            Sair
+                        </button>
                     </div>
 
                     <div className="md:hidden flex items-center">
@@ -151,6 +180,14 @@ export default function Header() {
                                         <p className="text-[11px] text-slate-500">{profile?.role ?? 'Perfil'}</p>
                                     </div>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-red-100/70 bg-white px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
+                                >
+                                    <LogOut size={14} />
+                                    Sair
+                                </button>
                             </nav>
                         </div>
                     </div>

@@ -76,12 +76,34 @@ api.interceptors.response.use(
     }
 
     if (status === 401) {
-      toast.error('Sessão expirada. Redirecionando para login...');
+      const hasGlobalThis = typeof globalThis === 'object' && globalThis !== null;
+      const locationRef = hasGlobalThis ? globalThis.location : undefined;
+      const currentPath = locationRef?.pathname ?? '';
+      const isAuthScreen = currentPath === '/login' || currentPath === '/register';
+      const isAuthRequest = url.includes('/auth/login') || url.includes('/auth/user');
+
+      if (isAuthScreen) {
+        // Nada: evita aviso redundante na tela de login/registro.
+      } else {
+        toast.error('Sessão expirada. Redirecionando para login...');
+      }
+
       localStorage.removeItem('authToken');
       if (typeof document !== 'undefined') {
         document.cookie = 'authToken=; path=/; max-age=0';
       }
-      window.location.href = '/login';
+
+      if (isAuthScreen) {
+        return Promise.reject(error);
+      }
+
+      if (isAuthRequest) {
+        return Promise.reject(error);
+      }
+
+      if (locationRef?.assign) {
+        locationRef.assign('/login');
+      }
     } else if (status === 403) {
       toast.error('Você não tem permissão para realizar esta ação');
     } else if (status === 404) {
