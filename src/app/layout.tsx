@@ -48,7 +48,7 @@ export default function RootLayout({
           <main className="min-h-[calc(100vh-4rem)]">{children}</main>
         </div>
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
             duration: 4000,
             style: {

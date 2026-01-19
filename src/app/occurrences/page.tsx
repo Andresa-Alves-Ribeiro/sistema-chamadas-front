@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { FileText, Users, Calendar, Clock } from 'lucide-react';
-import './arquivos.css';
-import { useArquivos } from '../hooks/useArquivos';
+import './occurrences.css';
+import { useOccurrences } from '../hooks/useArquivos';
 import { OcorrenciasPorTurma } from '../types';
 import { timeToMinutes, formatTime } from '../utils/timeFormat';
 
@@ -18,10 +18,10 @@ const dayOrder: Record<string, number> = {
 };
 
 
-export default function ArquivosPage() {
+export default function OccurrencesPage() {
     const router = useRouter();
     
-    const { turmasOcorrencias } = useArquivos();
+    const { turmasOcorrencias } = useOccurrences();
     
     const turmasPorDia = turmasOcorrencias.reduce((acc, turma) => {
         if (!acc[turma.grade]) {
