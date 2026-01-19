@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { User, BookOpen, Menu, X, FileText, Home, LogOut, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 type AuthProfile = {
@@ -28,10 +29,47 @@ export default function Header() {
     const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [profile, setProfile] = useState<AuthProfile | null>(null);
+    const normalizedPathname =
+        pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+    const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
 
     useEffect(() => {
-        if (pathname === '/login' || pathname === '/register') {
+        if (publicRoutes.includes(normalizedPathname)) {
             return;
+        }
+
+        const windowRef = typeof globalThis === 'object' ? globalThis.window : undefined;
+        const documentRef = typeof globalThis === 'object' ? globalThis.document : undefined;
+        const hash = windowRef?.location?.hash ?? '';
+        if (hash) {
+            const hashParams = new URLSearchParams(hash.replace('#', ''));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            const recoveryType = hashParams.get('type');
+            const errorCode = hashParams.get('error_code');
+            const errorDescription = hashParams.get('error_description');
+
+            if (!accessToken && (errorCode || errorDescription)) {
+                toast.error('Link de redefinicao invalido ou expirado.');
+                windowRef?.history?.replaceState?.(null, '', windowRef.location.pathname + windowRef.location.search);
+                return;
+            }
+
+            if (accessToken) {
+                sessionStorage.setItem('authToken', accessToken);
+                localStorage.removeItem('authToken');
+                if (refreshToken) {
+                    sessionStorage.setItem('refreshToken', refreshToken);
+                }
+                if (documentRef) {
+                    documentRef.cookie = `authToken=${encodeURIComponent(accessToken)}; path=/; samesite=lax`;
+                }
+                windowRef?.history?.replaceState?.(null, '', windowRef.location.pathname + windowRef.location.search);
+                if (recoveryType === 'recovery') {
+                    router.replace('/reset-password');
+                    return;
+                }
+            }
         }
 
         const token =
@@ -65,9 +103,9 @@ export default function Header() {
         return () => {
             isActive = false;
         };
-    }, [pathname]);
+    }, [normalizedPathname]);
 
-    if (pathname === '/login' || pathname === '/register') {
+    if (publicRoutes.includes(normalizedPathname)) {
         return null;
     }
 

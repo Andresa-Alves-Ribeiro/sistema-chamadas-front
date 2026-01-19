@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye } from 'lucide-react';
@@ -22,6 +22,47 @@ export default function LoginPage() {
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const windowRef = typeof globalThis === 'object' ? globalThis.window : undefined;
+    const documentRef = typeof globalThis === 'object' ? globalThis.document : undefined;
+    if (!windowRef?.location?.hash) return;
+
+    const hashParams = new URLSearchParams(windowRef.location.hash.replace('#', ''));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+    const recoveryType = hashParams.get('type');
+    const errorCode = hashParams.get('error_code');
+    const errorDescription = hashParams.get('error_description');
+
+    if (!accessToken) {
+      if (errorCode || errorDescription) {
+        toast.error('Link de redefinicao invalido ou expirado.');
+        windowRef.history.replaceState(null, '', windowRef.location.pathname + windowRef.location.search);
+      }
+      return;
+    }
+
+    sessionStorage.setItem('authToken', accessToken);
+    localStorage.removeItem('authToken');
+
+    if (refreshToken) {
+      sessionStorage.setItem('refreshToken', refreshToken);
+    }
+
+    if (documentRef) {
+      documentRef.cookie = `authToken=${encodeURIComponent(accessToken)}; path=/; samesite=lax`;
+    }
+
+    windowRef.history.replaceState(null, '', windowRef.location.pathname + windowRef.location.search);
+
+    if (recoveryType === 'recovery') {
+      router.replace('/reset-password');
+      return;
+    }
+
+    router.replace(getRedirectPath());
+  }, [router, searchParams]);
 
   const getRedirectPath = () => {
     const redirectParam = searchParams.get('redirect');
@@ -148,7 +189,7 @@ export default function LoginPage() {
 
           <div className="px-6 py-10 sm:px-10">
             <div className="mb-8 space-y-2">
-              <h2 className="text-2xl font-semibold text-slate-900">Sign in</h2>
+              <h2 className="text-2xl font-semibold text-slate-900">Entrar</h2>
               <p className="text-sm text-slate-500">
                 Entre com seus dados para acessar o sistema.
               </p>
@@ -176,7 +217,7 @@ export default function LoginPage() {
 
               <div className="space-y-3">
                 <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                  Password
+                  Senha
                 </label>
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -192,7 +233,7 @@ export default function LoginPage() {
                   />
                   <span className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600">
                     <Eye className="h-3 w-3" />
-                    Show
+                    Mostrar
                   </span>
                 </div>
               </div>
@@ -205,9 +246,11 @@ export default function LoginPage() {
                     checked={rememberMe}
                     onChange={(event) => setRememberMe(event.target.checked)}
                   />
-                  <span>Remember me</span>
+                  <span>Lembrar-me</span>
                 </label>
-                <span className="font-semibold text-blue-600">Forgot Password?</span>
+                <Link href="/forgot-password" className="font-semibold text-blue-600">
+                  Esqueceu a senha?
+                </Link>
               </div>
 
               <button
@@ -215,13 +258,13 @@ export default function LoginPage() {
                 className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-blue-800"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Entrando...' : 'Sign in'}
+                {isSubmitting ? 'Entrando...' : 'Entrar'}
               </button>
 
               <p className="text-center text-xs text-slate-500">
-                Don&apos;t have an account?{' '}
+                Não tem uma conta?{' '}
                 <Link href="/register" className="font-semibold !text-blue-600">
-                  Sign up
+                  Criar conta
                 </Link>
               </p>
             </form>
