@@ -14,7 +14,8 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem('authToken') ?? sessionStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -71,10 +72,36 @@ api.interceptors.response.use(
     const method = error.config?.method?.toUpperCase();
     const url = error.config?.url || '';
 
+    if (url.includes('/auth/login')) {
+      return Promise.reject(error);
+    }
+
     if (status === 401) {
-      toast.error('Sessão expirada. Redirecionando para login...');
+      const hasGlobalThis = typeof globalThis === 'object' && globalThis !== null;
+      const locationRef = hasGlobalThis ? globalThis.location : undefined;
+      const currentPath = locationRef?.pathname ?? '';
+      const isAuthScreen = currentPath === '/login' || currentPath === '/register';
+      const isLoginRequest = url.includes('/auth/login');
+
+      if (isAuthScreen) {
+        // Nada: evita aviso redundante na tela de login/registro.
+      } else {
+        toast.error('Sessão expirada. Redirecionando para login...');
+      }
+
       localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      sessionStorage.removeItem('authToken');
+      if (typeof document !== 'undefined') {
+        document.cookie = 'authToken=; path=/; max-age=0';
+      }
+
+      if (isAuthScreen) {
+        return Promise.reject(error);
+      }
+
+      if (!isLoginRequest && locationRef?.assign) {
+        locationRef.assign('/login');
+      }
     } else if (status === 403) {
       toast.error('Você não tem permissão para realizar esta ação');
     } else if (status === 404) {

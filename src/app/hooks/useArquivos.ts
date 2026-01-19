@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { arquivosService } from '../services/arquivosService';
 import { Arquivo, OcorrenciasPorTurma } from '../types';
 
-export const useArquivos = () => {
+export const useOccurrences = () => {
   const [turmasOcorrencias, setTurmasOcorrencias] = useState<OcorrenciasPorTurma[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchArquivos = async () => {
+  const fetchOccurrences = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -21,10 +21,10 @@ export const useArquivos = () => {
     }
   };
 
-  const uploadArquivo = async (file: File, alunoId: number) => {
+  const uploadOccurrence = async (file: File, alunoId: number) => {
     try {
       const novoArquivo = await arquivosService.uploadArquivo({ file, alunoId });
-      await fetchArquivos();
+      await fetchOccurrences();
       return novoArquivo;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer upload do arquivo');
@@ -32,17 +32,17 @@ export const useArquivos = () => {
     }
   };
 
-  const deleteArquivo = async (id: number) => {
+  const deleteOccurrence = async (id: number) => {
     try {
       await arquivosService.deleteArquivo(id);
-      await fetchArquivos();
+      await fetchOccurrences();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar arquivo');
       throw err;
     }
   };
 
-  const downloadArquivo = async (id: number) => {
+  const downloadOccurrence = async (id: number) => {
     try {
       const blob = await arquivosService.downloadArquivo(id);
       return blob;
@@ -53,26 +53,26 @@ export const useArquivos = () => {
   };
 
   useEffect(() => {
-    fetchArquivos();
+    fetchOccurrences();
   }, []);
 
   return {
     turmasOcorrencias,
     loading,
     error,
-    fetchArquivos,
-    uploadArquivo,
-    deleteArquivo,
-    downloadArquivo,
+    fetchOccurrences,
+    uploadOccurrence,
+    deleteOccurrence,
+    downloadOccurrence,
   };
 };
 
-export const useArquivosByAluno = (alunoId: number) => {
+export const useOccurrencesByAluno = (alunoId: number) => {
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchArquivosByAluno = useCallback(async () => {
+  const fetchOccurrencesByAluno = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -86,7 +86,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     }
   }, [alunoId]);
 
-  const uploadArquivo = async (file: File) => {
+  const uploadOccurrence = async (file: File) => {
     try {
       const novoArquivo = await arquivosService.uploadArquivo({ file, alunoId });
       setArquivos(prev => [...prev, novoArquivo]);
@@ -97,7 +97,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     }
   };
 
-  const deleteArquivo = async (id: number) => {
+  const deleteOccurrence = async (id: number) => {
     try {
       await arquivosService.deleteArquivo(id);
       setArquivos(prev => prev.filter(a => a.id !== id));
@@ -107,7 +107,7 @@ export const useArquivosByAluno = (alunoId: number) => {
     }
   };
 
-  const downloadArquivo = async (id: number) => {
+  const downloadOccurrence = async (id: number) => {
     try {
       const blob = await arquivosService.downloadArquivo(id);
       return blob;
@@ -119,17 +119,17 @@ export const useArquivosByAluno = (alunoId: number) => {
 
   useEffect(() => {
     if (alunoId) {
-      fetchArquivosByAluno();
+      fetchOccurrencesByAluno();
     }
-  }, [alunoId, fetchArquivosByAluno]);
+  }, [alunoId, fetchOccurrencesByAluno]);
 
   return {
     arquivos,
     loading,
     error,
-    fetchArquivosByAluno,
-    uploadArquivo,
-    deleteArquivo,
-    downloadArquivo,
+    fetchOccurrencesByAluno,
+    uploadOccurrence,
+    deleteOccurrence,
+    downloadOccurrence,
   };
 };

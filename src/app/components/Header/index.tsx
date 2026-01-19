@@ -1,11 +1,148 @@
 'use client';
 
 import Link from 'next/link';
-import { User, BookOpen, Menu, X, FileText, Home } from 'lucide-react';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { User, BookOpen, Menu, X, FileText, Home, LogOut, Download } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import api from '../../services/api';
+
+type AuthProfile = {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    avatar_url?: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+type AuthUserResponse = {
+    success: boolean;
+    data?: {
+        profile?: AuthProfile;
+    };
+};
 
 export default function Header() {
+    const pathname = usePathname();
+    const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [profile, setProfile] = useState<AuthProfile | null>(null);
+    const normalizedPathname =
+        pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+    const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+
+    useEffect(() => {
+        if (publicRoutes.includes(normalizedPathname)) {
+            return;
+        }
+
+        const windowRef = typeof globalThis === 'object' ? globalThis.window : undefined;
+        const documentRef = typeof globalThis === 'object' ? globalThis.document : undefined;
+        const hash = windowRef?.location?.hash ?? '';
+        if (hash) {
+            const hashParams = new URLSearchParams(hash.replace('#', ''));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            const recoveryType = hashParams.get('type');
+            const errorCode = hashParams.get('error_code');
+            const errorDescription = hashParams.get('error_description');
+
+            if (!accessToken && (errorCode || errorDescription)) {
+                toast.error('Link de redefinicao invalido ou expirado.');
+                windowRef?.history?.replaceState?.(null, '', windowRef.location.pathname + windowRef.location.search);
+                return;
+            }
+
+            if (accessToken) {
+                sessionStorage.setItem('authToken', accessToken);
+                localStorage.removeItem('authToken');
+                if (refreshToken) {
+                    sessionStorage.setItem('refreshToken', refreshToken);
+                }
+                if (documentRef) {
+                    documentRef.cookie = `authToken=${encodeURIComponent(accessToken)}; path=/; samesite=lax`;
+                }
+                windowRef?.history?.replaceState?.(null, '', windowRef.location.pathname + windowRef.location.search);
+                if (recoveryType === 'recovery') {
+                    router.replace('/reset-password');
+                    return;
+                }
+            }
+        }
+
+        const token =
+            localStorage.getItem('authToken') ?? sessionStorage.getItem('authToken');
+        if (!token) {
+            setProfile(null);
+            router.replace('/login');
+            return;
+        }
+
+        let isActive = true;
+
+        const fetchProfile = async () => {
+            try {
+                const response = await api.get<AuthUserResponse>('/auth/user');
+                if (!isActive) return;
+                const profileData = response.data?.data?.profile ?? null;
+                setProfile(profileData);
+            } catch (error: unknown) {
+                console.error('Erro ao buscar perfil do usuário:', error);
+                const status = (error as { response?: { status?: number } })?.response?.status;
+                if (status === 401) {
+                    setProfile(null);
+                    router.replace('/login');
+                }
+            }
+        };
+
+        fetchProfile();
+
+        return () => {
+            isActive = false;
+        };
+    }, [normalizedPathname]);
+
+    if (publicRoutes.includes(normalizedPathname)) {
+        return null;
+    }
+
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        if (typeof document !== 'undefined') {
+            document.cookie = 'authToken=; path=/; max-age=0';
+        }
+        setProfile(null);
+        setIsMobileMenuOpen(false);
+        router.replace('/login');
+    };
+
+    const handleDownloadPdf = async () => {
+        if (globalThis.window === undefined) {
+            return;
+        }
+
+        try {
+            const response = await api.get('/relatorios/pdf/geral', {
+                responseType: 'blob',
+            });
+            const pdfBlob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: 'application/pdf' });
+            const url = globalThis.URL.createObjectURL(pdfBlob);
+            const link = globalThis.document.createElement('a');
+            link.href = url;
+            link.download = 'relatorio-geral.pdf';
+            globalThis.document.body.appendChild(link);
+            link.click();
+            link.remove();
+            globalThis.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Erro ao baixar PDF:', error);
+            globalThis.window.alert('Não foi possível gerar o PDF agora. Tente novamente.');
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-white/60 bg-white/80 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur">
@@ -31,22 +168,46 @@ export default function Header() {
                                 Início
                             </Link>
                             <Link
-                                href="/arquivos"
+                                href="/occurrences"
                                 className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-amber-50 hover:text-amber-700"
                             >
                                 <FileText size={16} />
-                                Arquivos
+                                Ocorrências
                             </Link>
+                            <button
+                                type="button"
+                                onClick={handleDownloadPdf}
+                                className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
+                            >
+                                <Download size={16} />
+                                Download PDF
+                            </button>
                         </nav>
                         <div className="flex items-center gap-3 rounded-full border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
-                                <User className="h-4 w-4 text-slate-600" />
-                            </span>
+                            {profile?.avatar_url ? (
+                                <img
+                                    src={profile.avatar_url}
+                                    alt={`Avatar de ${profile.name}`}
+                                    className="h-8 w-8 rounded-full object-cover shadow-sm"
+                                />
+                            ) : (
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+                                    <User className="h-4 w-4 text-slate-600" />
+                                </span>
+                            )}
                             <div className="hidden lg:block leading-tight">
-                                <p className="text-xs font-semibold text-slate-700">Prof. Paulo Jeovani</p>
-                                <p className="text-[11px] text-slate-500">Violão</p>
+                                <p className="text-xs font-semibold text-slate-700">{profile?.name ?? 'Usuário'}</p>
+                                <p className="text-[11px] text-slate-500">{profile?.role ?? 'Perfil'}</p>
                             </div>
                         </div>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 rounded-full border border-red-100/70 bg-white/80 px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
+                        >
+                            <LogOut size={14} />
+                            Sair
+                        </button>
                     </div>
 
                     <div className="md:hidden flex items-center">
@@ -73,22 +234,49 @@ export default function Header() {
                                     Início
                                 </Link>
                                 <Link
-                                    href="/arquivos"
+                                    href="/occurrences"
                                     className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-amber-50 hover:text-amber-700"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     <FileText size={16} />
-                                    Arquivos
+                                    Ocorrências
                                 </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        handleDownloadPdf();
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"
+                                >
+                                    <Download size={16} />
+                                    Baixar PDF
+                                </button>
                                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-3">
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
-                                        <User className="h-4 w-4 text-slate-600" />
-                                    </span>
+                                    {profile?.avatar_url ? (
+                                        <img
+                                            src={profile.avatar_url}
+                                            alt={`Avatar de ${profile.name}`}
+                                            className="h-8 w-8 rounded-full object-cover shadow-sm"
+                                        />
+                                    ) : (
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+                                            <User className="h-4 w-4 text-slate-600" />
+                                        </span>
+                                    )}
                                     <div className="leading-tight">
-                                        <p className="text-xs font-semibold text-slate-700">Prof. Paulo Jeovani</p>
-                                        <p className="text-[11px] text-slate-500">Violão</p>
+                                        <p className="text-xs font-semibold text-slate-700">{profile?.name ?? 'Usuário'}</p>
+                                        <p className="text-[11px] text-slate-500">{profile?.role ?? 'Perfil'}</p>
                                     </div>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-red-100/70 bg-white px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
+                                >
+                                    <LogOut size={14} />
+                                    Sair
+                                </button>
                             </nav>
                         </div>
                     </div>
