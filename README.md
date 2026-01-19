@@ -1,36 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Chamada — Frontend
 
-## Getting Started
+Frontend do Sistema de Chamada, focado no gerenciamento de turmas, alunos e registros de presença. Este projeto foi construído com Next.js e TypeScript e integra-se a uma API backend.
 
-First, run the development server:
+## Badges
+
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+
+## Sumario
+
+- [Badges](#badges)
+- [Visao Geral](#visao-geral)
+- [Imagens](#imagens)
+- [Demo/Preview](#demopreview)
+- [Funcionalidades](#funcionalidades)
+- [Stack](#stack)
+- [Bibliotecas e Tecnologias](#bibliotecas-e-tecnologias)
+- [Requisitos](#requisitos)
+- [Requisitos de Ambiente](#requisitos-de-ambiente)
+- [Instalacao](#instalacao)
+- [Configuracao](#configuracao)
+- [Scripts](#scripts)
+- [Estrutura de Pastas](#estrutura-de-pastas)
+- [Guia de API/Backend](#guia-de-apibackend)
+- [Deploy](#deploy)
+- [Testes](#testes)
+- [Roadmap](#roadmap)
+- [Licenca](#licenca)
+- [Contato](#contato)
+
+## Visao Geral
+
+Este repositorio contem a aplicacao web utilizada para operar o sistema de chamada, incluindo fluxos de autenticacao, cadastro de turmas e alunos, e visualizacao de ocorrencias.
+
+## Imagens
+
+Inclua aqui as capturas de tela principais do sistema.
+
+![Tela de Login](docs/images/login.png)
+![Dashboard/Turmas](docs/images/dashboard.png)
+![Chamada/Presenca](docs/images/presenca.png)
+![Ocorrencias](docs/images/ocorrencias.png)
+
+## Demo/Preview
+
+- Link para demo: <https://sistema-chamadas-front.vercel.app/>
+
+## Funcionalidades
+
+- Autenticacao e recuperacao de senha.
+- Cadastro e gestao de turmas e alunos.
+- Registro de presenca e ocorrencias.
+- Upload e gerenciamento de arquivos.
+- Interface responsiva e com feedbacks de status.
+
+## Stack
+
+- Next.js (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- Radix UI
+- Axios
+
+## Bibliotecas e Tecnologias
+
+- Framework: Next.js
+- UI: React, Radix UI, Tailwind CSS, Lucide React
+- Requisicoes HTTP: Axios
+- Notificacoes: React Hot Toast
+- Qualidade de codigo: ESLint
+- Linguagem: TypeScript
+
+## Requisitos
+
+- Node.js (LTS recomendado)
+- NPM (ou gerenciador equivalente)
+
+## Requisitos de Ambiente
+
+- Node.js 18+ (LTS)
+- Variaveis em `.env.local` configuradas
+- API backend disponivel (ou `NEXT_PUBLIC_USE_MOCK_DATA=true`)
+
+## Instalacao
 
 ```bash
+# 1) Instalar dependencias
+npm install
+
+# 2) Iniciar ambiente de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicacao fica disponivel em `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuracao
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Crie um arquivo `.env.local` na raiz do projeto com as variaveis abaixo conforme o ambiente:
 
-## Learn More
+```bash
+NEXT_PUBLIC_API_URL=/api
+NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+NEXT_PUBLIC_USE_MOCK_DATA=false
+NEXT_PUBLIC_APP_NAME=Sistema de Chamada
+NEXT_PUBLIC_APP_VERSION=1.0.0
+```
 
-To learn more about Next.js, take a look at the following resources:
+Observacoes:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_BACKEND_URL` podem ser ajustadas para ambientes de staging/producao.
+- `NEXT_PUBLIC_USE_MOCK_DATA` habilita dados mockados quando `true`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+```bash
+npm run dev       # inicia o servidor de desenvolvimento
+npm run build     # gera build de producao
+npm run start     # inicia a aplicacao em producao
+npm run lint      # executa o linter
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Estrutura de Pastas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+src/
+  app/
+    api/                # rotas de API (se houver)
+    components/         # componentes de UI
+    config/             # configuracoes e ambiente
+    hooks/              # hooks reutilizaveis
+    services/           # clientes/servicos de API
+    types/              # tipos TypeScript
+    utils/              # utilitarios
+```
+
+## Guia de API/Backend
+
+- Backend: inserir URL do repositorio/servico.
+- Base URL: `NEXT_PUBLIC_BACKEND_URL`
+- Timeout padrao: 10s (configurado em `src/app/config/environment.ts`).
+
+## Deploy
+
+Qualquer plataforma que suporte Next.js (Vercel, Render, AWS, etc).
+Garanta que as variaveis de ambiente estejam configuradas no provedor escolhido.
+
+## Testes
+
+No momento, nao ha uma suite de testes automatizados. Se adicionar testes, inclua aqui:
+
+```bash
+npm test
+```
+
+## Roadmap
+
+- Adicionar testes automatizados (unitarios e e2e).
+- Melhorar a cobertura de acessibilidade.
+- Otimizar carregamento de listas e arquivos grandes.
+
+## Licenca
+
+Este projeto é licenciado pela licença MIT.
+
+## Contato
+
+Hi! 👋 I'm Andresa Alves Ribeiro, a Front-end/Full-Stack developer and Information Systems student. I love creating solutions to complex problems and am always excited to learn new technologies.
+
+This project was developed as part of a technical assessment, showcasing my skills in modern web development, particularly with Next.js, TypeScript, and full-stack development practices.
+
+### Connect with me
+
+<p align="center">
+  <a href="mailto:andresa_15ga@hotmail.com"><img src="https://img.shields.io/static/v1?logoWidth=15&logoColor=ff69b4&logo=gmail&label=Email&message=andresa_15ga@hotmail.com&color=ff69b4" target="_blank"></a>
+  <a href="https://www.linkedin.com/in/andresa-alves-ribeiro/"><img alt="LinkedIn Profile" src="https://img.shields.io/static/v1?logoWidth=15&logoColor=0A66C2&logo=LinkedIn&label=LinkedIn&message=andresa-alves-ribeiro&color=0A66C2"></a>
+  <a href="https://www.instagram.com/dresa.alves/"><img alt="Instagram Profile" src="https://img.shields.io/static/v1?logoWidth=15&logoColor=E4405F&logo=Instagram&label=Instagram&message=@dresa.alves&color=E4405F"></a>
+</p>
