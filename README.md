@@ -46,7 +46,7 @@ Inclua aqui as capturas de tela principais do sistema.
 
 ## Demo/Preview
 
-- Link para demo: inserir URL do deploy.
+- Link para demo: <https://sistema-chamadas-front.vercel.app/>
 
 ## Funcionalidades
 
