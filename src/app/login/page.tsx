@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, Eye } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import loginBackground from '../assets/login.jpg';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -22,6 +22,7 @@ export default function LoginPage() {
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const windowRef = typeof globalThis === 'object' ? globalThis.window : undefined;
@@ -224,7 +225,7 @@ export default function LoginPage() {
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-11 pr-16 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
                     placeholder="minhaSenha123"
                     value={formState.password}
@@ -232,8 +233,7 @@ export default function LoginPage() {
                     required
                   />
                   <span className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600">
-                    <Eye className="h-3 w-3" />
-                    Mostrar
+                    {showPassword ? <Eye className="h-5 w-5 text-slate-500" onClick={() => setShowPassword(!showPassword)} /> : <EyeOff className="h-5 w-5 text-slate-500" onClick={() => setShowPassword(!showPassword)} />}
                   </span>
                 </div>
               </div>
