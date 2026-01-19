@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, FileText, Calendar, AlertCircle, Pencil, Save, X, Trash2 } from 'lucide-react';
-import '../../arquivos.css';
+import '../../occurrences.css';
 import { useAlunos } from '../../../hooks/useAlunos';
 import { useOccurrences } from '../../../hooks/useOccurrences';
 import { formatTime } from '../../../utils/timeFormat';
