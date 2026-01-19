@@ -130,11 +130,11 @@ export default function Header() {
                                 Início
                             </Link>
                             <Link
-                                href="/arquivos"
+                                href="/occurrences"
                                 className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-amber-50 hover:text-amber-700"
                             >
                                 <FileText size={16} />
-                                Arquivos
+                                Ocorrências
                             </Link>
                             <button
                                 type="button"
@@ -196,12 +196,12 @@ export default function Header() {
                                     Início
                                 </Link>
                                 <Link
-                                    href="/arquivos"
+                                    href="/occurrences"
                                     className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-amber-50 hover:text-amber-700"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     <FileText size={16} />
-                                    Arquivos
+                                    Ocorrências
                                 </Link>
                                 <button
                                     type="button"
