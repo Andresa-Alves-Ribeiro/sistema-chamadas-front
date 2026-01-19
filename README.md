@@ -26,7 +26,6 @@ Frontend do Sistema de Chamada, focado no gerenciamento de turmas, alunos e regi
 - [Estrutura de Pastas](#estrutura-de-pastas)
 - [Guia de API/Backend](#guia-de-apibackend)
 - [Deploy](#deploy)
-- [Testes](#testes)
 - [Roadmap](#roadmap)
 - [Licenca](#licenca)
 - [Contato](#contato)
@@ -39,14 +38,24 @@ Este repositorio contem a aplicacao web utilizada para operar o sistema de chama
 
 Inclua aqui as capturas de tela principais do sistema.
 
-![Tela de Login](docs/images/login.png)
-![Dashboard/Turmas](docs/images/dashboard.png)
-![Chamada/Presenca](docs/images/presenca.png)
-![Ocorrencias](docs/images/ocorrencias.png)
+TELA LOGIN
+<img width="1570" height="1298" alt="Captura de tela 2026-01-19 192107" src="https://github.com/user-attachments/assets/a6dae83b-8d98-434e-a897-d04c58a94104" />
+
+TELA CADASTRO
+<img width="1456" height="1104" alt="Captura de tela 2026-01-19 192120" src="https://github.com/user-attachments/assets/c4fa7069-df36-4781-98c1-4ac5919d78c0" />
+
+TELA LISTA DE TURMAS
+<img width="1350" height="1295" alt="Captura de tela 2026-01-19 192139" src="https://github.com/user-attachments/assets/39b17934-06dc-4e94-bb40-983d2aa0b78d" />
+
+TELA OCORRÊNCIAS
+<img width="1348" height="1269" alt="Captura de tela 2026-01-19 192211" src="https://github.com/user-attachments/assets/d37f8a7f-4cda-4ce2-939a-6898439af51c" />
+
+TELA LISTA DE CHAMADA
+<img width="1368" height="861" alt="Captura de tela 2026-01-19 192226" src="https://github.com/user-attachments/assets/5bf05166-1e7e-4dd4-ad7c-95c40361f87f" />
 
 ## Demo/Preview
 
-- Link para demo: <https://sistema-chamadas-front.vercel.app/>
+- Link para demo: https://sistema-chamadas-front.vercel.app/
 
 ## Funcionalidades
 
@@ -142,19 +151,6 @@ src/
 - Backend: inserir URL do repositorio/servico.
 - Base URL: `NEXT_PUBLIC_BACKEND_URL`
 - Timeout padrao: 10s (configurado em `src/app/config/environment.ts`).
-
-## Deploy
-
-Qualquer plataforma que suporte Next.js (Vercel, Render, AWS, etc).
-Garanta que as variaveis de ambiente estejam configuradas no provedor escolhido.
-
-## Testes
-
-No momento, nao ha uma suite de testes automatizados. Se adicionar testes, inclua aqui:
-
-```bash
-npm test
-```
 
 ## Roadmap
 
