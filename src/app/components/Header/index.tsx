@@ -34,7 +34,8 @@ export default function Header() {
             return;
         }
 
-        const token = localStorage.getItem('authToken');
+        const token =
+            localStorage.getItem('authToken') ?? sessionStorage.getItem('authToken');
         if (!token) {
             setProfile(null);
             router.replace('/login');
@@ -72,6 +73,7 @@ export default function Header() {
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
         if (typeof document !== 'undefined') {
             document.cookie = 'authToken=; path=/; max-age=0';
         }

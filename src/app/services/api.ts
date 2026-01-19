@@ -14,7 +14,8 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem('authToken') ?? sessionStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -89,6 +90,7 @@ api.interceptors.response.use(
       }
 
       localStorage.removeItem('authToken');
+      sessionStorage.removeItem('authToken');
       if (typeof document !== 'undefined') {
         document.cookie = 'authToken=; path=/; max-age=0';
       }

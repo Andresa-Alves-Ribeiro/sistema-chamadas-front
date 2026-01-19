@@ -20,6 +20,7 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
+  const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getRedirectPath = () => {
@@ -61,8 +62,17 @@ export default function LoginPage() {
         response.data?.data?.session?.access_token;
 
       if (token) {
-        localStorage.setItem('authToken', token);
-        document.cookie = `authToken=${encodeURIComponent(token)}; path=/; samesite=lax`;
+        if (rememberMe) {
+          localStorage.setItem('authToken', token);
+          sessionStorage.removeItem('authToken');
+        } else {
+          sessionStorage.setItem('authToken', token);
+          localStorage.removeItem('authToken');
+        }
+
+        const rememberMaxAge = 60 * 60 * 24 * 30;
+        const cookieMaxAge = rememberMe ? `; max-age=${rememberMaxAge}` : '';
+        document.cookie = `authToken=${encodeURIComponent(token)}; path=/; samesite=lax${cookieMaxAge}`;
       } else {
         toast.error('Token de autenticação não retornado.');
         return;
@@ -192,6 +202,8 @@ export default function LoginPage() {
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    checked={rememberMe}
+                    onChange={(event) => setRememberMe(event.target.checked)}
                   />
                   <span>Remember me</span>
                 </label>
