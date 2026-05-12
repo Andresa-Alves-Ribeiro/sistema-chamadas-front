@@ -1,7 +1,6 @@
 # Sistema de Chamada — Frontend
 
 Frontend do Sistema de Chamada, focado no gerenciamento de turmas, alunos e registros de presença.
-Desenvolvido para o professor Paulo Jeovani, professor de música.
 Este projeto foi construído com Next.js e TypeScript e integra-se a uma API backend.
 
 ## Badges
